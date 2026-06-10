@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Design source files (large binaries)
+docs/design/*.fig
+docs/design/*.zip
+
+# Database dumps (sensitive)
+docs/dump.sql

@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscrição — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+  <style>
+    .apoiador-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .apoiador-grid { grid-template-columns: 1fr; }
+    }
+    .apoiador-item {
+      padding: 0.875rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid var(--orange);
+      border-radius: 0 8px 8px 0;
+    }
+    .apoiador-item .item-title { font-weight: 600; color: var(--text); font-size: 0.875rem; }
+    .apoiador-item .item-desc  { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link active">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link">Comunidade</a>
+    <a href="index.html"         class="nav-link active">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem; max-width:760px;">
+
+    <div class="page-header">
+      <h1>Inscrição no Campeonato</h1>
+    </div>
+
+    <!-- Sub-nav -->
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:2rem;">
+      <a href="rodadas.html"   class="btn-secondary btn-sm">🎮 Rodadas</a>
+      <a href="ranking.html"   class="btn-secondary btn-sm">🏆 Ranking</a>
+      <a href="regras.html"    class="btn-secondary btn-sm">📋 Regras</a>
+      <a href="inscricao.html" class="btn-primary btn-sm">✍️ Inscrição</a>
+    </div>
+
+    <!-- Not logged in -->
+    <div id="naoLogado" style="display:none; text-align:center; padding:3rem;" class="card">
+      <div style="text-align:center;">
+        <h3 style="margin-bottom:0.75rem;">🔒 Faça login para se inscrever</h3>
+        <p style="color:var(--text-secondary); margin-bottom:1.75rem;">Você precisa estar logado para participar do campeonato.</p>
+        <a href="login.html" class="btn-primary">Fazer Login</a>
+      </div>
+    </div>
+
+    <!-- Inscriptions closed -->
+    <div id="inscricoesFechadas" style="display:none;" class="card">
+      <div style="text-align:center;">
+        <h3 style="color:var(--orange); margin-bottom:0.75rem;">🏆 Campeonato em Andamento</h3>
+        <p style="color:var(--text-secondary); margin-bottom:0.5rem;">O campeonato atual já está em andamento e as inscrições foram encerradas.</p>
+        <p style="color:var(--text-secondary); margin-bottom:1.75rem;">Aguarde o próximo campeonato para se inscrever!</p>
+        <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+          <a href="rodadas.html"   class="btn-primary">Ver Rodadas</a>
+          <a href="estatisticas.html" class="btn-secondary">Ver Estatísticas</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- No campaign -->
+    <div id="semCampeonato" style="display:none;" class="card">
+      <div style="text-align:center;">
+        <h3 style="color:var(--text-secondary); margin-bottom:0.75rem;">📅 Nenhum Campeonato Ativo</h3>
+        <p style="color:var(--text-secondary);">Não há campeonatos com inscrições abertas no momento. Aguarde o próximo!</p>
+      </div>
+    </div>
+
+    <!-- Already registered -->
+    <div id="jaInscrito" style="display:none;" class="card">
+      <div style="text-align:center;">
+        <h3 style="color:var(--success); margin-bottom:0.75rem;">✅ Você já está inscrito!</h3>
+        <p style="color:var(--text-secondary); margin-bottom:0.4rem;">Deck: <strong id="jaInscritoDeck" style="color:var(--text);"></strong></p>
+        <p style="color:var(--text-secondary); margin-bottom:1.75rem;">Aguarde o início das rodadas.</p>
+        <a href="rodadas.html" class="btn-primary">Ver Rodadas</a>
+      </div>
+    </div>
+
+    <!-- Not an apoiador -->
+    <div id="naoApoiador" style="display:none;" class="card">
+      <div style="text-align:center;">
+        <h3 style="color:var(--orange); margin-bottom:0.75rem;">⭐ Apoiador APOIA.se necessário</h3>
+        <p style="color:var(--text-secondary); margin-bottom:0.4rem;">Para participar, você precisa ser apoiador ativo no APOIA.se.</p>
+        <p style="color:var(--text-secondary); margin-bottom:0.4rem;">Seu e-mail: <strong id="naoApoiadorEmail" style="color:var(--text);"></strong></p>
+        <p style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:1.75rem;">Certifique-se de usar o mesmo e-mail cadastrado no APOIA.se.</p>
+        <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+          <a href="https://apoia.se/diarioplaninauta" target="_blank" class="btn-primary">Ir para APOIA.se</a>
+          <a href="mesas-casuais.html" class="btn-secondary">Ir para Mesões</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div id="formContainer" style="display:none;">
+      <div class="card" style="background:rgba(245,130,32,0.06); border-color:rgba(245,130,32,0.25); margin-bottom:1.5rem;">
+        <p style="color:var(--text-secondary); font-size:0.875rem; margin:0;">
+          Logado como: <strong id="emailLogado" style="color:var(--text);"></strong>
+        </p>
+      </div>
+
+      <div class="card">
+        <form id="inscricaoForm" style="display:flex; flex-direction:column; gap:1.25rem; background:transparent; border:none; padding:0; max-width:100%;">
+          <div class="form-group">
+            <label for="nome">Nome (como aparecerá no campeonato)</label>
+            <input type="text" name="nome" id="nome" placeholder="Seu nome" required>
+          </div>
+          <div class="form-group">
+            <label for="discord">Discord</label>
+            <input type="text" name="discord" id="discord" placeholder="@usuario ou usuario#1234" required>
+            <small>Seu nome de usuário no Discord</small>
+          </div>
+          <div class="form-group">
+            <label for="whatsapp">WhatsApp (opcional)</label>
+            <input type="tel" name="whatsapp" id="whatsapp" placeholder="(11) 99999-9999">
+          </div>
+          <div class="form-group">
+            <label for="deckBusca">Deck Precon</label>
+            <div style="position:relative;">
+              <input type="text" id="deckBusca" placeholder="Buscar deck precon..." autocomplete="off">
+              <div id="deckSugestoes" style="display:none;"></div>
+            </div>
+            <small>Digite o nome do comandante ou do deck</small>
+          </div>
+
+          <input type="hidden" name="deckId"   id="deckId"   required>
+          <input type="hidden" name="deckNome" id="deckNome" required>
+
+          <div id="deckSelecionado" style="display:none; padding:1rem; background:rgba(245,130,32,0.07); border:1px solid rgba(245,130,32,0.25); border-radius:10px;">
+            <strong style="color:var(--orange);">Deck selecionado:</strong>
+            <div id="deckInfo" style="margin-top:0.75rem;"></div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%; padding:1rem; font-size:1rem;">
+            Inscrever no Campeonato
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Apoiador section (visible when not logged in) -->
+    <div id="secaoApoiador" style="display:none; margin-top:2rem;">
+      <div class="card">
+        <div style="text-align:center; max-width:780px; margin:0 auto;">
+          <p style="color:var(--orange); font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem;">
+            Para participar do Precompeonato
+          </p>
+          <h2 style="font-size:1.375rem; color:var(--text); margin-bottom:0.625rem;">Você precisa ser apoiador no APOIA.se</h2>
+          <p style="color:var(--text-secondary); font-size:0.9375rem; margin-bottom:1.75rem; line-height:1.65;">
+            Faça parte de uma das maiores comunidades de card games do Brasil! Apoiar é dar e também receber:
+          </p>
+
+          <div class="apoiador-grid" style="margin-bottom:1.5rem; text-align:left;">
+            <div class="apoiador-item">
+              <div class="item-title">💬 Grupo do WhatsApp</div>
+              <div class="item-desc">Comunidade exclusiva com fãs de Magic e card games</div>
+            </div>
+            <div class="apoiador-item">
+              <div class="item-title">🎮 Commander ao Vivo</div>
+              <div class="item-desc">Jogue em lives mensais com o canal e outros apoiadores</div>
+            </div>
+            <div class="apoiador-item">
+              <div class="item-title">🔍 Análise de Deck</div>
+              <div class="item-desc">Upgrade semanal ao vivo do seu deck de Commander</div>
+            </div>
+            <div class="apoiador-item">
+              <div class="item-title">🎙️ Papo Planinauta</div>
+              <div class="item-desc">Bate-papos com criadores de conteúdo</div>
+            </div>
+          </div>
+
+          <div class="destaque" style="margin-bottom:1.75rem; text-align:left;">
+            🏆 O <strong>Precompeonato</strong> é um dos maiores torneios de Commander Precon online do Brasil.
+            A partir do <strong>Tier de R$15</strong> no APOIA.se.
+          </div>
+
+          <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+            <a href="https://apoia.se/diarioplaninauta" target="_blank" class="btn-primary">Quero Apoiar</a>
+            <a href="login.html" class="btn-secondary">Já sou apoiador, fazer login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>

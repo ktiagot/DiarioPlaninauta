@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estatísticas — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+  <style>
+    .stats-filter select { max-width: 380px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link active">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link">Comunidade</a>
+    <a href="index.html"         class="nav-link">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link active">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem;">
+
+    <div class="page-header">
+      <h1>Estatísticas</h1>
+      <p>Metagame geral e estatísticas individuais dos jogadores</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="geral">Estatísticas Gerais</button>
+      <button class="tab-btn" data-tab="minhas">Minhas Estatísticas</button>
+    </div>
+
+    <!-- ── Tab: Gerais ── -->
+    <div class="tab-content active" id="tab-geral">
+
+      <div class="stats-filter" style="margin-bottom:2rem;">
+        <select id="filtroCampeonatoGeral">
+          <option value="">Todos os campeonatos</option>
+        </select>
+      </div>
+
+      <!-- Números gerais -->
+      <div style="margin-bottom:2rem;">
+        <h3 style="font-size:1rem; font-weight:700; color:var(--orange); margin-bottom:1rem; text-transform:uppercase; letter-spacing:0.06em;">Números Gerais</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalPartidasGeral">0</div>
+            <div class="stat-label">Partidas Jogadas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalJogadoresGeral">0</div>
+            <div class="stat-label">Jogadores</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalDecksGeral">0</div>
+            <div class="stat-label">Decks Diferentes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalRodadasGeral">0</div>
+            <div class="stat-label">Rodadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metagame -->
+      <div class="stats-section">
+        <h3>Metagame — Decks Mais Usados</h3>
+        <div id="metagameGeral"></div>
+        <button id="btnMostrarMaisMetagame" class="btn-secondary" style="display:none; width:100%; margin-top:1rem;">Mostrar Mais</button>
+      </div>
+
+      <!-- Top Win Rate -->
+      <div class="stats-section">
+        <h3>Decks com Melhor Win Rate</h3>
+        <div id="topDecks"></div>
+        <button id="btnMostrarMaisTopDecks" class="btn-secondary" style="display:none; width:100%; margin-top:1rem;">Mostrar Mais</button>
+      </div>
+
+      <!-- Matchups -->
+      <div class="stats-section">
+        <h3>Matchups Mais Comuns</h3>
+        <div id="matchupsComuns"></div>
+        <button id="btnMostrarMaisMatchups" class="btn-secondary" style="display:none; width:100%; margin-top:1rem;">Mostrar Mais</button>
+      </div>
+
+    </div><!-- /tab-geral -->
+
+    <!-- ── Tab: Minhas ── -->
+    <div class="tab-content" id="tab-minhas" style="display:none;">
+
+      <div id="naoLogado" style="display:none; text-align:center; padding:3rem 1rem;">
+        <h3 style="color:var(--text-secondary); margin-bottom:0.75rem;">🔒 Faça login para ver suas estatísticas</h3>
+        <p style="color:var(--text-secondary); margin-bottom:1.75rem;">Você precisa estar logado para ver seus dados.</p>
+        <a href="login.html" class="btn-primary">Fazer Login</a>
+      </div>
+
+      <div id="semDados" style="display:none; text-align:center; padding:3rem 1rem;">
+        <h3 style="color:var(--text-secondary); margin-bottom:0.5rem;">📊 Nenhuma estatística encontrada</h3>
+        <p style="color:var(--text-secondary);">Você ainda não jogou nenhuma partida.</p>
+      </div>
+
+      <div id="statsContainer" style="display:none;">
+        <div style="margin-bottom:2rem;">
+          <h3 id="nomeJogador" style="font-size:1.125rem; font-weight:700; color:var(--orange);"></h3>
+          <p id="emailJogador" style="color:var(--text-secondary); font-size:0.875rem;"></p>
+        </div>
+
+        <div style="margin-bottom:2rem;">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="totalPartidas">0</div><div class="stat-label">Partidas</div></div>
+            <div class="stat-card"><div class="stat-value" id="totalVitorias">0</div><div class="stat-label">Vitórias</div></div>
+            <div class="stat-card"><div class="stat-value" id="winRate">0%</div><div class="stat-label">Win Rate</div></div>
+            <div class="stat-card"><div class="stat-value" id="totalPontos">0</div><div class="stat-label">Pontos</div></div>
+          </div>
+        </div>
+
+        <div class="stats-section">
+          <h3>Meus Decks</h3>
+          <div id="meusDecks"></div>
+        </div>
+
+        <div class="stats-section">
+          <h3>Performance por Deck</h3>
+          <div id="performanceDeck"></div>
+        </div>
+
+        <div class="stats-section">
+          <h3>Matchups</h3>
+          <div id="matchupsContra"></div>
+        </div>
+
+        <div class="stats-section">
+          <h3>Histórico de Partidas</h3>
+          <div id="historicoPartidas"></div>
+        </div>
+      </div>
+
+      <div id="nenhumDado" class="empty-state" style="display:none;">
+        <p>Nenhuma estatística encontrada.</p>
+      </div>
+
+    </div><!-- /tab-minhas -->
+
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/scryfall-helper.js"></script>
+<script src="js/estatisticas.js"></script>
+</body>
+</html>

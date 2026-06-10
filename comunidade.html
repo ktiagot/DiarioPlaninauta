@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunidade — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link active">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link active">Comunidade</a>
+    <a href="index.html"         class="nav-link">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem;">
+
+    <!-- Mensagem para não logados -->
+    <div id="comunidadeNaoLogado" style="display:none; text-align:center; padding:4rem 1rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+      <h2 style="color:var(--text); margin-bottom:0.75rem;">Faça login para acessar a comunidade</h2>
+      <p style="color:var(--text-secondary); margin-bottom:2rem; max-width:400px; margin-left:auto; margin-right:auto;">
+        Conheça outros jogadores, veja disponibilidades e encontre parceiros de mesa.
+      </p>
+      <a href="login.html" class="btn-primary">Fazer Login</a>
+    </div>
+
+    <!-- Conteúdo principal (escondido se não logado) -->
+    <div id="comunidadeConteudo">
+
+    <!-- Title row + search -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.75rem;">
+      <div class="page-header" style="padding:0;">
+        <h1>Conhecer jogadores</h1>
+        <p>Encontre parceiros de Commander na comunidade</p>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Buscar jogador...">
+        <button onclick="buscarJogadores()">🔍</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <select class="filter-select" onchange="filtrarPorCidade(this.value)">
+        <option value="">📍 Localidade</option>
+      </select>
+      <select class="filter-select" onchange="filtrarPorFormato(this.value)">
+        <option value="">🃏 Formato</option>
+      </select>
+      <select class="filter-select" onchange="filtrarPorDisponibilidade(this.value)">
+        <option value="">📅 Disponibilidade</option>
+      </select>
+    </div>
+
+    <!-- Players list -->
+    <div id="playersList" style="display:flex; flex-direction:column; gap:0.875rem;"></div>
+
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <h3>Nenhum jogador encontrado</h3>
+      <p>Tente buscar com outro nome.</p>
+    </div>
+
+    </div><!-- /comunidadeConteudo -->
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Controlar visibilidade: desativado para demonstração
+  // if (!localStorage.getItem('auth_token')) {
+  //   document.getElementById('comunidadeNaoLogado').style.display = 'block';
+  //   document.getElementById('comunidadeConteudo').style.display = 'none';
+  // }
+</script>
+<script src="js/comunidade.js"></script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diário Planinauta — A maior comunidade de card games do Brasil</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+  <style>
+    .landing-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .landing-hero {
+      text-align: center;
+      padding: 5rem 1rem 4rem;
+    }
+
+    .landing-hero img {
+      max-width: 280px;
+      height: auto;
+      margin-bottom: 2rem;
+    }
+
+    .landing-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .landing-hero .tagline {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .landing-section {
+      padding: 3rem 0;
+    }
+
+    .landing-section h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .landing-section p.section-desc {
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .benefit-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: border-color 0.25s;
+    }
+
+    .benefit-card:hover {
+      border-color: var(--card-border-h);
+    }
+
+    .benefit-card .icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .benefit-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .benefit-card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .steps-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .step-item {
+      text-align: center;
+      max-width: 200px;
+    }
+
+    .step-item .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(245,130,32,0.15);
+      border: 2px solid var(--orange);
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.75rem;
+    }
+
+    .step-item h4 {
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .step-item p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .landing-cta {
+      text-align: center;
+      padding: 3rem 0 4rem;
+    }
+
+    .landing-cta .btn-primary {
+      font-size: 1.125rem;
+      padding: 1rem 2.5rem;
+    }
+
+    .landing-cta .secondary-link {
+      display: block;
+      margin-top: 1.25rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+
+    .landing-cta .secondary-link:hover {
+      color: var(--orange);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container landing-header">
+    <a href="landing.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      <div class="logo-text">
+        <span class="brand-name">Diário</span>
+        <span class="brand-sub">Planinauta</span>
+      </div>
+    </a>
+    <a href="login.html" class="btn-primary" style="font-size:0.875rem;padding:0.5rem 1.25rem;">Entrar</a>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="landing-hero">
+    <img src="assets/logo-branco.png" alt="Diário Planinauta">
+    <h1>Diário Planinauta</h1>
+    <p class="tagline">A maior comunidade de card games do Brasil</p>
+  </section>
+
+  <!-- O que é -->
+  <section class="landing-section">
+    <div class="container">
+      <h2>O que é o Diário Planinauta?</h2>
+      <p class="section-desc">
+        Somos um canal e comunidade dedicados ao Magic: The Gathering, especialmente Commander.
+        Através do nosso portal exclusivo para apoiadores, organizamos torneios semanais de Commander Precon,
+        mesas casuais, e muito conteúdo sobre o jogo que amamos. Tudo online, via Spelltable e Discord.
+      </p>
+    </div>
+  </section>
+
+  <!-- Benefícios -->
+  <section class="landing-section" style="background:rgba(255,255,255,0.02);">
+    <div class="container">
+      <h2>Benefícios de apoiar</h2>
+      <p class="section-desc">Ao se tornar apoiador, você desbloqueia acesso a tudo isso:</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="icon">🏆</div>
+          <h3>Precompeonato</h3>
+          <p>Torneio semanal de Commander Precon com premiação real em produtos e créditos.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon">🎲</div>
+          <h3>Mesões</h3>
+          <p>Crie e participe de mesas casuais de Commander a qualquer hora com a comunidade.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon">👥</div>
+          <h3>Comunidade</h3>
+          <p>Conheça outros jogadores, encontre parceiros de mesa por cidade e formato.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon">🎮</div>
+          <h3>Commander ao Vivo</h3>
+          <p>Jogue em lives mensais junto com o canal e outros apoiadores.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon">🔍</div>
+          <h3>Análise de Deck</h3>
+          <p>Upgrade semanal ao vivo do seu deck de Commander com dicas personalizadas.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon">🎙️</div>
+          <h3>Papo Planinauta</h3>
+          <p>Bate-papos exclusivos com criadores de conteúdo e convidados especiais.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section class="landing-section">
+    <div class="container">
+      <h2>Como funciona</h2>
+      <div class="steps-row">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <h4>Apoie no APOIA.se</h4>
+          <p>Escolha um plano a partir de R$5/mês e torne-se apoiador.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <h4>Faça login com seu email</h4>
+          <p>Use o mesmo email do APOIA.se para acessar o portal.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <h4>Acesse o portal</h4>
+          <p>Participe de torneios, mesas casuais e conheça a comunidade.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta">
+    <div class="container">
+      <a href="https://apoia.se/diarioplaninauta" target="_blank" class="btn-primary">Quero Apoiar</a>
+      <a href="login.html" class="secondary-link">Já sou apoiador → Fazer login</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>&copy; 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.1rem;" title="YouTube">&#9654;&#65039;</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.1rem;" title="Twitch">&#128250;</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.1rem;" title="Instagram">&#128247;</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regras — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link active">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link">Comunidade</a>
+    <a href="index.html"         class="nav-link active">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem; max-width:960px;">
+
+    <div class="page-header">
+      <h1>Regras e Instruções</h1>
+      <p id="campeonatoTitulo" style="color:var(--orange); font-weight:600;">Carregando...</p>
+    </div>
+
+    <!-- Sub-nav -->
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:2rem;">
+      <a href="rodadas.html"   class="btn-secondary btn-sm">🎮 Rodadas</a>
+      <a href="ranking.html"   class="btn-secondary btn-sm">🏆 Ranking</a>
+      <a href="regras.html"    class="btn-primary btn-sm">📋 Regras</a>
+      <a href="inscricao.html" class="btn-secondary btn-sm">✍️ Inscrição</a>
+    </div>
+
+    <div class="destaque destaque-info" style="margin-bottom:1.5rem;">
+      <p><strong>Sobre o Torneio</strong></p>
+      <p style="margin-top:0.4rem;">Torneio de Commander multiplayer (4 jogadores) com decks pré-montados oficiais lançados pela Wizards.</p>
+      <p style="margin-top:0.4rem;">Data de início: <strong>11 de Março de 2026</strong></p>
+    </div>
+
+    <!-- 1. Plataforma -->
+    <div class="regras-section">
+      <h3>1. Plataforma</h3>
+      <ul>
+        <li>Jogos devem ser jogados via <strong>Spelltable</strong>, com comunicação nos canais de voz do Discord.</li>
+        <li>A comunicação das informações do evento será feita por canais no Discord (tabela, rodadas, anúncios).</li>
+      </ul>
+    </div>
+
+    <!-- 2. Inscrições -->
+    <div class="regras-section">
+      <h3>2. Inscrições</h3>
+      <ul>
+        <li>As inscrições devem ser realizadas pelo formulário no site oficial do evento.</li>
+        <li>Período de inscrições: <strong>24/02/2026 a 06/03/2026 às 21:00</strong></li>
+        <li>Jogadores inscritos que não estiverem autorizados serão removidos do evento.</li>
+      </ul>
+    </div>
+
+    <!-- 3. Listas -->
+    <div class="regras-section">
+      <h3>3. Listas de Decks</h3>
+      <ul>
+        <li>Os decks devem ser originais ou montados de acordo com a lista oficial dos precons da Wizards.</li>
+        <li>Impressões de outras edições das mesmas cartas podem ser utilizadas.</li>
+        <li>Os comandantes secundários/alternativos podem ser usados como comandantes principais.</li>
+        <li>Caso não possua alguma carta, ela poderá ser trocada por um terreno básico (informar à organização).</li>
+        <li>Após o lançamento da primeira rodada, os jogadores não podem mais trocar de deck.</li>
+      </ul>
+      <div class="destaque destaque-importante" style="margin-top:1rem;">
+        <strong>Deck Banido:</strong> Prismari Performance (Strixhaven)
+      </div>
+    </div>
+
+    <!-- 4. Partidas -->
+    <div class="regras-section">
+      <h3>4. Partidas</h3>
+      <ul>
+        <li>O torneio será REL casual. Todas as regras oficiais do Magic se aplicam.</li>
+        <li>Serão <strong>4 a 5 rodadas suíças</strong>, dependendo da quantidade de jogadores.</li>
+        <li>Uma rodada por semana. Primeira rodada: <strong>11/03/2026</strong></li>
+      </ul>
+
+      <h4 style="margin-top:1.25rem; color:var(--text); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.75rem;">Horários</h4>
+      <ul>
+        <li>Rodadas acontecem toda <strong>quarta-feira</strong></li>
+        <li>Partidas devem começar entre <strong>18:00 e 21:00</strong></li>
+        <li>Duração máxima: <strong>3 horas</strong> do horário de início</li>
+        <li>Horário deve ser acordado até às 18:00 do dia da rodada</li>
+        <li>Sem acordo: jogo marcado para 21:00</li>
+        <li>Tolerância de 10 minutos para atrasos</li>
+      </ul>
+
+      <h4 style="margin-top:1.25rem; color:var(--text); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.75rem;">Pontuação</h4>
+      <ul>
+        <li><strong>Vencedor:</strong> 3 pontos</li>
+        <li><strong>Segundo lugar:</strong> 1 ponto</li>
+        <li>Terceiro e quarto lugares: 0 pontos</li>
+        <li>Empate após tempo: todos os jogadores vivos recebem 1 ponto</li>
+      </ul>
+
+      <div class="destaque" style="margin-top:1rem;">
+        <strong>Importante:</strong> O segundo colocado é o último jogador eliminado. Em caso de eliminação simultânea, usa-se a ordem de turnos.
+      </div>
+
+      <ul>
+        <li>Ao final do jogo, o campeão comunica o resultado no Discord.</li>
+        <li>Check-in semanal obrigatório (divulgado toda quinta-feira)</li>
+        <li>Ausência sem check-in em 2 semanas seguidas: drop automático</li>
+      </ul>
+    </div>
+
+    <!-- 5. Conduta -->
+    <div class="regras-section">
+      <h3>5. Regras de Conduta no Spelltable</h3>
+      <ul>
+        <li>Jogar o evento exige <strong>disponibilidade de horário por várias semanas</strong>.</li>
+        <li>Deck e cemitério devem estar sempre à vista na câmera.</li>
+        <li>Corte deve acontecer a cada embaralhada, à vista de todos.</li>
+        <li>Jogadores não ativos devem deixar cartas na mesa com dados indicando a quantidade.</li>
+        <li>Problemas de conexão: mesa decide se reagenda ou continua.</li>
+        <li>Desconexão &gt; 30s: embaralhar mão no grimório e recomprar.</li>
+        <li>Desconexão &gt; 5min: jogador considerado eliminado.</li>
+        <li><strong>Concessão:</strong> apenas no próprio turno, fase principal, pilha vazia.</li>
+      </ul>
+      <div class="destaque">
+        <strong>Suporte:</strong> Em caso de dúvidas, contate a administração via Discord no canal #ajuda.
+      </div>
+    </div>
+
+    <!-- 6. Classificação -->
+    <div class="regras-section">
+      <h3>6. Classificação</h3>
+      <ul>
+        <li><strong>1º colocado:</strong> avança direto para a grande final</li>
+        <li><strong>2º ao 13º:</strong> disputam 3 mesas de semifinais</li>
+        <li>Vencedor de cada semifinal passa para a final</li>
+      </ul>
+      <h4 style="margin-top:1.25rem; color:var(--text); font-size:0.9rem; margin-bottom:0.75rem;">Mesas de Semifinais</h4>
+      <ul>
+        <li><strong>Mesa 1:</strong> 2º, 5º, 10º e 13º</li>
+        <li><strong>Mesa 2:</strong> 3º, 6º, 8º e 12º</li>
+        <li><strong>Mesa 3:</strong> 4º, 7º, 9º e 11º</li>
+      </ul>
+    </div>
+
+    <!-- 7. Premiações -->
+    <div class="regras-section">
+      <h3>7. Premiações</h3>
+      <div class="destaque destaque-info" style="margin-bottom:1rem;">
+        <strong>Parceiro:</strong> Citadel Hobby Store
+      </div>
+
+      <div class="premio-item">
+        <strong>Campeão (1º Lugar)</strong>
+        <p>R$250 em créditos na Citadel + Camisa da Glórin + Deckbox Gamegenic + Troféu + Marcador de Mão by WTF CARDS</p>
+      </div>
+      <div class="premio-item">
+        <strong>Finalistas (2º ao 4º)</strong>
+        <p>R$70 em créditos na Citadel + Shields Gamegenic</p>
+      </div>
+      <div class="premio-item">
+        <strong>Semifinalistas (não classificados)</strong>
+        <p>R$20 em créditos na Citadel</p>
+      </div>
+      <div class="premio-item">
+        <strong>Último Lugar</strong>
+        <p>Shield Gamegenic (válido se jogou todas as rodadas do suíço)</p>
+      </div>
+
+      <ul style="margin-top:1rem;">
+        <li>Sorteios de produtos Gamegenic e Camisa da Glórin entre participantes que jogarem todas as rodadas.</li>
+        <li>Jogadores premiados são responsáveis pelos custos de envio (fora de São Paulo).</li>
+      </ul>
+    </div>
+
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+  async function carregarTituloCampeonato() {
+    try {
+      const response = await fetch(`${API_URL}/tema`);
+      const tema = await response.json();
+      const titulo = `${tema.nome}${tema.edicao ? ' — ' + tema.edicao : ''}`;
+      document.getElementById('campeonatoTitulo').textContent = titulo;
+    } catch (e) {
+      document.getElementById('campeonatoTitulo').textContent = 'Precompeonato';
+    }
+  }
+  carregarTituloCampeonato();
+</script>
+</body>
+</html>

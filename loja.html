@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loja de Pontos — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+  <style>
+    .points-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245,130,32,0.12);
+      border: 1px solid rgba(245,130,32,0.3);
+      border-radius: 50px;
+      padding: 0.5rem 1.25rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--orange);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link active">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link">Comunidade</a>
+    <a href="index.html"         class="nav-link">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link active">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem; max-width:960px;">
+
+    <div class="page-header">
+      <h1>Loja de Pontos</h1>
+      <p>Troque seus pontos por recompensas exclusivas</p>
+    </div>
+
+    <!-- User points -->
+    <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:2.5rem;">
+      <div class="points-badge">
+        <span>⭐</span>
+        <span>Você tem <span id="userPoints">0</span> pontos</span>
+      </div>
+      <span style="font-size:0.85rem; color:var(--text-tertiary);">
+        Ganhe pontos participando do Precompeonato e da comunidade
+      </span>
+    </div>
+
+    <!-- Coming soon card -->
+    <div class="card" style="text-align:center; padding:3rem 2rem; margin-bottom:2.5rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">🏪</div>
+      <h2 style="font-size:1.5rem; font-weight:800; margin-bottom:0.75rem;">Em breve...</h2>
+      <p style="color:var(--text-secondary); max-width:480px; margin:0 auto; line-height:1.65;">
+        A Loja de Pontos está sendo preparada. Em breve você poderá trocar seus pontos por
+        produtos exclusivos, créditos em lojas parceiras, camisas da Glórin, acessórios Gamegenic e muito mais!
+      </p>
+    </div>
+
+    <!-- How to earn points -->
+    <div style="margin-bottom:2.5rem;">
+      <h2 style="font-size:1.1rem; font-weight:700; color:var(--orange); margin-bottom:1.25rem; text-transform:uppercase; letter-spacing:0.06em;">Como ganhar pontos</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.875rem;">
+        <div class="card" style="padding:1.25rem;">
+          <div style="font-size:1.75rem; margin-bottom:0.625rem;">🎮</div>
+          <div style="font-weight:700; color:var(--text); font-size:0.9rem; margin-bottom:0.3rem;">Jogar Rodadas</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">+5 pts por rodada jogada</div>
+        </div>
+        <div class="card" style="padding:1.25rem;">
+          <div style="font-size:1.75rem; margin-bottom:0.625rem;">🥇</div>
+          <div style="font-weight:700; color:var(--text); font-size:0.9rem; margin-bottom:0.3rem;">Vencer Mesas</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">+10 pts por vitória no campeonato</div>
+        </div>
+        <div class="card" style="padding:1.25rem;">
+          <div style="font-size:1.75rem; margin-bottom:0.625rem;">🎲</div>
+          <div style="font-weight:700; color:var(--text); font-size:0.9rem; margin-bottom:0.3rem;">Mesões Casuais</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">+2 pts por mesa casual participada</div>
+        </div>
+        <div class="card" style="padding:1.25rem;">
+          <div style="font-size:1.75rem; margin-bottom:0.625rem;">👥</div>
+          <div style="font-weight:700; color:var(--text); font-size:0.9rem; margin-bottom:0.3rem;">Comunidade</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">+1 pt por atividade comunitária</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mock products (locked) -->
+    <div>
+      <h2 style="font-size:1.1rem; font-weight:700; color:var(--text-secondary); margin-bottom:1.25rem; text-transform:uppercase; letter-spacing:0.06em;">
+        Produtos em breve <span style="font-size:0.8rem;">🔒</span>
+      </h2>
+      <div class="products-grid" id="produtosGrid">
+        <div class="loja-product">
+          <div class="product-icon">🃏</div>
+          <div class="product-name">Deck Sleeve Pack</div>
+          <div class="product-price">500 pontos</div>
+        </div>
+        <div class="loja-product">
+          <div class="product-icon">🎒</div>
+          <div class="product-name">Deckbox Premium</div>
+          <div class="product-price">1.200 pontos</div>
+        </div>
+        <div class="loja-product">
+          <div class="product-icon">👕</div>
+          <div class="product-name">Camisa Glórin</div>
+          <div class="product-price">3.500 pontos</div>
+        </div>
+        <div class="loja-product">
+          <div class="product-icon">💳</div>
+          <div class="product-name">Crédito Citadel R$50</div>
+          <div class="product-price">5.000 pontos</div>
+        </div>
+        <div class="loja-product">
+          <div class="product-icon">🏆</div>
+          <div class="product-name">Troféu Exclusivo</div>
+          <div class="product-price">10.000 pontos</div>
+        </div>
+        <div class="loja-product">
+          <div class="product-icon">⭐</div>
+          <div class="product-name">Badge VIP Perfil</div>
+          <div class="product-price">2.000 pontos</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+  const token = localStorage.getItem('auth_token');
+
+  // Buscar saldo de pontos do usuário
+  async function carregarPontos() {
+    if (!token) return;
+    try {
+      const r = await fetch(`${API_URL}/pontos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (r.ok) {
+        const d = await r.json();
+        document.getElementById('userPoints').textContent = d.saldo || 0;
+      }
+    } catch (_) {}
+  }
+
+  // Buscar produtos reais da loja
+  async function carregarProdutos() {
+    try {
+      const r = await fetch(`${API_URL}/loja/produtos`);
+      if (!r.ok) return;
+      const produtos = await r.json();
+
+      const ativos = produtos.filter(p => p.ativo);
+      if (ativos.length === 0) return; // manter os mockados se nada ativo
+
+      const grid = document.getElementById('produtosGrid');
+      if (!grid) return;
+
+      const icons = ['🃏', '🎒', '👕', '💳', '🏆', '⭐', '🎁', '🎮'];
+      grid.innerHTML = ativos.map((p, i) => `
+        <div class="loja-product" style="opacity:1;cursor:pointer;" onclick="resgatar(${p.id}, '${p.nome.replace(/'/g,"\\'")}', ${p.preco_pontos})">
+          <div class="product-icon">${icons[i % icons.length]}</div>
+          <div class="product-name">${p.nome}</div>
+          <div class="product-price">${p.preco_pontos} pontos</div>
+          ${p.estoque !== null ? `<div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:0.3rem;">${p.estoque} restantes</div>` : ''}
+        </div>
+      `).join('');
+
+      // Atualizar título
+      const titulo = grid.previousElementSibling;
+      if (titulo) titulo.innerHTML = 'Produtos disponíveis';
+    } catch (_) {}
+  }
+
+  // Resgatar produto
+  async function resgatar(produtoId, nome, preco) {
+    if (!token) { alert('Faça login para resgatar.'); return; }
+    if (!confirm(`Resgatar "${nome}" por ${preco} pontos?`)) return;
+
+    try {
+      const r = await fetch(`${API_URL}/loja/resgatar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produto_id: produtoId })
+      });
+      const data = await r.json();
+      if (r.ok) {
+        alert(data.message);
+        carregarPontos();
+        carregarProdutos();
+      } else {
+        alert(data.error || 'Erro ao resgatar');
+      }
+    } catch (e) {
+      alert('Erro de conexão');
+    }
+  }
+
+  carregarPontos();
+  carregarProdutos();
+</script>
+</body>
+</html>

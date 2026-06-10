@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking — Diário Planinauta</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/tema.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo-icon.png" alt="Diário Planinauta" style="height:36px;width:auto;">
+      
+    </a>
+    <nav class="main-nav">
+      <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+      <span class="nav-sep">|</span>
+      <a href="comunidade.html"    class="nav-link">Comunidade</a>
+      <span class="nav-sep">|</span>
+      <a href="index.html"         class="nav-link active">Precompeonato</a>
+      <span class="nav-sep">|</span>
+      <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+      <span class="nav-sep">|</span>
+      <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+      <span class="nav-sep">|</span>
+      <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <nav class="mobile-menu">
+    <a href="perfil.html"        class="nav-link">Meu Perfil</a>
+    <a href="comunidade.html"    class="nav-link">Comunidade</a>
+    <a href="index.html"         class="nav-link active">Precompeonato</a>
+    <a href="estatisticas.html"  class="nav-link">Estatísticas</a>
+    <a href="mesas-casuais.html" class="nav-link">Mesões</a>
+    <a href="loja.html"          class="nav-link">Loja de Pontos</a>
+  </nav>
+</header>
+
+<main>
+  <div class="container" style="padding-top:2.5rem; padding-bottom:4rem;">
+
+    <div class="page-header">
+      <h1>🏆 Ranking de Jogadores</h1>
+      <p>Os melhores jogadores do Precompeonato</p>
+    </div>
+
+    <!-- Precompeonato sub-nav -->
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:2rem;">
+      <a href="rodadas.html"   class="btn-secondary btn-sm">🎮 Rodadas</a>
+      <a href="ranking.html"   class="btn-primary btn-sm">🏆 Ranking</a>
+      <a href="regras.html"    class="btn-secondary btn-sm">📋 Regras</a>
+      <a href="inscricao.html" class="btn-secondary btn-sm">✍️ Inscrição</a>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:1rem; margin-bottom:2rem;">
+      <div class="form-group">
+        <label>Buscar Jogador</label>
+        <input type="text" id="buscaJogador" placeholder="Nome ou email...">
+      </div>
+      <div class="form-group">
+        <label>Filtrar por Campeonato</label>
+        <select id="filtroCampeonato">
+          <option value="">Todos os Campeonatos</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table wrapper -->
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th style="width:56px;">#</th>
+            <th>Jogador</th>
+            <th class="hide-mobile">Campeonatos</th>
+            <th>Pontos</th>
+            <th class="hide-mobile">Vitórias</th>
+            <th>Win Rate</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr>
+            <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-secondary);">
+              Carregando ranking...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <h3>Nenhum jogador encontrado</h3>
+      <p>Seja o primeiro a participar de um campeonato!</p>
+    </div>
+
+  </div>
+</main>
+
+
+<footer class="site-footer">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <span>© 2026 Diário Planinauta. Todos os direitos reservados.</span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <a href="https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg" target="_blank" aria-label="YouTube" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="YouTube">▶️</a>
+      <a href="https://www.twitch.tv/diarioplaninauta" target="_blank" aria-label="Twitch" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Twitch">📺</a>
+      <a href="https://www.instagram.com/diarioplaninauta/" target="_blank" aria-label="Instagram" style="color:var(--text-secondary);text-decoration:none;font-size:1.2rem;" title="Instagram">📷</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/ranking.js"></script>
+</body>
+</html>
