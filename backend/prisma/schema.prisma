@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  BACKER
+  PREMIUM
+  VIP
+}
+
+model User {
+  id        String @id @default(uuid())
+  email     String @unique
+
+  // --- mandatory registration fields ---
+  nome      String?
+  sobrenome String?
+  nick      String?
+  telefone  String?
+  formatos  String[]
+  cidade    String?
+
+  // --- role flags ---
+  isAdmin         Boolean @default(false)
+  isExApoiador    Boolean @default(false)
+  isApoiadorAtivo Boolean @default(false)
+
+  // --- optional profile fields ---
+  token              String?
+  foto               String?
+  genero             String?
+  tier               String?
+  badge              String?
+  formatoFavorito    String?
+  diasDisponiveis    String[]
+  horarios           String[]
+  partidas           Int?
+  vitorias           Int?
+  eliminacoes        Int?
+  winRate            Float?
+  pontosTotais       Float?
+  melhoresResultados Int[]
+  preCampeonatos     String[]
+  decksMaisUsados    String[]
+
+  // --- APOIA.se / auth fields ---
+  role                UserRole @default(BACKER)
+  monthlyContribution Int?
+  lastValidationAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

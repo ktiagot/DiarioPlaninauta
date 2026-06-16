@@ -1,44 +1,59 @@
-# Diário Planinauta
+# DiarioPlaninauta
 
-Portal exclusivo para apoiadores do canal **Diário Planinauta** — a maior comunidade de card games (Magic: The Gathering) do Brasil.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.15.
 
-## O que é
+## Development server
 
-O Diário Planinauta é um canal dedicado ao Magic: The Gathering, especialmente o formato Commander. Através do nosso portal para apoiadores, organizamos torneios semanais, mesas casuais e mantemos uma comunidade ativa de jogadores de todo o Brasil.
+To start a local development server, run:
 
-## Funcionalidades
+```bash
+ng serve
+```
 
-### 🏆 Precompeonato
-Torneio semanal de Commander com decks pré-montados (Precons) oficiais da Wizards of the Coast. Rodadas suíças, ranking ao vivo, semifinais e grande final com premiação real.
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-### 👥 Comunidade
-Encontre outros jogadores por cidade, formato e disponibilidade. Favorite membros e troque contatos com quem tem interesses em comum.
+## Code scaffolding
 
-### 🎲 Mesões
-Crie mesas casuais de Commander para jogar online via Spelltable. Publique horário, formato e compartilhe o link do jogo com a comunidade.
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
-### 📊 Estatísticas
-Metagame completo: decks mais usados, win rates, matchups e sua performance individual detalhada ao longo dos campeonatos.
+```bash
+ng generate component component-name
+```
 
-### 👤 Perfil
-Seu cartão de membro com avatar (criaturas lendárias do MTG), formatos que joga, disponibilidade, resultados e decks favoritos.
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-### 🏪 Loja de Pontos *(em breve)*
-Ganhe pontos participando e troque por recompensas exclusivas como sleeves, deckboxes, camisas e créditos em lojas parceiras.
+```bash
+ng generate --help
+```
 
-## Como acessar
+## Building
 
-1. **Apoie no APOIA.se** → [apoia.se/diarioplaninauta](https://apoia.se/diarioplaninauta)
-2. **Faça login** com o email cadastrado no APOIA.se
-3. **Acesse o portal** e participe da comunidade
+To build the project run:
 
-## Redes sociais
+```bash
+ng build
+```
 
-- [YouTube](https://www.youtube.com/channel/UC75XFc_jbPOJXoaXcUFOCEg)
-- [Twitch](https://www.twitch.tv/diarioplaninauta)
-- [Instagram](https://www.instagram.com/diarioplaninauta/)
-- [APOIA.se](https://apoia.se/diarioplaninauta)
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Licença
+## Running unit tests
 
-Diário Planinauta é uma marca registrada. © 2026. Todos os direitos reservados.
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

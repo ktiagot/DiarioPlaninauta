@@ -1,0 +1,17 @@
+// Ensure the card footer link stretches full width
+mat-card-footer {
+  a[mat-stroked-button] {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+form {
+  a[mat-stroked-button] {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+  }
+}

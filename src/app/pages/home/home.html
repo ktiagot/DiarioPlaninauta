@@ -1,0 +1,95 @@
+<div class="portal-page flex min-h-screen flex-col">
+
+  <!-- Toolbar -->
+  <mat-toolbar color="primary" class="shadow-md">
+    <app-portal-brand variant="toolbar" [showSubtitle]="false" />
+    <span class="flex-1"></span>
+
+    <span
+      class="mr-2 hidden text-sm opacity-75 sm:inline"
+      [matTooltip]="userEmail()"
+    >{{ userEmail() }}</span>
+
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Sair"
+      (click)="logout()"
+      aria-label="Sair"
+    >
+      <mat-icon>logout</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Conteúdo principal -->
+  <main class="flex flex-1 flex-col items-center gap-6 p-6">
+
+    <!-- Boas-vindas -->
+    <mat-card class="w-full max-w-3xl">
+      <mat-card-header>
+        <div
+          mat-card-avatar
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--mat-sys-primary)] text-lg font-bold text-[var(--mat-sys-on-primary)]"
+        >
+          {{ userInitial() }}
+        </div>
+        <mat-card-title>Bem-vindo de volta!</mat-card-title>
+        <mat-card-subtitle>{{ userEmail() }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="pt-4">
+        <p class="text-[var(--mat-sys-on-surface-variant)] leading-relaxed">
+          Você está na área exclusiva do <strong>Diário Planinauta</strong>,
+          disponível apenas para apoiadores ativos no APOIA.se. Obrigado pelo apoio!
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Cards de conteúdo -->
+    <div class="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
+
+      <mat-card class="cursor-pointer transition-shadow hover:shadow-lg">
+        <mat-card-header>
+          <fa-icon
+            mat-card-avatar
+            [icon]="faNewspaper"
+            class="text-2xl text-[var(--mat-sys-primary)]"
+          />
+          <mat-card-title>Diário</mat-card-title>
+          <mat-card-subtitle>Anotações e reflexões</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+            Acesse o diário exclusivo com conteúdo produzido para apoiadores.
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" type="button">Acessar</button>
+        </mat-card-actions>
+      </mat-card>
+
+      <mat-card class="cursor-pointer transition-shadow hover:shadow-lg">
+        <mat-card-header>
+          <fa-icon
+            mat-card-avatar
+            [icon]="faStar"
+            class="text-2xl text-[var(--mat-sys-tertiary)]"
+          />
+          <mat-card-title>Benefícios</mat-card-title>
+          <mat-card-subtitle>Conteúdo exclusivo</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">
+            Veja os benefícios disponíveis para o seu nível de apoio.
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button type="button" class="text-[var(--mat-sys-tertiary)]">Ver tudo</button>
+        </mat-card-actions>
+      </mat-card>
+
+    </div>
+
+  </main>
+
+</div>

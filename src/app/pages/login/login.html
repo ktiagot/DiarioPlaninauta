@@ -1,0 +1,74 @@
+<div class="portal-page flex min-h-screen flex-col items-center justify-center gap-8 p-4">
+
+  <app-portal-brand />
+
+  <mat-card class="w-full max-w-sm">
+    <mat-card-header>
+      <mat-card-title>Login</mat-card-title>
+      <mat-card-subtitle>Use seu e-mail do apoia.se — enviaremos um link de acesso</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="pt-4">
+      <form #loginForm="ngForm" (ngSubmit)="login(loginForm)" class="flex flex-col gap-4" novalidate>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>E-mail</mat-label>
+          <input
+            matInput
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            #emailInput="ngModel"
+            required
+            email
+            placeholder="seu@email.com"
+            autocomplete="email"
+          />
+          @if (emailInput.invalid && emailInput.touched) {
+            <mat-error>
+              @if (emailInput.hasError('required')) { Informe seu e-mail }
+              @else if (emailInput.hasError('email')) { Digite um e-mail válido }
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="loginForm.invalid || loading()"
+          class="w-full"
+        >
+          @if (loading()) { Enviando… } @else { Entrar }
+        </button>
+
+        <a
+          routerLink="/cadastro"
+          mat-stroked-button
+          class="w-full text-center"
+        >
+          Criar conta
+        </a>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-footer class="px-4 pb-4 pt-2">
+      <div class="flex items-center gap-3 py-3">
+        <hr class="flex-1 border-t border-[var(--mat-sys-outline-variant)]" />
+        <span class="text-xs text-[var(--mat-sys-on-surface-variant)]">Ainda não apoia?</span>
+        <hr class="flex-1 border-t border-[var(--mat-sys-outline-variant)]" />
+      </div>
+      <a
+        href="https://apoia.se/diarioplaninauta"
+        target="_blank"
+        rel="noopener noreferrer"
+        mat-stroked-button
+        class="w-full text-center"
+      >
+        Vem pro apoia.se! 🎮
+      </a>
+    </mat-card-footer>
+  </mat-card>
+
+</div>

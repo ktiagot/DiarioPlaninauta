@@ -1,0 +1,14 @@
+<div class="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
+
+  @if (error()) {
+    <div class="flex w-full max-w-sm flex-col items-center gap-4 text-center">
+      <span class="text-5xl">⚠️</span>
+      <p class="text-base text-[var(--mat-sys-on-surface)]">{{ error() }}</p>
+      <a mat-flat-button color="primary" routerLink="/login">Voltar ao login</a>
+    </div>
+  } @else {
+    <mat-spinner diameter="48" />
+    <p class="text-sm text-[var(--mat-sys-on-surface-variant)]">Autenticando, aguarde…</p>
+  }
+
+</div>
