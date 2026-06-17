@@ -8,6 +8,10 @@ import { BackerVerifyResponse, LoginResponse } from './auth.models';
 export class AuthService {
   constructor(private http: HttpClient) {}
 
+  login(email: string, password: string) {
+    return this.http.post<LoginResponse>(`${API_URL}/auth/login`, { email, password });
+  }
+
   requestLogin(email: string) {
     return this.http.post<LoginResponse>(`${API_URL}/auth/request-login`, { email });
   }

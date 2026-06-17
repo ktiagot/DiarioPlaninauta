@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,9 +21,12 @@ export class UsersService {
       throw new ConflictException('Já existe um usuário cadastrado com este e-mail.');
     }
 
+    const passwordHash = await argon2.hash(dto.senha);
+
     return this.prisma.user.create({
       data: {
         email: dto.email,
+        passwordHash,
         nome: dto.nome,
         sobrenome: dto.sobrenome,
         nick: dto.nick,

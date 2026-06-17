@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,19 +27,29 @@ import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
 })
 export class LoginComponent {
   email = '';
+  password = '';
   protected readonly loading = signal(false);
 
   constructor(
     private authService: AuthService,
     private snackBar: MatSnackBar,
+    private router: Router,
   ) {}
+
+  createAccount(): void {
+    this.router.navigate(['/cadastro']);
+  }
+
+  goToApoiaSe(): void {
+    window.open('https://apoia.se/diarioplaninauta', '_blank');
+  }
 
   login(form: NgForm): void {
     if (form.invalid || this.loading()) return;
 
     this.loading.set(true);
 
-    this.authService.requestLogin(this.email).subscribe({
+    this.authService.login(this.email, this.password).subscribe({
       next: (res) => {
         localStorage.setItem('access_token', res.accessToken);
         localStorage.setItem('user_email', res.user.email);
@@ -50,11 +60,9 @@ export class LoginComponent {
         this.loading.set(false);
         const message =
           err.error?.message ||
-          (err.status === 401
-            ? 'Você não é apoiador ativo no APOIA.se.'
-            : err.status === 0
-              ? 'Serviço temporariamente indisponível'
-              : 'Erro ao entrar. Tente novamente.');
+          (err.status === 0
+            ? 'Serviço temporariamente indisponível'
+            : 'Erro ao entrar. Tente novamente.');
         this.snackBar.open(message, 'OK', { duration: 6000 });
       },
     });

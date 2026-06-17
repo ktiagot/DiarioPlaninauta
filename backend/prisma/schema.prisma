@@ -47,7 +47,8 @@ model User {
   preCampeonatos     String[]
   decksMaisUsados    String[]
 
-  // --- APOIA.se / auth fields ---
+  // --- auth fields ---
+  passwordHash        String?
   role                UserRole @default(BACKER)
   monthlyContribution Int?
   lastValidationAt    DateTime?

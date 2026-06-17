@@ -5,13 +5,21 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+// ── Design system (Sass) ─────────────────────────────────────
+$sys-font-family: 'Roboto', sans-serif;
+$sys-color-primary: #f58220;
+$sys-color-white: #ffffff;
+$sys-color-black: #000000;
+$sys-color-button-disabled: #e08f4a;
+$sys-bg-image: '/assets/images/BG.png';
+
 html {
   height: 100%;
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$orange-palette,
+        tertiary: mat.$orange-palette,
       ),
       typography: Roboto,
       density: 0,
@@ -19,21 +27,170 @@ html {
   );
 }
 
+:root {
+  --sys-font-family: #{$sys-font-family};
+  --sys-color-primary: #{$sys-color-primary};
+  --sys-color-white: #{$sys-color-white};
+  --sys-color-black: #{$sys-color-black};
+  --sys-bg-image: url(#{$sys-bg-image});
+
+  // Alinha tokens do Angular Material à identidade visual
+  --mat-sys-primary: #{$sys-color-primary};
+  --mat-sys-on-primary: #{$sys-color-white};
+
+  // matInput — fundo branco, texto 16px alinhado à esquerda, sem borda
+  --mat-form-field-outlined-outline-width: 0;
+  --mat-form-field-outlined-focus-outline-width: 0;
+  --mat-form-field-outlined-outline-color: transparent;
+  --mat-form-field-outlined-hover-outline-color: transparent;
+  --mat-form-field-outlined-focus-outline-color: transparent;
+  --mat-form-field-outlined-error-outline-color: transparent;
+  --mat-form-field-outlined-input-text-color: #{$sys-color-black};
+  --mat-form-field-outlined-caret-color: #{$sys-color-black};
+  --mat-form-field-filled-container-color: #{$sys-color-white};
+  --mat-form-field-container-text-size: 16px;
+  --mat-form-field-container-text-weight: 400;
+  --mat-form-field-container-text-line-height: 24px;
+
+  // mat-flat-button (primary) — válido: cor primária; inválido: #e08f4a
+  --mat-button-filled-container-color: #{$sys-color-primary};
+  --mat-button-filled-label-text-color: #{$sys-color-white};
+  --mat-button-filled-state-layer-color: #{$sys-color-white};
+  --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-white} 12%, transparent);
+  --mat-button-filled-hover-state-layer-opacity: 0.04;
+  --mat-button-filled-focus-state-layer-opacity: 0.12;
+  --mat-button-filled-pressed-state-layer-opacity: 0.12;
+  --mat-button-filled-container-height: var(--mat-button-text-container-height, 36px);
+  --mat-button-filled-horizontal-padding: var(--mat-button-text-horizontal-padding, 8px);
+  --mat-button-filled-container-shape: var(--mat-button-text-container-shape, 4px);
+  --mat-button-filled-label-text-font: var(--mat-button-text-label-text-font, #{$sys-font-family});
+  --mat-button-filled-label-text-size: var(--mat-button-text-label-text-size, 14px);
+  --mat-button-filled-label-text-weight: var(--mat-button-text-label-text-weight, 500);
+  --mat-button-filled-label-text-tracking: var(--mat-button-text-label-text-tracking, 0.0892857143em);
+  --mat-button-filled-label-text-transform: var(--mat-button-text-label-text-transform, none);
+  --mat-button-filled-disabled-container-color: #{$sys-color-button-disabled};
+  --mat-button-filled-disabled-label-text-color: #{$sys-color-white};
+
+  // mat-stroked-button (secondary) — mesmo layout do mat-button, fundo branco e texto primário
+  --mat-button-outlined-label-text-color: #{$sys-color-primary};
+  --mat-button-outlined-outline-color: #{$sys-color-white};
+  --mat-button-outlined-state-layer-color: #{$sys-color-primary};
+  --mat-button-outlined-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+  --mat-button-outlined-hover-state-layer-opacity: 0.04;
+  --mat-button-outlined-focus-state-layer-opacity: 0.12;
+  --mat-button-outlined-pressed-state-layer-opacity: 0.12;
+  --mat-button-outlined-container-height: var(--mat-button-text-container-height, 36px);
+  --mat-button-outlined-horizontal-padding: var(--mat-button-text-horizontal-padding, 8px);
+  --mat-button-outlined-container-shape: var(--mat-button-text-container-shape, 4px);
+  --mat-button-outlined-label-text-font: var(--mat-button-text-label-text-font, #{$sys-font-family});
+  --mat-button-outlined-label-text-size: var(--mat-button-text-label-text-size, 14px);
+  --mat-button-outlined-label-text-weight: var(--mat-button-text-label-text-weight, 500);
+  --mat-button-outlined-label-text-tracking: var(--mat-button-text-label-text-tracking, 0.0892857143em);
+  --mat-button-outlined-label-text-transform: var(--mat-button-text-label-text-transform, none);
+  --mat-button-outlined-disabled-label-text-color: #{$sys-color-button-disabled};
+  --mat-button-outlined-disabled-outline-color: #{$sys-color-button-disabled};
+}
+
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: #d9d9d9;
+  background-color: $sys-color-black;
+  background-image: var(--sys-bg-image);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
+  font-family: var(--sys-font-family);
 
-  // Reset the user agent margin.
   margin: 0;
-  height: 100%;
+  min-height: 100vh;
+
+  // Evita o cursor de texto piscando ao clicar fora de campos editáveis.
+  user-select: none;
+  -webkit-user-select: none;
 }
-/* You can add global styles to this file, and also import other style files */
+
+input,
+textarea,
+select,
+[contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.mat-mdc-form-field-type-mat-input.mat-form-field-appearance-outline,
+.mat-mdc-form-field-type-mat-select.mat-form-field-appearance-outline {
+  .mdc-text-field--outlined {
+    background-color: $sys-color-white;
+  }
+
+  .mdc-notched-outline {
+    display: none;
+  }
+
+  .mat-mdc-form-field-infix {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .mat-mdc-input-element,
+  .mdc-text-field__input,
+  .mat-mdc-select-value-text {
+    color: $sys-color-black;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: left;
+  }
+}
+
+input:not([type='checkbox']):not([type='radio']):not(.mat-mdc-input-element),
+textarea,
+select {
+  background-color: $sys-color-white;
+  border: none;
+  font-size: 16px;
+  text-align: left;
+}
+
+.mat-mdc-unelevated-button.mat-primary:not(:disabled):not(.mat-mdc-button-disabled) {
+  --mat-button-filled-container-color: #{$sys-color-primary};
+  --mat-button-filled-label-text-color: #{$sys-color-white};
+  --mat-button-filled-state-layer-color: #{$sys-color-white};
+  --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-white} 12%, transparent);
+}
+
+.mat-mdc-unelevated-button.mat-secondary:not(:disabled):not(.mat-mdc-button-disabled),
+.mat-mdc-unelevated-button.mat-accent:not(:disabled):not(.mat-mdc-button-disabled) {
+  --mat-button-filled-container-color: #{$sys-color-white};
+  --mat-button-filled-label-text-color: #{$sys-color-primary};
+  --mat-button-filled-state-layer-color: #{$sys-color-primary};
+  --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+}
+
+.mat-mdc-unelevated-button:disabled,
+.mat-mdc-unelevated-button.mat-mdc-button-disabled {
+  --mat-button-filled-disabled-container-color: #{$sys-color-button-disabled};
+  --mat-button-filled-disabled-label-text-color: #{$sys-color-white};
+}
+
+.mat-mdc-outlined-button,
+.mat-mdc-outlined-button.mat-primary {
+  background-color: #{$sys-color-white};
+  --mat-button-outlined-label-text-color: #{$sys-color-primary};
+  --mat-button-outlined-outline-color: #{$sys-color-white};
+  --mat-button-outlined-state-layer-color: #{$sys-color-primary};
+  --mat-button-outlined-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+}
+
+.mat-mdc-outlined-button:disabled,
+.mat-mdc-outlined-button.mat-mdc-button-disabled {
+  background-color: #{$sys-color-button-disabled};
+  --mat-button-outlined-disabled-label-text-color: #{$sys-color-white};
+  --mat-button-outlined-disabled-outline-color: #{$sys-color-button-disabled};
+}

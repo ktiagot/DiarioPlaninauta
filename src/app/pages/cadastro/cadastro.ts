@@ -52,6 +52,12 @@ function minArrayLength(min: number) {
     (control.value?.length ?? 0) >= min ? null : { minArrayLength: { min } };
 }
 
+function senhasIguais(group: AbstractControl): ValidationErrors | null {
+  const senha = group.get('senha')?.value;
+  const confirmarSenha = group.get('confirmarSenha')?.value;
+  return senha && confirmarSenha && senha !== confirmarSenha ? { senhasDivergentes: true } : null;
+}
+
 @Component({
   selector: 'app-cadastro',
   imports: [
@@ -81,15 +87,20 @@ export class CadastroComponent {
   protected readonly loading = signal(false);
   protected readonly backerStatus = signal<BackerStatus>('idle');
 
-  protected readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    nome: ['', Validators.required],
-    sobrenome: ['', Validators.required],
-    nick: ['', Validators.required],
-    telefone: ['', Validators.required],
-    formatos: [[] as string[], [Validators.required, minArrayLength(1)]],
-    cidade: ['', Validators.required],
-  });
+  protected readonly form = this.fb.nonNullable.group(
+    {
+      email: ['', [Validators.required, Validators.email]],
+      senha: ['', [Validators.required, Validators.minLength(8)]],
+      confirmarSenha: ['', Validators.required],
+      nome: ['', Validators.required],
+      sobrenome: ['', Validators.required],
+      nick: ['', Validators.required],
+      telefone: ['', Validators.required],
+      formatos: [[] as string[], [Validators.required, minArrayLength(1)]],
+      cidade: ['', Validators.required],
+    },
+    { validators: senhasIguais },
+  );
 
   constructor() {
     this.form.controls.email.valueChanges
@@ -126,7 +137,8 @@ export class CadastroComponent {
 
     this.loading.set(true);
 
-    this.usersService.create(this.form.getRawValue()).subscribe({
+    const { confirmarSenha: _, ...payload } = this.form.getRawValue();
+    this.usersService.create(payload).subscribe({
       next: () => {
         this.snackBar.open('Cadastro realizado com sucesso! Faça login para continuar.', 'OK', {
           duration: 6000,

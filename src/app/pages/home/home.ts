@@ -1,25 +1,21 @@
-import { Component, computed, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faNewspaper, faStar } from '@fortawesome/free-solid-svg-icons';
+import { filter } from 'rxjs';
 
+import { APOIA_SE_URL } from '../../shared/portal-header/portal-header.constants';
 import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
 
 @Component({
   selector: 'app-home',
   imports: [
-    MatToolbarModule,
+    RouterLink,
     MatButtonModule,
-    MatIconModule,
     MatCardModule,
-    MatChipsModule,
-    MatTooltipModule,
     FaIconComponent,
     PortalBrandComponent,
   ],
@@ -27,20 +23,33 @@ import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
   styleUrl: './home.scss',
 })
 export class HomeComponent {
+  private readonly router = inject(Router);
+  private readonly authRevision = signal(0);
+
   protected readonly faNewspaper = faNewspaper;
   protected readonly faStar = faStar;
+  protected readonly apoiaSeUrl = APOIA_SE_URL;
 
-  protected readonly userEmail = signal(localStorage.getItem('user_email') ?? '');
+  protected readonly isAuthenticated = computed(() => {
+    this.authRevision();
+    return !!localStorage.getItem('access_token');
+  });
+
+  protected readonly userEmail = computed(() => {
+    this.authRevision();
+    return localStorage.getItem('user_email') ?? '';
+  });
+
   protected readonly userInitial = computed(() =>
     this.userEmail().charAt(0).toUpperCase(),
   );
 
-  constructor(private router: Router) {}
-
-  logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_email');
-    localStorage.removeItem('user_role');
-    this.router.navigate(['/login']);
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.authRevision.update((value) => value + 1));
   }
 }

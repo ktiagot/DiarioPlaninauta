@@ -1,3 +1,24 @@
+.login-card {
+  width: 762px;
+  max-width: 100%;
+  --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
+  --mat-card-elevated-container-shape: 45%;
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6%;
+  overflow: hidden;
+  padding: 36px 65px;
+}
+
+.form-container {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6%;
+  overflow: hidden;
+  padding: 41px 38px;
+}
+
 // Ensure the card footer link stretches full width
 mat-card-footer {
   a[mat-stroked-button] {

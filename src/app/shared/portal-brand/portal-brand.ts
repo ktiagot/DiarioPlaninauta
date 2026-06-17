@@ -11,9 +11,6 @@ import { PORTAL_LOGO_URL } from './portal-brand.constants';
         alt="Diário Planinauta"
         class="portal-brand__logo"
       />
-      @if (showSubtitle()) {
-        <p class="portal-brand__subtitle">Portal do Apoiador</p>
-      }
     </div>
   `,
   styles: `

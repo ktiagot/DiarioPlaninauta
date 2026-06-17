@@ -1,0 +1,103 @@
+<header class="portal-header">
+  <div class="portal-header__inner">
+    <a routerLink="/" class="portal-header__logo" aria-label="Diário Planinauta — Home">
+      <img [src]="logoUrl" alt="" class="portal-header__logo-img" />
+    </a>
+
+    <nav class="portal-header__nav" aria-label="Menu principal">
+      @for (item of navItems(); track item.label; let last = $last) {
+        @if (item.external) {
+          <a
+            [href]="item.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="portal-header__link"
+          >
+            {{ item.label }}
+          </a>
+        } @else {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="portal-header__link--active"
+            [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+            class="portal-header__link"
+          >
+            {{ item.label }}
+          </a>
+        }
+        @if (!last) {
+          <span class="portal-header__sep" aria-hidden="true">|</span>
+        }
+      }
+    </nav>
+
+    <div class="portal-header__actions">
+      @if (isAuthenticated()) {
+        <a
+          routerLink="/perfil"
+          mat-icon-button
+          routerLinkActive="portal-header__icon-btn--active"
+          aria-label="Meu perfil"
+          matTooltip="Meu perfil"
+          class="portal-header__icon-btn"
+        >
+          <mat-icon>person</mat-icon>
+        </a>
+
+        <button
+          mat-icon-button
+          type="button"
+          class="portal-header__icon-btn"
+          aria-label="Sair"
+          matTooltip="Sair"
+          (click)="logout()"
+        >
+          <mat-icon>logout</mat-icon>
+        </button>
+      }
+
+      <button
+        type="button"
+        class="portal-header__hamburger"
+        [class.portal-header__hamburger--open]="mobileMenuOpen()"
+        aria-label="Menu"
+        [attr.aria-expanded]="mobileMenuOpen()"
+        (click)="toggleMobileMenu()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav
+    class="portal-header__mobile-nav"
+    [class.portal-header__mobile-nav--open]="mobileMenuOpen()"
+    aria-label="Menu mobile"
+  >
+    @for (item of navItems(); track item.label) {
+      @if (item.external) {
+        <a
+          [href]="item.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="portal-header__mobile-link"
+          (click)="closeMobileMenu()"
+        >
+          {{ item.label }}
+        </a>
+      } @else {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="portal-header__mobile-link--active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+          class="portal-header__mobile-link"
+          (click)="closeMobileMenu()"
+        >
+          {{ item.label }}
+        </a>
+      }
+    }
+  </nav>
+</header>

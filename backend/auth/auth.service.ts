@@ -1,7 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as argon2 from 'argon2';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
+
+// Hash fictício para rodar argon2.verify mesmo quando o usuário não existe,
+// evitando timing attack por diferença de tempo de resposta.
+const DUMMY_HASH =
+  '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHRzb21lc2FsdA$RdescudvJCsgt3ub+b+dWRWJTmaasfEfp8XVWrvO-N8';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +22,27 @@ export class AuthService {
     return {
       isBacker: backer.isBacker,
       isPaidThisMonth: backer.isPaidThisMonth,
+      thisMonthPaidValue: backer.thisMonthPaidValue ?? null,
     };
+  }
+
+  async login(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    const hashToVerify = user?.passwordHash ?? DUMMY_HASH;
+    const valid = await argon2.verify(hashToVerify, password);
+
+    if (!user || !user.passwordHash || !valid) {
+      throw new UnauthorizedException('E-mail ou senha inválidos.');
+    }
+
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return { accessToken, user };
   }
 
   async requestLogin(email: string) {

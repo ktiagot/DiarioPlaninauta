@@ -11,4 +11,5 @@ export interface LoginResponse {
 export interface BackerVerifyResponse {
   isBacker: boolean;
   isPaidThisMonth: boolean;
+  thisMonthPaidValue: number | null;
 }

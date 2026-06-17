@@ -1,30 +1,6 @@
-<div class="portal-page flex min-h-screen flex-col">
-
-  <!-- Toolbar -->
-  <mat-toolbar color="primary" class="shadow-md">
-    <app-portal-brand variant="toolbar" [showSubtitle]="false" />
-    <span class="flex-1"></span>
-
-    <span
-      class="mr-2 hidden text-sm opacity-75 sm:inline"
-      [matTooltip]="userEmail()"
-    >{{ userEmail() }}</span>
-
-    <button
-      mat-icon-button
-      type="button"
-      matTooltip="Sair"
-      (click)="logout()"
-      aria-label="Sair"
-    >
-      <mat-icon>logout</mat-icon>
-    </button>
-  </mat-toolbar>
-
-  <!-- Conteúdo principal -->
+@if (isAuthenticated()) {
   <main class="flex flex-1 flex-col items-center gap-6 p-6">
 
-    <!-- Boas-vindas -->
     <mat-card class="w-full max-w-3xl">
       <mat-card-header>
         <div
@@ -45,7 +21,6 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Cards de conteúdo -->
     <div class="grid w-full max-w-3xl gap-4 sm:grid-cols-2">
 
       <mat-card class="cursor-pointer transition-shadow hover:shadow-lg">
@@ -91,5 +66,32 @@
     </div>
 
   </main>
+} @else {
+  <main class="flex flex-1 flex-col items-center justify-center gap-8 p-6">
+    <app-portal-brand />
 
-</div>
+    <mat-card class="w-full max-w-lg">
+      <mat-card-header>
+        <mat-card-title>Diário Planinauta</mat-card-title>
+        <mat-card-subtitle>Portal exclusivo para apoiadores</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <p class="text-[var(--mat-sys-on-surface-variant)] leading-relaxed">
+          Acesse conteúdo, estatísticas, mesões e benefícios disponíveis para quem apoia o
+          <strong>Diário Planinauta</strong> no APOIA.se.
+        </p>
+      </mat-card-content>
+      <mat-card-actions class="flex flex-wrap gap-2 px-4 pb-4">
+        <a mat-flat-button color="primary" routerLink="/login">Entrar</a>
+        <a
+          mat-stroked-button
+          [href]="apoiaSeUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Apoia-se
+        </a>
+      </mat-card-actions>
+    </mat-card>
+  </main>
+}

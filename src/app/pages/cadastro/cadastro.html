@@ -59,6 +59,43 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Senha</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="senha"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+            />
+            @if (form.controls.senha.invalid && form.controls.senha.touched) {
+              <mat-error>
+                @if (form.controls.senha.hasError('required')) { Informe uma senha }
+                @else if (form.controls.senha.hasError('minlength')) { Mínimo 8 caracteres }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Confirmar senha</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="confirmarSenha"
+              placeholder="Repita a senha"
+              autocomplete="new-password"
+            />
+            @if (form.controls.confirmarSenha.touched) {
+              @if (form.controls.confirmarSenha.hasError('required')) {
+                <mat-error>Confirme sua senha</mat-error>
+              } @else if (form.hasError('senhasDivergentes')) {
+                <mat-error>As senhas não coincidem</mat-error>
+              }
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <mat-form-field appearance="outline" class="w-full">
             <mat-label>Nome</mat-label>
             <input matInput formControlName="nome" autocomplete="given-name" />
             @if (form.controls.nome.invalid && form.controls.nome.touched) {

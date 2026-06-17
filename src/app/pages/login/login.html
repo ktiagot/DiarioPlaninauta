@@ -2,17 +2,17 @@
 
   <app-portal-brand />
 
-  <mat-card class="w-full max-w-sm">
-    <mat-card-header>
-      <mat-card-title>Login</mat-card-title>
-      <mat-card-subtitle>Use seu e-mail do apoia.se — enviaremos um link de acesso</mat-card-subtitle>
+  <mat-card class="login-card">
+    <mat-card-header class="text-center w-full flex flex-col items-center justify-center">
+      <mat-card-title class="text-2xl font-bold text-white">Login</mat-card-title>
+      <p class="text-white">Use seu e-mail do apoia.se</p>
     </mat-card-header>
 
-    <mat-card-content class="pt-4">
+    <mat-card-content class="pt-4 mt-6 form-container">
       <form #loginForm="ngForm" (ngSubmit)="login(loginForm)" class="flex flex-col gap-4" novalidate>
 
+        <label for="email" class="text-white">E-mail</label>
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>E-mail</mat-label>
           <input
             matInput
             type="email"
@@ -32,6 +32,27 @@
           }
         </mat-form-field>
 
+        <label for="password" class="text-white">Senha</label>
+        <mat-form-field appearance="outline" class="w-full">
+          <input
+            matInput
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            #passwordInput="ngModel"
+            required
+            minlength="8"
+            placeholder="Sua senha"
+            autocomplete="current-password"
+          />
+          @if (passwordInput.invalid && passwordInput.touched) {
+            <mat-error>
+              @if (passwordInput.hasError('required')) { Informe sua senha }
+              @else if (passwordInput.hasError('minlength')) { A senha deve ter ao menos 8 caracteres }
+            </mat-error>
+          }
+        </mat-form-field>
+
         <button
           mat-flat-button
           color="primary"
@@ -39,36 +60,34 @@
           [disabled]="loginForm.invalid || loading()"
           class="w-full"
         >
-          @if (loading()) { Enviando… } @else { Entrar }
+          @if (loading()) { Entrando… } @else { Entrar }
         </button>
 
-        <a
-          routerLink="/cadastro"
-          mat-stroked-button
-          class="w-full text-center"
+        <button
+          mat-flat-button
+          color="secondary"
+          (click)="createAccount()"
         >
           Criar conta
-        </a>
-
+        </button>
       </form>
     </mat-card-content>
 
-    <mat-card-footer class="px-4 pb-4 pt-2">
-      <div class="flex items-center gap-3 py-3">
-        <hr class="flex-1 border-t border-[var(--mat-sys-outline-variant)]" />
-        <span class="text-xs text-[var(--mat-sys-on-surface-variant)]">Ainda não apoia?</span>
-        <hr class="flex-1 border-t border-[var(--mat-sys-outline-variant)]" />
-      </div>
-      <a
-        href="https://apoia.se/diarioplaninauta"
+    <mat-card-footer class="px-4 pb-4 mt-6 flex items-center justify-center">
+      <span class="text-white mr-6">Não faz parte ainda?</span>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="goToApoiaSe()"
         target="_blank"
-        rel="noopener noreferrer"
-        mat-stroked-button
-        class="w-full text-center"
       >
         Vem pro apoia.se! 🎮
-      </a>
+      </button>
     </mat-card-footer>
   </mat-card>
+
+  <p class="text-white text-center">
+    <span class="font-bold">A maior comunidade de card games do Brasil.</span>
+  </p>
 
 </div>
