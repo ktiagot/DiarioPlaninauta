@@ -52,6 +52,7 @@ export class LoginComponent {
     this.authService.login(this.email, this.password).subscribe({
       next: (res) => {
         localStorage.setItem('access_token', res.accessToken);
+        localStorage.setItem('user_id', res.user.id);
         localStorage.setItem('user_email', res.user.email);
         localStorage.setItem('user_role', res.user.role);
         window.location.href = '/';

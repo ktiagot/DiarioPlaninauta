@@ -18,6 +18,26 @@ export interface User {
   telefone: string | null;
   formatos: string[];
   cidade: string | null;
+  foto: string | null;
+  genero: string | null;
+  tier: string | null;
+  badge: string | null;
+  formatoFavorito: string | null;
+  diasDisponiveis: string[];
+  horarios: string[];
+  partidas: number | null;
+  vitorias: number | null;
+  eliminacoes: number | null;
+  winRate: number | null;
+  pontosTotais: number | null;
+  melhoresResultados: number[];
+  preCampeonatos: string[];
+  decksMaisUsados: string[];
+  isAdmin: boolean;
+  isExApoiador: boolean;
+  isApoiadorAtivo: boolean;
+  monthlyContribution: number | null;
+  lastValidationAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

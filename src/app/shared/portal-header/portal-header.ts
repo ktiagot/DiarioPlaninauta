@@ -53,6 +53,7 @@ export class PortalHeaderComponent {
 
   logout(): void {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_role');
     this.authRevision.update((value) => value + 1);

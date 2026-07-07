@@ -12,6 +12,7 @@ $sys-color-white: #ffffff;
 $sys-color-black: #000000;
 $sys-color-button-disabled: #e08f4a;
 $sys-bg-image: '/assets/images/BG.png';
+$sys-input-height: 36px;
 
 html {
   height: 100%;
@@ -38,16 +39,20 @@ html {
   --mat-sys-primary: #{$sys-color-primary};
   --mat-sys-on-primary: #{$sys-color-white};
 
-  // matInput — fundo branco, texto 16px alinhado à esquerda, sem borda
+  // matInput — glass, texto branco, borda primária
+  --sys-input-height: #{$sys-input-height};
+  --mat-form-field-container-height: #{$sys-input-height};
+  --mat-form-field-container-vertical-padding: 6px;
   --mat-form-field-outlined-outline-width: 0;
   --mat-form-field-outlined-focus-outline-width: 0;
   --mat-form-field-outlined-outline-color: transparent;
   --mat-form-field-outlined-hover-outline-color: transparent;
   --mat-form-field-outlined-focus-outline-color: transparent;
   --mat-form-field-outlined-error-outline-color: transparent;
-  --mat-form-field-outlined-input-text-color: #{$sys-color-black};
-  --mat-form-field-outlined-caret-color: #{$sys-color-black};
-  --mat-form-field-filled-container-color: #{$sys-color-white};
+  --mat-form-field-outlined-input-text-color: #{$sys-color-white};
+  --mat-form-field-outlined-caret-color: #{$sys-color-white};
+  --mat-form-field-outlined-placeholder-text-color: rgba(255, 255, 255, 0.45);
+  --mat-form-field-filled-container-color: rgba(217, 217, 217, 0.1);
   --mat-form-field-container-text-size: 16px;
   --mat-form-field-container-text-weight: 400;
   --mat-form-field-container-text-line-height: 24px;
@@ -120,42 +125,134 @@ select,
   -webkit-user-select: text;
 }
 
-.mat-mdc-form-field-type-mat-input.mat-form-field-appearance-outline,
-.mat-mdc-form-field-type-mat-select.mat-form-field-appearance-outline {
+.mat-mdc-form-field.mat-form-field-appearance-outline {
   .mdc-text-field--outlined {
-    background-color: $sys-color-white;
+    background-color: rgba(217, 217, 217, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid $sys-color-primary;
+    height: $sys-input-height;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  &.mat-focused .mdc-text-field--outlined {
+    border-color: $sys-color-primary;
+    background-color: rgba(217, 217, 217, 0.16);
   }
 
   .mdc-notched-outline {
     display: none;
   }
 
+  .mat-mdc-form-field-flex {
+    height: $sys-input-height;
+  }
+
   .mat-mdc-form-field-infix {
     display: flex;
     align-items: center;
-    min-height: 3rem;
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
+    min-height: $sys-input-height;
+    padding: 0;
+  }
+
+  .mat-mdc-form-field-icon-prefix {
+    padding: 0 8px 0 0;
+  }
+
+  .mat-mdc-select-trigger {
+    height: $sys-input-height;
+    padding: 0;
   }
 
   .mat-mdc-input-element,
   .mdc-text-field__input,
   .mat-mdc-select-value-text {
-    color: $sys-color-black;
+    color: $sys-color-white;
+    caret-color: $sys-color-white;
+    -webkit-text-fill-color: $sys-color-white;
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
     text-align: left;
+    padding: 0;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: $sys-color-white;
+      caret-color: $sys-color-white;
+      transition: background-color 9999s ease-out 0s;
+    }
+  }
+
+  .mat-mdc-form-field-icon-prefix,
+  .mat-mdc-form-field-icon-suffix {
+    color: $sys-color-primary;
   }
 }
 
 input:not([type='checkbox']):not([type='radio']):not(.mat-mdc-input-element),
-textarea,
 select {
-  background-color: $sys-color-white;
-  border: none;
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid $sys-color-primary;
+  border-radius: 1.5rem;
+  box-sizing: border-box;
+  color: $sys-color-white;
+  caret-color: $sys-color-white;
+  -webkit-text-fill-color: $sys-color-white;
+  height: $sys-input-height;
+  min-height: $sys-input-height;
+  padding: 0 12px;
   font-size: 16px;
   text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $sys-color-primary;
+    background-color: rgba(217, 217, 217, 0.16);
+  }
+}
+
+textarea:not(.mat-mdc-input-element) {
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid $sys-color-primary;
+  border-radius: 1.5rem;
+  box-sizing: border-box;
+  color: $sys-color-white;
+  caret-color: $sys-color-white;
+  -webkit-text-fill-color: $sys-color-white;
+  min-height: $sys-input-height;
+  padding: 6px 12px;
+  font-size: 16px;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $sys-color-primary;
+    background-color: rgba(217, 217, 217, 0.16);
+  }
 }
 
 .mat-mdc-unelevated-button.mat-primary:not(:disabled):not(.mat-mdc-button-disabled) {

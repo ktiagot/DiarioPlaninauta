@@ -11,4 +11,8 @@ export class UsersService {
   create(data: CreateUserRequest) {
     return this.http.post<User>(`${API_URL}/users`, data);
   }
+
+  findById(id: string) {
+    return this.http.get<User>(`${API_URL}/users/${id}`);
+  }
 }

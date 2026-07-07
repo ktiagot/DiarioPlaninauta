@@ -10,7 +10,8 @@ export interface PortalNavItem {
 }
 
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  { label: 'Home', path: '/', exact: true },
+  { label: 'Meu Perfil', path: '/', exact: true },
+  { label: 'Mesas', path: '/mesas' },
   { label: 'Comunidade', path: '/comunidade' },
   { label: 'Precompeonato', path: '/precompeonato' },
   { label: 'Estatisticas', path: '/estatisticas' },
@@ -19,7 +20,9 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
 ];
 
 export const PORTAL_GUEST_NAV_ITEMS: PortalNavItem[] = [
-  { label: 'Home', path: '/', exact: true },
+  { label: 'Mesas', path: '/mesas' },
+  { label: 'Precompeonato', path: '/precompeonato' },
+  { label: 'Meu Perfil', path: '/', exact: true },
   { label: 'Login', path: '/login', exact: true },
   { label: 'Apoia-se', href: APOIA_SE_URL, external: true },
 ];

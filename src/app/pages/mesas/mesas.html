@@ -1,0 +1,31 @@
+<main class="mesas-page mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  @if (loading()) {
+    <div class="flex flex-1 items-center justify-center py-24">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="mesas-empty">
+      <p class="mesas-empty__message">{{ error() }}</p>
+      <button mat-flat-button color="primary" (click)="carregarRodada()">Tentar novamente</button>
+    </div>
+  } @else if (!rodada()) {
+    <div class="mesas-empty">
+      <p class="mesas-empty__message">Nenhuma rodada disponível ainda.</p>
+    </div>
+  } @else {
+    <header class="mesas-header">
+      <h1 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h1>
+      <p class="mesas-header__subtitle">
+        {{ totalMesas() }} {{ totalMesas() === 1 ? 'mesa ativa' : 'mesas ativas' }} · Arraste para definir posições
+      </p>
+    </header>
+
+    <div class="mesas-grid">
+      @for (mesa of rodada()!.mesas; track mesa.id) {
+        <app-mesa-card [mesa]="mesa" (mesaAtualizada)="onMesaAtualizada($event)" />
+      }
+    </div>
+  }
+
+</main>

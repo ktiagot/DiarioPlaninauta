@@ -1,0 +1,40 @@
+<article class="jogador-card">
+  <header class="jogador-card__header">
+    <h3 class="jogador-card__nome">
+      <span class="jogador-card__ranking">#{{ jogador.ranking }}</span>
+      {{ nomeExibicao() }}
+    </h3>
+
+  @if (jogador.deckUrl) {
+      <a
+        class="jogador-card__link"
+        [href]="jogador.deckUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Abrir deck"
+      >
+        <mat-icon fontSet="material-icons-outlined">open_in_new</mat-icon>
+      </a>
+    } @else {
+      <span class="jogador-card__link-placeholder" aria-hidden="true"></span>
+    }
+  </header>
+
+  <p class="jogador-card__comandante">{{ jogador.comandante }}</p>
+
+  <div class="jogador-card__tags jogador-card__tags--primary">
+    @if (jogador.deckNome) {
+      <span class="jogador-card__tag jogador-card__tag--deck">{{ jogador.deckNome }}</span>
+    }
+    <span class="jogador-card__tag jogador-card__tag--meta">Meta {{ jogador.meta }}</span>
+  </div>
+
+  <div class="jogador-card__tags jogador-card__tags--status">
+    @if (jogador.rodada) {
+      <span class="jogador-card__tag jogador-card__tag--status">Rodada {{ jogador.rodada }}</span>
+    }
+    @if (jogador.mesa) {
+      <span class="jogador-card__tag jogador-card__tag--status">Mesa {{ jogador.mesa }}</span>
+    }
+  </div>
+</article>

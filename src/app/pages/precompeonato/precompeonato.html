@@ -1,0 +1,110 @@
+<main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+
+  <section class="precompeonato-hero" aria-label="Commander League">
+    <h1 class="precompeonato-hero__title">Commander League</h1>
+    <p class="precompeonato-hero__subtitle">
+      Torneio de Commander Precon — {{ totalJogadores() || '—' }} Planeswalkers prontos para a batalha
+    </p>
+
+    <a mat-flat-button color="primary" routerLink="/mesas">
+      <fa-icon [icon]="faTableCells" class="precompeonato-hero__cta-icon" />
+      Ver Mesas da Rodada Atual
+    </a>
+
+    <div class="precompeonato-hero__stats">
+      <div class="precompeonato-hero__stat">
+        <span class="precompeonato-hero__stat-icon" aria-hidden="true">
+          <fa-icon [icon]="faUserPlus" />
+        </span>
+        <span class="precompeonato-hero__stat-value">{{ totalJogadores() || '—' }}</span>
+        <span class="precompeonato-hero__stat-label">Jogadores</span>
+      </div>
+
+      <div class="precompeonato-hero__stat">
+        <span class="precompeonato-hero__stat-icon" aria-hidden="true">
+          <fa-icon [icon]="faLayerGroup" />
+        </span>
+        <span class="precompeonato-hero__stat-value">{{ totalDecksUnicos() || '—' }}</span>
+        <span class="precompeonato-hero__stat-label">Decks Únicos</span>
+      </div>
+
+      <div class="precompeonato-hero__stat">
+        <span class="precompeonato-hero__stat-icon" aria-hidden="true">
+          <fa-icon [icon]="faWandSparkles" />
+        </span>
+        <span class="precompeonato-hero__stat-value">{{ totalCommanders() || '—' }}</span>
+        <span class="precompeonato-hero__stat-label">Commanders</span>
+      </div>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="flex flex-1 items-center justify-center py-24">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="precompeonato-empty">
+      <p class="precompeonato-empty__message">{{ error() }}</p>
+      <button mat-flat-button color="primary" (click)="carregarJogadores()">Tentar novamente</button>
+    </div>
+  } @else {
+    <header class="precompeonato-header">
+      <h2 class="precompeonato-header__title">Planeswalkers</h2>
+      <p class="precompeonato-header__subtitle">
+        {{ filteredJogadores().length }}
+        {{ filteredJogadores().length === 1 ? 'jogador encontrado' : 'jogadores encontrados' }}
+      </p>
+    </header>
+
+    <section class="precompeonato-filters" aria-label="Filtros de jogadores">
+      <mat-form-field appearance="outline" class="precompeonato-search w-full">
+        <fa-icon matPrefix [icon]="faMagnifyingGlass" class="precompeonato-search__icon" />
+        <input
+          matInput
+          type="search"
+          placeholder="Buscar jogador, commander ou deck..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchChange($event)"
+          aria-label="Buscar jogador, commander ou deck"
+        />
+      </mat-form-field>
+
+      <div class="precompeonato-deck-tags" role="list" aria-label="Filtrar por deck">
+        <button
+          type="button"
+          class="precompeonato-deck-tag"
+          [class.precompeonato-deck-tag--active]="isDeckAtivo(null)"
+          (click)="selecionarDeck(null)"
+          role="listitem"
+        >
+          Todos ({{ jogadores().length }})
+        </button>
+
+        @for (deck of deckFilterOptions(); track deck.nome) {
+          <button
+            type="button"
+            class="precompeonato-deck-tag"
+            [class.precompeonato-deck-tag--active]="isDeckAtivo(deck.nome)"
+            (click)="selecionarDeck(deck.nome)"
+            role="listitem"
+          >
+            {{ deck.nome }} ({{ deck.count }})
+          </button>
+        }
+      </div>
+    </section>
+
+    @if (filteredJogadores().length === 0) {
+      <div class="precompeonato-empty">
+        <p class="precompeonato-empty__message">Nenhum jogador encontrado com os filtros atuais.</p>
+      </div>
+    } @else {
+      <div class="precompeonato-grid">
+        @for (jogador of filteredJogadores(); track jogador.id) {
+          <app-jogador-card [jogador]="jogador" />
+        }
+      </div>
+    }
+  }
+
+</main>

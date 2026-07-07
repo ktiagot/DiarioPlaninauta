@@ -4,18 +4,21 @@ import {
   IsNotEmpty,
   IsArray,
   IsOptional,
-  IsBoolean,
-  IsNumber,
   IsUrl,
-  IsInt,
-  Min,
   MinLength,
   ArrayNotEmpty,
+  IsIn,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { FORMATOS_DISPONIVEIS } from '../constants/formatos';
+
+const trim = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
 
 export class CreateUserDto {
   @ApiProperty({ example: 'usuario@email.com' })
+  @Transform(trim)
   @IsEmail()
   email: string;
 
@@ -25,32 +28,43 @@ export class CreateUserDto {
   senha: string;
 
   @ApiProperty({ example: 'João' })
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   nome: string;
 
   @ApiProperty({ example: 'Silva' })
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   sobrenome: string;
 
   @ApiProperty({ example: 'joaosilva' })
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   nick: string;
 
   @ApiProperty({ example: '11999999999' })
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   telefone: string;
 
-  @ApiProperty({ example: ['Commander', 'Standard'], type: [String] })
+  @ApiProperty({
+    example: ['Commander', 'Standard'],
+    type: [String],
+    enum: FORMATOS_DISPONIVEIS,
+    isArray: true,
+  })
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
+  @IsIn([...FORMATOS_DISPONIVEIS], { each: true })
   formatos: string[];
 
   @ApiProperty({ example: 'São Paulo' })
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   cidade: string;
@@ -59,27 +73,33 @@ export class CreateUserDto {
 
   @ApiPropertyOptional({ example: 'https://example.com/foto.jpg' })
   @IsOptional()
+  @Transform(trim)
   @IsUrl()
   foto?: string;
 
   @ApiPropertyOptional({ example: 'Masculino' })
   @IsOptional()
+  @Transform(trim)
   @IsString()
   genero?: string;
 
   @ApiPropertyOptional({ example: 'gold' })
   @IsOptional()
+  @Transform(trim)
   @IsString()
   tier?: string;
 
   @ApiPropertyOptional({ example: 'veteran' })
   @IsOptional()
+  @Transform(trim)
   @IsString()
   badge?: string;
 
   @ApiPropertyOptional({ example: 'Commander' })
   @IsOptional()
+  @Transform(trim)
   @IsString()
+  @IsIn([...FORMATOS_DISPONIVEIS])
   formatoFavorito?: string;
 
   @ApiPropertyOptional({ example: ['sábado', 'domingo'], type: [String] })

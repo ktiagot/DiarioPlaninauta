@@ -1,3 +1,22 @@
+.cadastro-card {
+  --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1.5rem;
+  box-shadow: none;
+  color: var(--sys-color-white);
+  overflow: hidden;
+}
+
+mat-card-title {  color: var(--sys-color-white);
+}
+
+mat-card-subtitle {
+  color: rgba(255, 255, 255, 0.65);
+}
+
 mat-card-footer {
   a {
     text-decoration: none;
@@ -7,7 +26,7 @@ mat-card-footer {
 .email-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
 }
 
@@ -21,8 +40,7 @@ mat-card-footer {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  padding-top: 0.5rem;
-  min-height: 3.5rem;
+  min-height: var(--sys-input-height, 36px);
 }
 
 .status-label {
@@ -30,7 +48,7 @@ mat-card-footer {
   white-space: nowrap;
 
   &.checking {
-    color: var(--mat-sys-on-surface-variant);
+    color: rgba(255, 255, 255, 0.65);
   }
 
   &.error {

@@ -1,0 +1,89 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, catchError, forkJoin, map, of, throwError } from 'rxjs';
+
+import { API_URL } from '../config/api.config';
+import { mapRodada } from '../rodadas/rodadas.mapper';
+import { RodadaApi } from '../rodadas/rodadas.models';
+import { aplicarMeta, mapInscricao, ordenarPorRanking } from './inscricoes.mapper';
+import { INSCRICOES_MOCK } from './inscricoes.mock';
+import { InscricaoApi, JogadorInscrito } from './inscricoes.models';
+
+@Injectable({ providedIn: 'root' })
+export class InscricoesService {
+  constructor(private http: HttpClient) {}
+
+  getJogadoresInscritos(): Observable<JogadorInscrito[]> {
+    return forkJoin({
+      inscricoes: this.http.get<InscricaoApi[]>(`${API_URL}/inscricoes`).pipe(
+        catchError(() => of(null)),
+      ),
+      rodadas: this.http.get<RodadaApi[]>(`${API_URL}/rodadas`).pipe(
+        catchError(() => of([] as RodadaApi[])),
+      ),
+    }).pipe(
+      map(({ inscricoes, rodadas }) => {
+        if (!inscricoes) {
+          if (this.useMockFallback()) {
+            return INSCRICOES_MOCK;
+          }
+          throw new Error('Não foi possível carregar os jogadores inscritos.');
+        }
+
+        const rodadaMap = this.buildRodadaMesaMap(rodadas);
+        const jogadores = inscricoes
+          .filter((i) => i.ativo !== false)
+          .map((i) => {
+            const base = mapInscricao(i);
+            const mesaInfo = rodadaMap.get(i.id);
+
+            return {
+              id: base.id,
+              ranking: base.rankingBase,
+              nome: base.nome,
+              nickname: base.nickname,
+              comandante: base.comandante,
+              deckNome: base.deckNome,
+              deckUrl: base.deckUrl,
+              meta: 0,
+              rodada: mesaInfo?.rodada,
+              mesa: mesaInfo?.mesa,
+            } satisfies JogadorInscrito;
+          });
+
+        const comMeta = aplicarMeta(jogadores);
+        return ordenarPorRanking(comMeta);
+      }),
+      catchError(() => {
+        if (this.useMockFallback()) {
+          return of(INSCRICOES_MOCK);
+        }
+        return throwError(() => new Error('Não foi possível carregar os jogadores inscritos.'));
+      }),
+    );
+  }
+
+  private buildRodadaMesaMap(
+    rodadas: RodadaApi[],
+  ): Map<number, { rodada: number; mesa: number }> {
+    const map = new Map<number, { rodada: number; mesa: number }>();
+
+    for (const rodadaApi of rodadas) {
+      const rodada = mapRodada(rodadaApi);
+      for (const mesa of rodada.mesas) {
+        for (const jogador of mesa.jogadores) {
+          map.set(jogador.inscricaoId, {
+            rodada: rodada.numero,
+            mesa: mesa.numeroMesa,
+          });
+        }
+      }
+    }
+
+    return map;
+  }
+
+  private useMockFallback(): boolean {
+    return window.location.hostname === 'localhost';
+  }
+}

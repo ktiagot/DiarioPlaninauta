@@ -10,7 +10,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./pages/home/home').then((m) => m.HomeComponent),
+        loadComponent: () => import('./pages/perfil/perfil').then((m) => m.PerfilComponent),
+        data: { title: 'Meu perfil' },
       },
       {
         path: 'login',
@@ -19,6 +20,11 @@ export const routes: Routes = [
       {
         path: 'cadastro',
         loadComponent: () => import('./pages/cadastro/cadastro').then((m) => m.CadastroComponent),
+      },
+      {
+        path: 'mesas',
+        loadComponent: () => import('./pages/mesas/mesas').then((m) => m.MesasComponent),
+        data: { title: 'Mesas' },
       },
       {
         path: 'comunidade',
@@ -31,11 +37,8 @@ export const routes: Routes = [
       },
       {
         path: 'precompeonato',
-        canActivate: [authGuard],
         loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
-          ),
+          import('./pages/precompeonato/precompeonato').then((m) => m.PrecompeonatoComponent),
         data: { title: 'Precompeonato' },
       },
       {
@@ -65,15 +68,7 @@ export const routes: Routes = [
           ),
         data: { title: 'Loja de Pontos' },
       },
-      {
-        path: 'perfil',
-        canActivate: [authGuard],
-        loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
-          ),
-        data: { title: 'Meu perfil' },
-      },
+      { path: 'perfil', redirectTo: '', pathMatch: 'full' },
     ],
   },
   {

@@ -4,15 +4,21 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
+import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
+import { toUserResponse } from './mappers/to-user-response';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly apoiaseService: ApoiaSeService,
+  ) {}
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -21,9 +27,10 @@ export class UsersService {
       throw new ConflictException('Já existe um usuário cadastrado com este e-mail.');
     }
 
+    const backer = await this.apoiaseService.verify(dto.email);
     const passwordHash = await argon2.hash(dto.senha);
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
@@ -42,24 +49,29 @@ export class UsersService {
         horarios: dto.horarios ?? [],
         decksMaisUsados: dto.decksMaisUsados ?? [],
         preCampeonatos: dto.preCampeonatos ?? [],
+        isApoiadorAtivo: backer.isBacker,
+        monthlyContribution: backer.thisMonthPaidValue ?? null,
+        lastValidationAt: new Date(),
       },
     });
+
+    return toUserResponse(user);
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<UserResponseDto> {
     const user = await this.prisma.user.findUnique({ where: { id } });
 
     if (!user) {
       throw new NotFoundException(`Usuário com id "${id}" não encontrado.`);
     }
 
-    return user;
+    return toUserResponse(user);
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOne(id);
 
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
         nome: dto.nome,
@@ -85,5 +97,7 @@ export class UsersService {
         decksMaisUsados: dto.decksMaisUsados,
       },
     });
+
+    return toUserResponse(user);
   }
 }
