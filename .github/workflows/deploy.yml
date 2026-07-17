@@ -20,11 +20,11 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             echo "=== Pulling latest code ==="
-            cd /var/www/precompeonato
+            cd /var/www/diarioplaninauta
             git pull origin main
 
             echo "=== Installing backend dependencies ==="
-            cd /var/www/precompeonato/backend
+            cd /var/www/diarioplaninauta/backend
             npm install --production
 
             echo "=== Restarting backend ==="
