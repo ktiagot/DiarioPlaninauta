@@ -19,12 +19,20 @@ export class UsersService {
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
-    const existing = await this.prisma.user.findUnique({
+    const existingByEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
 
-    if (existing) {
+    if (existingByEmail) {
       throw new ConflictException('Já existe um usuário cadastrado com este e-mail.');
+    }
+
+    const existingByNick = await this.prisma.user.findUnique({
+      where: { nick: dto.nick },
+    });
+
+    if (existingByNick) {
+      throw new ConflictException('Já existe um usuário cadastrado com este nick.');
     }
 
     const backer = await this.apoiaseService.verify(dto.email);

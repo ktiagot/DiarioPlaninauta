@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
@@ -36,6 +37,7 @@ import { RodadasService } from '../../../core/rodadas/rodadas.service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './mesa-card.html',
   styleUrl: './mesa-card.scss',
@@ -56,6 +58,8 @@ export class MesaCardComponent {
   protected readonly eliminacoes = signal<EliminacaoRegistro[]>([]);
   protected readonly novoEliminadorId = signal<number | null>(null);
   protected readonly novoEliminadoId = signal<number | null>(null);
+  protected readonly resultadoEmpate = signal(false);
+  protected readonly jogadoresEmpatados = signal<Record<number, boolean>>({});
 
   constructor() {
     effect(() => {
@@ -69,15 +73,39 @@ export class MesaCardComponent {
       this.eliminacoes.set(mesa.eliminacoes ? [...mesa.eliminacoes] : []);
       this.novoEliminadorId.set(null);
       this.novoEliminadoId.set(null);
+      this.resultadoEmpate.set(false);
+      this.jogadoresEmpatados.set({});
     });
   }
 
   protected drop(event: CdkDragDrop<MesaJogador[]>): void {
-    if (this.finalizada()) return;
+    if (this.finalizada() || this.resultadoEmpate()) return;
 
     const jogadores = [...this.jogadoresOrdenados()];
     moveItemInArray(jogadores, event.previousIndex, event.currentIndex);
     this.jogadoresOrdenados.set(jogadores);
+  }
+
+  protected onResultadoEmpateChange(value: boolean): void {
+    this.resultadoEmpate.set(value);
+    if (!value) {
+      this.jogadoresEmpatados.set({});
+    }
+  }
+
+  protected jogadorEmpatou(inscricaoId: number): boolean {
+    return this.jogadoresEmpatados()[inscricaoId] ?? false;
+  }
+
+  protected setJogadorEmpatou(inscricaoId: number, value: boolean): void {
+    this.jogadoresEmpatados.update((mapa) => ({ ...mapa, [inscricaoId]: value }));
+  }
+
+  protected isPrimeiroLugar(inscricaoId: number, index: number): boolean {
+    if (this.resultadoEmpate()) {
+      return this.jogadorEmpatou(inscricaoId);
+    }
+    return index === 0;
   }
 
   protected posicaoLabel(index: number, jogador: MesaJogador): string {

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { MesasModule } from './mesas/mesas.module';
+import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -8,6 +10,8 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UsersModule,
+    MesasModule,
+    PrecompeonatoModule,
   ],
 })
 export class AppModule {}

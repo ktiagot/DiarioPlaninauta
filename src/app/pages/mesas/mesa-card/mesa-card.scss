@@ -178,8 +178,16 @@
   margin-right: 0.25rem;
 }
 
-.mesa-card__drag-hint {
+.mesa-card__drag-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin: 0.25rem 0 0;
+}
+
+.mesa-card__drag-hint {
+  margin: 0;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -187,11 +195,27 @@
   color: rgba(255, 255, 255, 0.4);
 }
 
+.mesa-card__empate-toggle {
+  flex-shrink: 0;
+  --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.7);
+  --mat-slide-toggle-selected-track-color: #f58220;
+  --mat-slide-toggle-selected-handle-color: #fff;
+  --mat-slide-toggle-selected-hover-handle-color: #fff;
+  --mat-slide-toggle-selected-focus-handle-color: #fff;
+  --mat-slide-toggle-selected-pressed-handle-color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .mesa-jogadores {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
   min-height: 4rem;
+
+  &--empate .mesa-jogador {
+    cursor: default;
+  }
 }
 
 .mesa-jogador {
@@ -216,6 +240,20 @@
   &.cdk-drag-animating {
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
   }
+}
+
+.mesa-jogador__empatou-toggle {
+  flex-shrink: 0;
+  margin-left: auto;
+  --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.65);
+  --mat-slide-toggle-selected-track-color: #f58220;
+  --mat-slide-toggle-selected-handle-color: #fff;
+  --mat-slide-toggle-selected-hover-handle-color: #fff;
+  --mat-slide-toggle-selected-focus-handle-color: #fff;
+  --mat-slide-toggle-selected-pressed-handle-color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .mesa-jogadores.cdk-drop-list-dragging .mesa-jogador:not(.cdk-drag-placeholder) {
@@ -254,6 +292,10 @@
   gap: 0.125rem;
 }
 
+.mesa-jogadores--empate .mesa-jogador__posicao-wrap {
+  min-width: 4.5rem;
+}
+
 .mesa-jogador__place-icon {
   display: flex;
   align-items: center;
@@ -279,6 +321,7 @@
   font-weight: 700;
   color: rgba(255, 255, 255, 0.45);
   text-align: center;
+  line-height: 1.2;
 
   &--first {
     color: #ffd700;
@@ -287,6 +330,13 @@
   &--second {
     color: #c084fc;
   }
+}
+
+.mesa-jogadores--empate .mesa-jogador__posicao--first {
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  max-width: 4.5rem;
 }
 
 .mesa-jogador--first .mesa-jogador__nome {

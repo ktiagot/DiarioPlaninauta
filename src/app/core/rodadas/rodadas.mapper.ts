@@ -17,6 +17,7 @@ function mapJogador(j: MesaJogadorApi): MesaJogador {
     deckUrl: j.deck_url,
     rankingCampeonato: j.ranking_campeonato ?? j.ranking,
     posicaoFinal: j.posicao_final,
+    kills: j.kills,
   };
 }
 

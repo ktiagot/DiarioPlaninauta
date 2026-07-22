@@ -1,6 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,19 +10,24 @@ import {
   faLayerGroup,
   faMagnifyingGlass,
   faTableCells,
+  faTableList,
+  faUserGroup,
   faUserPlus,
   faWandSparkles,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
+import { MesasComponent } from '../mesas/mesas';
 import { JogadorCardComponent } from './jogador-card/jogador-card';
+import { PrecompeonatoTabelaComponent } from './precompeonato-tabela/precompeonato-tabela';
+
+type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela';
 
 @Component({
   selector: 'app-precompeonato',
   imports: [
     FormsModule,
-    RouterLink,
     FaIconComponent,
     MatButtonModule,
     MatFormFieldModule,
@@ -31,6 +35,8 @@ import { JogadorCardComponent } from './jogador-card/jogador-card';
     MatInputModule,
     MatProgressSpinnerModule,
     JogadorCardComponent,
+    MesasComponent,
+    PrecompeonatoTabelaComponent,
   ],
   templateUrl: './precompeonato.html',
   styleUrl: './precompeonato.scss',
@@ -39,16 +45,35 @@ export class PrecompeonatoComponent implements OnInit {
   private readonly inscricoesService = inject(InscricoesService);
 
   protected readonly faTableCells = faTableCells;
+  protected readonly faTableList = faTableList;
+  protected readonly faUserGroup = faUserGroup;
   protected readonly faUserPlus = faUserPlus;
   protected readonly faLayerGroup = faLayerGroup;
   protected readonly faWandSparkles = faWandSparkles;
   protected readonly faMagnifyingGlass = faMagnifyingGlass;
 
+  protected readonly viewMode = signal<PrecompeonatoViewMode>('jogadores');
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly jogadores = signal<JogadorInscrito[]>([]);
   protected readonly searchQuery = signal('');
   protected readonly selectedDeck = signal<string | null>(null);
+
+  protected readonly ctaMesasLabel = computed(() =>
+    this.viewMode() === 'mesas' ? 'Ver Planeswalkers' : 'Ver Mesas da Rodada Atual',
+  );
+
+  protected readonly ctaMesasIcon = computed(() =>
+    this.viewMode() === 'mesas' ? this.faUserGroup : this.faTableCells,
+  );
+
+  protected readonly ctaTabelaLabel = computed(() =>
+    this.viewMode() === 'tabela' ? 'Ver Planeswalkers' : 'Ver tabela',
+  );
+
+  protected readonly ctaTabelaIcon = computed(() =>
+    this.viewMode() === 'tabela' ? this.faUserGroup : this.faTableList,
+  );
 
   protected readonly deckFilterOptions = computed<DeckFilterOption[]>(() => {
     const counts = new Map<string, number>();
@@ -100,6 +125,14 @@ export class PrecompeonatoComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarJogadores();
+  }
+
+  protected toggleMesasView(): void {
+    this.viewMode.update((mode) => (mode === 'mesas' ? 'jogadores' : 'mesas'));
+  }
+
+  protected toggleTabelaView(): void {
+    this.viewMode.update((mode) => (mode === 'tabela' ? 'jogadores' : 'tabela'));
   }
 
   protected carregarJogadores(): void {

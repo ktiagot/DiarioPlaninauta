@@ -14,7 +14,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Login via APOIA.se',
     description:
-      'Verifica se o e-mail é apoiador ativo e em dia no APOIA.se. Retorna o accessToken direto.',
+      'Verifica se o e-mail é apoiador ativo e em dia no APOIA.se. Exige conta já cadastrada via POST /users; não cria usuários. Retorna o accessToken.',
   })
   @ApiOkResponse({
     description: 'Login realizado com sucesso',

@@ -1,0 +1,90 @@
+<section class="precompeonato-tabela" aria-label="Tabela de classificação">
+  <header class="precompeonato-tabela__header">
+    <h2 class="precompeonato-tabela__title">Classificação</h2>
+    <p class="precompeonato-tabela__subtitle">
+      {{ dataSource().length }}
+      {{ dataSource().length === 1 ? 'jogador' : 'jogadores' }}
+      @if (searchQuery().trim()) {
+        encontrados
+      }
+    </p>
+  </header>
+
+  <mat-form-field appearance="outline" class="precompeonato-tabela__search w-full">
+    <fa-icon matPrefix [icon]="faMagnifyingGlass" class="precompeonato-tabela__search-icon" />
+    <input
+      matInput
+      type="search"
+      placeholder="Buscar por posição, nome, nick, comandante, pontos ou eliminações..."
+      [ngModel]="searchQuery()"
+      (ngModelChange)="onSearchChange($event)"
+      aria-label="Filtrar tabela de classificação"
+    />
+  </mat-form-field>
+
+  @if (jogadores().length === 0) {
+    <div class="precompeonato-tabela__empty">
+      <p class="precompeonato-tabela__empty-message">Nenhum jogador cadastrado no precompeonato.</p>
+    </div>
+  } @else if (dataSource().length === 0) {
+    <div class="precompeonato-tabela__empty">
+      <p class="precompeonato-tabela__empty-message">Nenhum resultado para o filtro atual.</p>
+    </div>
+  } @else {
+    <div class="precompeonato-tabela__wrap">
+      <table mat-table [dataSource]="dataSource()" class="precompeonato-tabela__table">
+        <ng-container matColumnDef="posicao">
+          <th mat-header-cell *matHeaderCellDef>Posições</th>
+          <td mat-cell *matCellDef="let jogador">
+            <span class="precompeonato-tabela__posicao">#{{ jogador.ranking }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="jogador">
+          <th mat-header-cell *matHeaderCellDef>Primeiro nome / Nick discord</th>
+          <td mat-cell *matCellDef="let jogador">
+            <span class="precompeonato-tabela__nome">{{ displayNome(jogador) }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="comandante">
+          <th mat-header-cell *matHeaderCellDef>Comandante</th>
+          <td mat-cell *matCellDef="let jogador">
+            @if (jogador.comandante && jogador.deckUrl) {
+              <a
+                class="precompeonato-tabela__comandante-link"
+                [href]="jogador.deckUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="'Abrir deck de ' + jogador.comandante + ' no Moxfield'"
+              >
+                {{ jogador.comandante }}
+              </a>
+            } @else {
+              {{ jogador.comandante || '—' }}
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="pontos">
+          <th mat-header-cell *matHeaderCellDef>Pontos</th>
+          <td mat-cell *matCellDef="let jogador">
+            <span class="precompeonato-tabela__pontos">{{ jogador.pontos }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="eliminacoes">
+          <th mat-header-cell *matHeaderCellDef>Eliminação</th>
+          <td mat-cell *matCellDef="let jogador">{{ jogador.eliminacoes }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          [class]="rowHighlightClass(row)"
+        ></tr>
+      </table>
+    </div>
+  }
+</section>

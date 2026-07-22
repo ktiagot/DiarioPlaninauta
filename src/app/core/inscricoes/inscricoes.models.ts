@@ -7,6 +7,8 @@ export interface JogadorInscrito {
   deckNome: string;
   deckUrl?: string;
   meta: number;
+  pontos: number;
+  eliminacoes: number;
   rodada?: number;
   mesa?: number;
 }
