@@ -34,7 +34,7 @@ export class UsersController {
     description: 'Cria um novo usuário com todos os dados obrigatórios de perfil.',
   })
   @ApiCreatedResponse({ description: 'Usuário criado com sucesso.', type: UserResponseDto })
-  @ApiConflictResponse({ description: 'E-mail já cadastrado.' })
+  @ApiConflictResponse({ description: 'E-mail ou nick já cadastrado.' })
   @ApiServiceUnavailableResponse({
     description: 'Serviço de verificação APOIA.se indisponível.',
   })

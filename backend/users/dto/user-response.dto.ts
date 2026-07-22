@@ -13,23 +13,23 @@ export class UserResponseDto {
   @ApiProperty({ example: 'usuario@email.com' })
   email: string;
 
-  @ApiPropertyOptional({ example: 'João' })
-  nome: string | null;
+  @ApiProperty({ example: 'João' })
+  nome: string;
 
-  @ApiPropertyOptional({ example: 'Silva' })
-  sobrenome: string | null;
+  @ApiProperty({ example: 'Silva' })
+  sobrenome: string;
 
-  @ApiPropertyOptional({ example: 'joaosilva' })
-  nick: string | null;
+  @ApiProperty({ example: 'joaosilva' })
+  nick: string;
 
-  @ApiPropertyOptional({ example: '11999999999' })
-  telefone: string | null;
+  @ApiProperty({ example: '11999999999' })
+  telefone: string;
 
   @ApiProperty({ example: ['Commander'], type: [String] })
   formatos: string[];
 
-  @ApiPropertyOptional({ example: 'São Paulo' })
-  cidade: string | null;
+  @ApiProperty({ example: 'São Paulo' })
+  cidade: string;
 
   @ApiProperty({ example: false })
   isAdmin: boolean;

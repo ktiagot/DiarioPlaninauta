@@ -12,17 +12,24 @@ enum UserRole {
   VIP
 }
 
+// Hub relacional do portal.
+// Outras tabelas devem referenciar User via:
+//   userId String
+//   user   User   @relation(fields: [userId], references: [id])
+//   @@index([userId])
+// E no User: <nomeRelacao> ExemploEntidade[]
 model User {
   id        String @id @default(uuid())
   email     String @unique
 
   // --- mandatory registration fields ---
-  nome      String?
-  sobrenome String?
-  nick      String?
-  telefone  String?
-  formatos  String[]
-  cidade    String?
+  nome         String
+  sobrenome    String
+  nick         String @unique
+  telefone     String
+  formatos     String[]
+  cidade       String
+  passwordHash String
 
   // --- role flags ---
   isAdmin         Boolean @default(false)
@@ -47,12 +54,174 @@ model User {
   preCampeonatos     String[]
   decksMaisUsados    String[]
 
-  // --- auth fields ---
-  passwordHash        String?
+  // --- auth / APOIA.se fields ---
   role                UserRole @default(BACKER)
   monthlyContribution Int?
   lastValidationAt    DateTime?
 
+  // --- mesas relations ---
+  mesaJogadores      MesaJogador[] @relation("MesaJogadorUser")
+  eliminacoesFeitas  Eliminacao[]  @relation("EliminacaoEliminador")
+  eliminacoesSofridas Eliminacao[] @relation("EliminacaoEliminado")
+
+  // --- precompeonato ---
+  inscricoes Inscricao[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum CampeonatoStatus {
+  INSCRICOES_ABERTAS
+  EM_ANDAMENTO
+  ENCERRADO
+}
+
+model Campeonato {
+  id                   String           @id @default(uuid())
+  nome                 String
+  status               CampeonatoStatus @default(INSCRICOES_ABERTAS)
+  inscricoesAbertasAte DateTime?
+
+  inscricoes Inscricao[]
+  rodadas    Rodada[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("campeonatos")
+}
+
+model Inscricao {
+  id             String    @id @default(uuid())
+  campeonatoId   String
+  userId         String
+  email          String
+  deckUrl        String
+  deckNome       String
+  comandante     String
+  aceiteTermos   Boolean
+  aceiteTermosEm DateTime
+  ativo          Boolean   @default(true)
+  pontos         Int       @default(0)
+  posicao        Int?
+
+  campeonato Campeonato           @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  mesas      MesaTorneioJogador[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campeonatoId, userId])
+  @@index([campeonatoId])
+  @@index([userId])
+  @@index([email])
+  @@map("inscricoes")
+}
+
+model Rodada {
+  id           String  @id @default(uuid())
+  campeonatoId String
+  numero       Int
+  ativa        Boolean @default(false)
+
+  campeonato Campeonato    @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  mesas      MesaTorneio[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campeonatoId, numero])
+  @@index([campeonatoId])
+  @@map("rodadas")
+}
+
+model MesaTorneio {
+  id         String  @id @default(uuid())
+  rodadaId   String
+  numeroMesa Int
+  finalizada Boolean @default(false)
+
+  rodada    Rodada               @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
+  jogadores MesaTorneioJogador[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rodadaId, numeroMesa])
+  @@index([rodadaId])
+  @@map("mesas_torneio")
+}
+
+model MesaTorneioJogador {
+  id           String @id @default(uuid())
+  mesaId       String
+  inscricaoId  String
+  posicaoFinal Int?
+  kills        Int    @default(0)
+
+  mesa      MesaTorneio @relation(fields: [mesaId], references: [id], onDelete: Cascade)
+  inscricao Inscricao   @relation(fields: [inscricaoId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([mesaId, inscricaoId])
+  @@index([mesaId])
+  @@index([inscricaoId])
+  @@map("mesa_torneio_jogadores")
+}
+
+model Mesa {
+  id          String  @id @default(uuid())
+  nome        String
+  linkPartida String?
+  finalizada  Boolean @default(false)
+
+  jogadores    MesaJogador[]
+  eliminacoes  Eliminacao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mesas")
+}
+
+model MesaJogador {
+  id           String @id @default(uuid())
+  mesaId       String
+  userId       String
+  posicaoFinal Int?
+  kills        Int    @default(0)
+
+  mesa Mesa @relation(fields: [mesaId], references: [id], onDelete: Cascade)
+  user User @relation("MesaJogadorUser", fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([mesaId, userId])
+  @@index([mesaId])
+  @@index([userId])
+  @@map("mesa_jogadores")
+}
+
+model Eliminacao {
+  id                String @id @default(uuid())
+  mesaId            String
+  eliminadorUserId  String
+  eliminadoUserId   String
+
+  mesa       Mesa @relation(fields: [mesaId], references: [id], onDelete: Cascade)
+  eliminador User @relation("EliminacaoEliminador", fields: [eliminadorUserId], references: [id], onDelete: Restrict)
+  eliminado  User @relation("EliminacaoEliminado", fields: [eliminadoUserId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+
+  @@unique([mesaId, eliminadoUserId])
+  @@index([mesaId])
+  @@map("eliminacoes")
 }

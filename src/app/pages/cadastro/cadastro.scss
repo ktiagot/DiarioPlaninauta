@@ -10,6 +10,12 @@
   overflow: hidden;
 }
 
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 mat-card-title {  color: var(--sys-color-white);
 }
 

@@ -11,148 +11,170 @@
     <mat-card-content class="pt-4">
       <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4" novalidate>
 
-        <div class="email-row">
-          <mat-form-field appearance="outline" class="email-field">
-            <mat-label>E-mail</mat-label>
-            <input
-              matInput
-              type="email"
-              formControlName="email"
-              placeholder="seu@email.com"
-              autocomplete="email"
-            />
-            @if (form.controls.email.invalid && form.controls.email.touched) {
-              <mat-error>
-                @if (form.controls.email.hasError('required')) { Informe seu e-mail }
-                @else if (form.controls.email.hasError('email')) { Digite um e-mail válido }
-              </mat-error>
-            }
-          </mat-form-field>
+        <div class="field-group">
+          <label for="email" class="text-white">E-mail</label>
+          <div class="email-row">
+            <mat-form-field appearance="outline" class="email-field">
+              <input
+                matInput
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="seu@email.com"
+                autocomplete="email"
+              />
+              @if (form.controls.email.invalid && form.controls.email.touched) {
+                <mat-error>
+                  @if (form.controls.email.hasError('required')) { Informe seu e-mail }
+                  @else if (form.controls.email.hasError('email')) { Digite um e-mail válido }
+                </mat-error>
+              }
+            </mat-form-field>
 
-          <div class="backer-status" aria-live="polite">
-            @switch (backerStatus()) {
-              @case ('checking') {
-                <mat-spinner diameter="20" />
-                <span class="status-label checking">Verificando…</span>
+            <div class="backer-status" aria-live="polite">
+              @switch (backerStatus()) {
+                @case ('checking') {
+                  <mat-spinner diameter="20" />
+                  <span class="status-label checking">Verificando…</span>
+                }
+                @case ('backer') {
+                  <span class="status-badge backer">Apoiador</span>
+                }
+                @case ('not_backer') {
+                  <span class="status-badge not-backer">Não apoiador</span>
+                  <a
+                    [href]="apoiaSeUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    mat-stroked-button
+                    class="apoia-btn"
+                  >
+                    Vem pro apoia.se!
+                  </a>
+                }
+                @case ('error') {
+                  <span class="status-label error">Erro ao verificar</span>
+                }
               }
-              @case ('backer') {
-                <span class="status-badge backer">Apoiador</span>
-              }
-              @case ('not_backer') {
-                <span class="status-badge not-backer">Não apoiador</span>
-                <a
-                  [href]="apoiaSeUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  mat-stroked-button
-                  class="apoia-btn"
-                >
-                  Vem pro apoia.se!
-                </a>
-              }
-              @case ('error') {
-                <span class="status-label error">Erro ao verificar</span>
-              }
-            }
+            </div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Senha</mat-label>
-            <input
-              matInput
-              type="password"
-              formControlName="senha"
-              placeholder="Mínimo 8 caracteres"
-              autocomplete="new-password"
-            />
-            @if (form.controls.senha.invalid && form.controls.senha.touched) {
-              <mat-error>
-                @if (form.controls.senha.hasError('required')) { Informe uma senha }
-                @else if (form.controls.senha.hasError('minlength')) { Mínimo 8 caracteres }
-              </mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Confirmar senha</mat-label>
-            <input
-              matInput
-              type="password"
-              formControlName="confirmarSenha"
-              placeholder="Repita a senha"
-              autocomplete="new-password"
-            />
-            @if (form.controls.confirmarSenha.touched) {
-              @if (form.controls.confirmarSenha.hasError('required')) {
-                <mat-error>Confirme sua senha</mat-error>
-              } @else if (form.hasError('senhasDivergentes')) {
-                <mat-error>As senhas não coincidem</mat-error>
+          <div class="field-group">
+            <label for="senha" class="text-white">Senha</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="senha"
+                type="password"
+                formControlName="senha"
+                placeholder="Mínimo 8 caracteres"
+                autocomplete="new-password"
+              />
+              @if (form.controls.senha.invalid && form.controls.senha.touched) {
+                <mat-error>
+                  @if (form.controls.senha.hasError('required')) { Informe uma senha }
+                  @else if (form.controls.senha.hasError('minlength')) { Mínimo 8 caracteres }
+                </mat-error>
               }
-            }
-          </mat-form-field>
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label for="confirmarSenha" class="text-white">Confirmar senha</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="confirmarSenha"
+                type="password"
+                formControlName="confirmarSenha"
+                placeholder="Repita a senha"
+                autocomplete="new-password"
+              />
+              @if (form.controls.confirmarSenha.touched) {
+                @if (form.controls.confirmarSenha.hasError('required')) {
+                  <mat-error>Confirme sua senha</mat-error>
+                } @else if (form.hasError('senhasDivergentes')) {
+                  <mat-error>As senhas não coincidem</mat-error>
+                }
+              }
+            </mat-form-field>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Nome</mat-label>
-            <input matInput formControlName="nome" autocomplete="given-name" />
-            @if (form.controls.nome.invalid && form.controls.nome.touched) {
-              <mat-error>Informe seu nome</mat-error>
-            }
-          </mat-form-field>
+          <div class="field-group">
+            <label for="nome" class="text-white">Nome</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="nome" formControlName="nome" autocomplete="given-name" />
+              @if (form.controls.nome.invalid && form.controls.nome.touched) {
+                <mat-error>Informe seu nome</mat-error>
+              }
+            </mat-form-field>
+          </div>
 
+          <div class="field-group">
+            <label for="sobrenome" class="text-white">Sobrenome</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="sobrenome" formControlName="sobrenome" autocomplete="family-name" />
+              @if (form.controls.sobrenome.invalid && form.controls.sobrenome.touched) {
+                <mat-error>Informe seu sobrenome</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="nick" class="text-white">Nick</label>
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Sobrenome</mat-label>
-            <input matInput formControlName="sobrenome" autocomplete="family-name" />
-            @if (form.controls.sobrenome.invalid && form.controls.sobrenome.touched) {
-              <mat-error>Informe seu sobrenome</mat-error>
+            <input matInput id="nick" formControlName="nick" autocomplete="nickname" />
+            @if (form.controls.nick.invalid && form.controls.nick.touched) {
+              <mat-error>Informe seu nick</mat-error>
             }
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Nick</mat-label>
-          <input matInput formControlName="nick" autocomplete="nickname" />
-          @if (form.controls.nick.invalid && form.controls.nick.touched) {
-            <mat-error>Informe seu nick</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Telefone</mat-label>
-          <input
-            matInput
-            type="tel"
-            formControlName="telefone"
-            placeholder="11999999999"
-            autocomplete="tel"
-          />
-          @if (form.controls.telefone.invalid && form.controls.telefone.touched) {
-            <mat-error>Informe seu telefone</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Formatos</mat-label>
-          <mat-select formControlName="formatos" multiple>
-            @for (formato of formatosDisponiveis; track formato) {
-              <mat-option [value]="formato">{{ formato }}</mat-option>
+        <div class="field-group">
+          <label for="telefone" class="text-white">Telefone</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              id="telefone"
+              type="tel"
+              formControlName="telefone"
+              placeholder="11999999999"
+              autocomplete="tel"
+            />
+            @if (form.controls.telefone.invalid && form.controls.telefone.touched) {
+              <mat-error>Informe seu telefone</mat-error>
             }
-          </mat-select>
-          @if (form.controls.formatos.invalid && form.controls.formatos.touched) {
-            <mat-error>Selecione pelo menos um formato</mat-error>
-          }
-        </mat-form-field>
+          </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Cidade</mat-label>
-          <input matInput formControlName="cidade" autocomplete="address-level2" />
-          @if (form.controls.cidade.invalid && form.controls.cidade.touched) {
-            <mat-error>Informe sua cidade</mat-error>
-          }
-        </mat-form-field>
+        <div class="field-group">
+          <label for="formatos" class="text-white">Formatos</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-select id="formatos" formControlName="formatos" multiple>
+              @for (formato of formatosDisponiveis; track formato) {
+                <mat-option [value]="formato">{{ formato }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.formatos.invalid && form.controls.formatos.touched) {
+              <mat-error>Selecione pelo menos um formato</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <label for="cidade" class="text-white">Cidade</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input matInput id="cidade" formControlName="cidade" autocomplete="address-level2" />
+            @if (form.controls.cidade.invalid && form.controls.cidade.touched) {
+              <mat-error>Informe sua cidade</mat-error>
+            }
+          </mat-form-field>
+        </div>
 
         <button
           mat-flat-button

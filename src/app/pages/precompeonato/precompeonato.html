@@ -6,10 +6,17 @@
       Torneio de Commander Precon — {{ totalJogadores() || '—' }} Planeswalkers prontos para a batalha
     </p>
 
-    <a mat-flat-button color="primary" routerLink="/mesas">
-      <fa-icon [icon]="faTableCells" class="precompeonato-hero__cta-icon" />
-      Ver Mesas da Rodada Atual
-    </a>
+    <div class="precompeonato-hero__ctas">
+      <button mat-flat-button color="primary" type="button" (click)="toggleMesasView()">
+        <fa-icon [icon]="ctaMesasIcon()" class="precompeonato-hero__cta-icon" />
+        {{ ctaMesasLabel() }}
+      </button>
+
+      <button mat-stroked-button color="primary" type="button" (click)="toggleTabelaView()">
+        <fa-icon [icon]="ctaTabelaIcon()" class="precompeonato-hero__cta-icon" />
+        {{ ctaTabelaLabel() }}
+      </button>
+    </div>
 
     <div class="precompeonato-hero__stats">
       <div class="precompeonato-hero__stat">
@@ -38,7 +45,22 @@
     </div>
   </section>
 
-  @if (loading()) {
+  @if (viewMode() === 'mesas') {
+    <app-mesas />
+  } @else if (viewMode() === 'tabela') {
+    @if (loading()) {
+      <div class="flex flex-1 items-center justify-center py-24">
+        <mat-spinner diameter="48" />
+      </div>
+    } @else if (error()) {
+      <div class="precompeonato-empty">
+        <p class="precompeonato-empty__message">{{ error() }}</p>
+        <button mat-flat-button color="primary" (click)="carregarJogadores()">Tentar novamente</button>
+      </div>
+    } @else {
+      <app-precompeonato-tabela [jogadores]="jogadores()" />
+    }
+  } @else if (loading()) {
     <div class="flex flex-1 items-center justify-center py-24">
       <mat-spinner diameter="48" />
     </div>

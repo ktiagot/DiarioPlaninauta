@@ -31,6 +31,7 @@ export class InscricoesService {
         }
 
         const rodadaMap = this.buildRodadaMesaMap(rodadas);
+        const eliminacoesMap = this.buildEliminacoesMap(rodadas);
         const jogadores = inscricoes
           .filter((i) => i.ativo !== false)
           .map((i) => {
@@ -46,6 +47,8 @@ export class InscricoesService {
               deckNome: base.deckNome,
               deckUrl: base.deckUrl,
               meta: 0,
+              pontos: base.pontos,
+              eliminacoes: eliminacoesMap.get(i.id) ?? 0,
               rodada: mesaInfo?.rodada,
               mesa: mesaInfo?.mesa,
             } satisfies JogadorInscrito;
@@ -76,6 +79,23 @@ export class InscricoesService {
             rodada: rodada.numero,
             mesa: mesa.numeroMesa,
           });
+        }
+      }
+    }
+
+    return map;
+  }
+
+  private buildEliminacoesMap(rodadas: RodadaApi[]): Map<number, number> {
+    const map = new Map<number, number>();
+
+    for (const rodadaApi of rodadas) {
+      const rodada = mapRodada(rodadaApi);
+      for (const mesa of rodada.mesas) {
+        for (const jogador of mesa.jogadores) {
+          const kills = jogador.kills ?? 0;
+          if (!kills) continue;
+          map.set(jogador.inscricaoId, (map.get(jogador.inscricaoId) ?? 0) + kills);
         }
       }
     }

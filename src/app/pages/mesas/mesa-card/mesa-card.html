@@ -63,37 +63,54 @@
       }
     </div>
 
-    <p class="mesa-card__drag-hint">Arraste para definir posições</p>
+    <div class="mesa-card__drag-hint-row">
+      <p class="mesa-card__drag-hint">
+        {{ resultadoEmpate() ? 'Marque quem empatou' : 'Arraste para definir posições' }}
+      </p>
+      <mat-slide-toggle
+        class="mesa-card__empate-toggle"
+        [checked]="resultadoEmpate()"
+        [disabled]="finalizada()"
+        (change)="onResultadoEmpateChange($event.checked)"
+      >
+        Empate
+      </mat-slide-toggle>
+    </div>
 
     <div
       class="mesa-jogadores"
+      [class.mesa-jogadores--empate]="resultadoEmpate()"
       cdkDropList
-      [cdkDropListDisabled]="finalizada()"
+      [cdkDropListDisabled]="finalizada() || resultadoEmpate()"
       (cdkDropListDropped)="drop($event)"
     >
       @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId; let i = $index) {
         <div
           class="mesa-jogador"
-          [class.mesa-jogador--first]="i === 0"
-          [class.mesa-jogador--second]="i === 1"
+          [class.mesa-jogador--first]="isPrimeiroLugar(jogador.inscricaoId, i)"
+          [class.mesa-jogador--second]="!resultadoEmpate() && i === 1"
           cdkDrag
-          [cdkDragDisabled]="finalizada()"
+          [cdkDragDisabled]="finalizada() || resultadoEmpate()"
         >
           <div *cdkDragPlaceholder class="mesa-jogador__drag-placeholder"></div>
 
-          @if (!finalizada()) {
+          @if (!finalizada() && !resultadoEmpate()) {
             <mat-icon class="mesa-jogador__handle" cdkDragHandle>drag_indicator</mat-icon>
           }
 
           <div class="mesa-jogador__posicao-wrap">
-            @if (i === 0) {
+            @if (isPrimeiroLugar(jogador.inscricaoId, i)) {
               <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--first">emoji_events</mat-icon>
-              <span class="mesa-jogador__posicao mesa-jogador__posicao--first">1º</span>
-            } @else if (i === 1) {
+              <span class="mesa-jogador__posicao mesa-jogador__posicao--first">
+                {{ resultadoEmpate() ? 'Primeiro lugar' : '1º' }}
+              </span>
+            } @else if (!resultadoEmpate() && i === 1) {
               <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--second">military_tech</mat-icon>
               <span class="mesa-jogador__posicao mesa-jogador__posicao--second">2º</span>
-            } @else {
+            } @else if (!resultadoEmpate()) {
               <span class="mesa-jogador__posicao">{{ posicaoLabel(i, jogador) }}</span>
+            } @else {
+              <span class="mesa-jogador__posicao">—</span>
             }
           </div>
 
@@ -120,6 +137,18 @@
                 {{ jogador.deckNome }}
               </span>
             }
+          }
+
+          @if (resultadoEmpate()) {
+            <mat-slide-toggle
+              class="mesa-jogador__empatou-toggle"
+              [checked]="jogadorEmpatou(jogador.inscricaoId)"
+              [disabled]="finalizada()"
+              (change)="setJogadorEmpatou(jogador.inscricaoId, $event.checked)"
+              (click)="$event.stopPropagation()"
+            >
+              Empatou
+            </mat-slide-toggle>
           }
         </div>
       }

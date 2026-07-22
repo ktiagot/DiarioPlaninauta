@@ -23,8 +23,8 @@ export const routes: Routes = [
       },
       {
         path: 'mesas',
-        loadComponent: () => import('./pages/mesas/mesas').then((m) => m.MesasComponent),
-        data: { title: 'Mesas' },
+        redirectTo: 'precompeonato',
+        pathMatch: 'full',
       },
       {
         path: 'comunidade',

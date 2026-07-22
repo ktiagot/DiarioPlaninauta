@@ -1,6 +1,9 @@
 import { InscricaoApi, JogadorInscrito } from './inscricoes.models';
 
-export function mapInscricao(i: InscricaoApi): Omit<JogadorInscrito, 'meta' | 'rodada' | 'mesa' | 'ranking'> & {
+export function mapInscricao(i: InscricaoApi): Omit<
+  JogadorInscrito,
+  'meta' | 'rodada' | 'mesa' | 'ranking' | 'eliminacoes'
+> & {
   rankingBase: number;
 } {
   return {
@@ -11,6 +14,7 @@ export function mapInscricao(i: InscricaoApi): Omit<JogadorInscrito, 'meta' | 'r
     comandante: i.comandante ?? i.comandante_principal ?? '',
     deckNome: i.deck_nome ?? '',
     deckUrl: i.deck_url,
+    pontos: i.pontos ?? 0,
   };
 }
 

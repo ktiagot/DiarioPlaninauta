@@ -82,6 +82,8 @@ function buildMock(): JogadorInscrito[] {
     deckNome: e.deckNome,
     deckUrl: e.deckUrl,
     meta: deckCounts.get(e.deckNome.toLowerCase()) ?? 1,
+    pontos: Math.max(0, 40 - index * 2 + (index % 3)),
+    eliminacoes: index % 4,
     rodada: e.rodada,
     mesa: e.mesa,
   }));

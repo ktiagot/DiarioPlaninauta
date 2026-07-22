@@ -60,28 +60,29 @@ export class AuthService {
       );
     }
 
-    let user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          email,
-          monthlyContribution: backer.thisMonthPaidValue ?? null,
-        },
-      });
-    } else {
-      user = await this.prisma.user.update({
-        where: { email },
-        data: { monthlyContribution: backer.thisMonthPaidValue ?? null },
-      });
+      throw new UnauthorizedException(
+        'Nenhuma conta encontrada com este e-mail. Faça o cadastro completo antes de entrar.',
+      );
     }
 
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
+    const updated = await this.prisma.user.update({
+      where: { email },
+      data: {
+        monthlyContribution: backer.thisMonthPaidValue ?? null,
+        isApoiadorAtivo: true,
+        lastValidationAt: new Date(),
+      },
     });
 
-    return { accessToken, user };
+    const accessToken = await this.jwtService.signAsync({
+      sub: updated.id,
+      email: updated.email,
+      role: updated.role,
+    });
+
+    return { accessToken, user: updated };
   }
 }

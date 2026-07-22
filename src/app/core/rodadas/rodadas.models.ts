@@ -74,4 +74,5 @@ export interface MesaJogadorApi {
   ranking?: number;
   ranking_campeonato?: number;
   posicao_final?: number;
+  kills?: number;
 }

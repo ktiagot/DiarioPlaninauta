@@ -1,4 +1,4 @@
-<main class="mesas-page mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+<section class="mesas-section flex w-full flex-col gap-6">
 
   @if (loading()) {
     <div class="flex flex-1 items-center justify-center py-24">
@@ -15,7 +15,7 @@
     </div>
   } @else {
     <header class="mesas-header">
-      <h1 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h1>
+      <h2 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h2>
       <p class="mesas-header__subtitle">
         {{ totalMesas() }} {{ totalMesas() === 1 ? 'mesa ativa' : 'mesas ativas' }} · Arraste para definir posições
       </p>
@@ -28,4 +28,4 @@
     </div>
   }
 
-</main>
+</section>
