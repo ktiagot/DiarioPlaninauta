@@ -16,6 +16,41 @@
         <fa-icon [icon]="ctaTabelaIcon()" class="precompeonato-hero__cta-icon" />
         {{ ctaTabelaLabel() }}
       </button>
+
+      <button mat-flat-button color="primary" type="button" (click)="abrirInscricao()">
+        <fa-icon [icon]="faUserPlus" class="precompeonato-hero__cta-icon" />
+        Inscrever-se
+      </button>
+
+      @if (isAdmin()) {
+        <button mat-stroked-button color="primary" type="button" (click)="toggleSorteioView()">
+          <fa-icon [icon]="faDice" class="precompeonato-hero__cta-icon" />
+          {{ ctaSorteioLabel() }}
+        </button>
+      }
+
+      @if (showCheckInButton()) {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="toggleCheckIn()"
+          [disabled]="checkInLoading()"
+        >
+          @if (checkInLoading()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            <fa-icon
+              [icon]="checkInStatus()?.checkIn ? faCheck : faUserCheck"
+              class="precompeonato-hero__cta-icon"
+            />
+            {{ checkInStatus()?.checkIn ? 'Cancelar check-in' : 'Fazer check-in' }}
+            @if (checkInStatus()?.rodadaNumero; as n) {
+              (R{{ n }})
+            }
+          }
+        </button>
+      }
     </div>
 
     <div class="precompeonato-hero__stats">
@@ -47,6 +82,8 @@
 
   @if (viewMode() === 'mesas') {
     <app-mesas />
+  } @else if (viewMode() === 'sorteio') {
+    <app-sorteio-mesas />
   } @else if (viewMode() === 'tabela') {
     @if (loading()) {
       <div class="flex flex-1 items-center justify-center py-24">
@@ -127,6 +164,10 @@
         }
       </div>
     }
+  }
+
+  @if (inscricaoAberta()) {
+    <app-inscricao-form (closed)="fecharInscricao()" (submitted)="onInscricaoEnviada()" />
   }
 
 </main>

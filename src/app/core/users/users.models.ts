@@ -9,6 +9,11 @@ export interface CreateUserRequest {
   cidade: string;
 }
 
+export interface AvailabilityResponse {
+  emailTaken: boolean | null;
+  nickTaken: boolean | null;
+}
+
 export interface User {
   id: string;
   email: string;

@@ -291,3 +291,59 @@ textarea:not(.mat-mdc-input-element) {
   --mat-button-outlined-disabled-label-text-color: #{$sys-color-white};
   --mat-button-outlined-disabled-outline-color: #{$sys-color-button-disabled};
 }
+
+// Painel de mat-select com busca (overlay CDK — estilos globais)
+.inscricao-select-panel {
+  background: rgba(28, 24, 22, 0.96) !important;
+
+  .mat-mdc-option {
+    color: #{$sys-color-white};
+
+    .mdc-list-item__primary-text {
+      color: #{$sys-color-white};
+    }
+
+    &.mdc-list-item--disabled .mdc-list-item__primary-text {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    &:hover:not(.mdc-list-item--disabled),
+    &.mat-mdc-option-active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background: rgba(245, 130, 32, 0.2);
+    }
+  }
+
+  .select-search {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.5rem 0.75rem;
+    background: rgba(28, 24, 22, 0.98);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 0.5rem;
+      background: rgba(217, 217, 217, 0.1);
+      color: #{$sys-color-white};
+      font: inherit;
+      font-size: 0.875rem;
+      outline: none;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      &:focus {
+        border-color: #{$sys-color-primary};
+      }
+    }
+  }
+}

@@ -19,7 +19,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
-import { EliminacaoRegistro, Mesa, MesaJogador } from '../../../core/rodadas/rodadas.models';
+import { EliminacaoRegistro, Mesa, MesaJogador, Rodada } from '../../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../../core/rodadas/rodadas.service';
 
 @Component({
@@ -48,6 +48,7 @@ export class MesaCardComponent {
 
   readonly mesa = input.required<Mesa>();
   readonly mesaAtualizada = output<Mesa>();
+  readonly rodadaAtualizada = output<Rodada>();
 
   protected readonly jogadoresOrdenados = signal<MesaJogador[]>([]);
   protected readonly linkPartidaInput = signal('');
@@ -56,10 +57,10 @@ export class MesaCardComponent {
   protected readonly confirmando = signal(false);
   protected readonly salvandoLink = signal(false);
   protected readonly eliminacoes = signal<EliminacaoRegistro[]>([]);
-  protected readonly novoEliminadorId = signal<number | null>(null);
-  protected readonly novoEliminadoId = signal<number | null>(null);
+  protected readonly novoEliminadorId = signal<string | null>(null);
+  protected readonly novoEliminadoId = signal<string | null>(null);
   protected readonly resultadoEmpate = signal(false);
-  protected readonly jogadoresEmpatados = signal<Record<number, boolean>>({});
+  protected readonly jogadoresEmpatados = signal<Record<string, boolean>>({});
 
   constructor() {
     effect(() => {
@@ -73,8 +74,12 @@ export class MesaCardComponent {
       this.eliminacoes.set(mesa.eliminacoes ? [...mesa.eliminacoes] : []);
       this.novoEliminadorId.set(null);
       this.novoEliminadoId.set(null);
-      this.resultadoEmpate.set(false);
-      this.jogadoresEmpatados.set({});
+      this.resultadoEmpate.set(mesa.empate === true);
+      const empatadosMap: Record<string, boolean> = {};
+      for (const id of mesa.empatadosInscricaoIds ?? []) {
+        empatadosMap[id] = true;
+      }
+      this.jogadoresEmpatados.set(empatadosMap);
     });
   }
 
@@ -93,15 +98,15 @@ export class MesaCardComponent {
     }
   }
 
-  protected jogadorEmpatou(inscricaoId: number): boolean {
+  protected jogadorEmpatou(inscricaoId: string): boolean {
     return this.jogadoresEmpatados()[inscricaoId] ?? false;
   }
 
-  protected setJogadorEmpatou(inscricaoId: number, value: boolean): void {
+  protected setJogadorEmpatou(inscricaoId: string, value: boolean): void {
     this.jogadoresEmpatados.update((mapa) => ({ ...mapa, [inscricaoId]: value }));
   }
 
-  protected isPrimeiroLugar(inscricaoId: number, index: number): boolean {
+  protected isPrimeiroLugar(inscricaoId: string, index: number): boolean {
     if (this.resultadoEmpate()) {
       return this.jogadorEmpatou(inscricaoId);
     }
@@ -119,11 +124,11 @@ export class MesaCardComponent {
     return jogador.nickname ? `${jogador.nome} (${jogador.nickname})` : jogador.nome;
   }
 
-  protected jogadorPorId(inscricaoId: number): MesaJogador | undefined {
+  protected jogadorPorId(inscricaoId: string): MesaJogador | undefined {
     return this.jogadoresOrdenados().find((j) => j.inscricaoId === inscricaoId);
   }
 
-  protected killCount(inscricaoId: number): number {
+  protected killCount(inscricaoId: string): number {
     return this.eliminacoes().filter((e) => e.eliminadorInscricaoId === inscricaoId).length;
   }
 
@@ -131,7 +136,7 @@ export class MesaCardComponent {
     return count === 1 ? 'eliminação' : 'eliminações';
   }
 
-  protected eliminadosIds(): number[] {
+  protected eliminadosIds(): string[] {
     return this.eliminacoes().map((e) => e.eliminadoInscricaoId);
   }
 
@@ -179,7 +184,7 @@ export class MesaCardComponent {
     this.eliminacoes.update((lista) => lista.filter((_, i) => i !== index));
   }
 
-  protected onEliminadorChange(inscricaoId: number | null): void {
+  protected onEliminadorChange(inscricaoId: string | null): void {
     this.novoEliminadorId.set(inscricaoId);
     if (inscricaoId != null && this.novoEliminadoId() === inscricaoId) {
       this.novoEliminadoId.set(null);
@@ -204,25 +209,34 @@ export class MesaCardComponent {
     this.rodadasService
       .salvarLinkMesa(mesa.id, { linkPartida: link })
       .pipe(finalize(() => this.salvandoLink.set(false)))
-      .subscribe((result) => {
-        this.linkPartidaSalvo.set(link);
-        this.linkPartidaInput.set(link);
-        this.mesaAtualizada.emit({ ...mesa, linkPartida: link });
-
-        const message =
-          result === 'saved'
-            ? 'Link da partida salvo com sucesso!'
-            : 'Link salvo localmente — integração com API pendente.';
-
-        this.snackBar.open(message, 'Fechar', { duration: 4000 });
+      .subscribe({
+        next: () => {
+          this.linkPartidaSalvo.set(link);
+          this.linkPartidaInput.set(link);
+          this.mesaAtualizada.emit({ ...mesa, linkPartida: link });
+          this.snackBar.open('Link da partida salvo com sucesso!', 'Fechar', {
+            duration: 4000,
+          });
+        },
+        error: (err: Error) => {
+          this.snackBar.open(err.message || 'Erro ao salvar o link.', 'Fechar', {
+            duration: 5000,
+          });
+        },
       });
   }
 
   protected podeConfirmar(): boolean {
+    const total = this.jogadoresOrdenados().length;
+    const killsNeeded = Math.max(total - 1, 0);
+    const empateOk =
+      !this.resultadoEmpate() ||
+      Object.values(this.jogadoresEmpatados()).filter(Boolean).length >= 2;
     return (
       !this.finalizada() &&
-      this.jogadoresOrdenados().length === 4 &&
-      this.eliminacoes().length === 3 &&
+      total >= 3 &&
+      this.eliminacoes().length === killsNeeded &&
+      empateOk &&
       !this.confirmando()
     );
   }
@@ -232,44 +246,42 @@ export class MesaCardComponent {
 
     const mesa = this.mesa();
     const link = this.linkPartidaSalvo() || undefined;
-    const eliminacoes = this.eliminacoes();
+    const empate = this.resultadoEmpate();
+    const empatadosInscricaoIds = empate
+      ? Object.entries(this.jogadoresEmpatados())
+          .filter(([, marcado]) => marcado)
+          .map(([id]) => id)
+      : [];
+
     const payload = {
       jogadores: this.jogadoresOrdenados().map((j, index) => ({
         inscricaoId: j.inscricaoId,
         posicao: index + 1,
         kills: this.killCount(j.inscricaoId),
       })),
-      eliminacoes,
+      empate,
+      empatadosInscricaoIds,
       linkPartida: link,
     };
 
     this.confirmando.set(true);
 
-    const confirm$ = this.rodadasService.confirmarPosicoes(mesa.id, payload);
-
-    confirm$
+    this.rodadasService
+      .confirmarPosicoes(mesa.id, payload)
       .pipe(finalize(() => this.confirmando.set(false)))
-      .subscribe((result) => {
-        this.finalizada.set(true);
-        this.mesaAtualizada.emit({
-          ...mesa,
-          finalizada: true,
-          linkPartida: link || mesa.linkPartida,
-          vencedorId: payload.jogadores[0]?.inscricaoId,
-          segundoId: payload.jogadores[1]?.inscricaoId,
-          eliminacoes,
-          jogadores: this.jogadoresOrdenados().map((j) => ({
-            ...j,
-            kills: this.killCount(j.inscricaoId),
-          })),
-        });
-
-        const message =
-          result === 'saved'
-            ? 'Posições confirmadas com sucesso!'
-            : 'Posições salvas localmente — integração com API pendente.';
-
-        this.snackBar.open(message, 'Fechar', { duration: 4000 });
+      .subscribe({
+        next: (rodada) => {
+          this.finalizada.set(true);
+          this.rodadaAtualizada.emit(rodada);
+          this.snackBar.open('Posições confirmadas com sucesso!', 'Fechar', {
+            duration: 4000,
+          });
+        },
+        error: (err: Error) => {
+          this.snackBar.open(err.message || 'Erro ao confirmar posições.', 'Fechar', {
+            duration: 5000,
+          });
+        },
       });
   }
 }

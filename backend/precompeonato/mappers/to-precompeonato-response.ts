@@ -31,6 +31,7 @@ export function toCampeonatoAtualResponse(
 export function toInscricaoResumo(inscricao: Inscricao): InscricaoResumoDto {
   return {
     id: inscricao.id,
+    discordNick: inscricao.discordNick,
     deckUrl: inscricao.deckUrl,
     deckNome: inscricao.deckNome,
     comandante: inscricao.comandante,
@@ -44,6 +45,7 @@ export function toInscricaoResponse(
     id: inscricao.id,
     campeonatoId: inscricao.campeonatoId,
     email: inscricao.email,
+    discordNick: inscricao.discordNick,
     deckUrl: inscricao.deckUrl,
     deckNome: inscricao.deckNome,
     comandante: inscricao.comandante,
@@ -80,6 +82,7 @@ export function toJogadorResponse(
     comandante: inscricao.comandante,
     nomeJogador: inscricao.user.nome,
     nick: inscricao.user.nick,
+    discordNick: inscricao.discordNick,
     posicao: inscricao.posicao,
     rodadaAtual,
     mesaAtual,

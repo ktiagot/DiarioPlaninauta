@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -16,11 +17,13 @@ import {
   ApiNotFoundResponse,
   ApiConflictResponse,
   ApiServiceUnavailableResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { AvailabilityResponseDto } from './dto/availability-response.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -40,6 +43,25 @@ export class UsersController {
   })
   create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(dto);
+  }
+
+  @Get('availability')
+  @ApiOperation({
+    summary: 'Verificar disponibilidade de e-mail e/ou nick',
+    description:
+      'Consulta se e-mail e/ou nick já estão cadastrados. Informe ao menos um dos query params.',
+  })
+  @ApiQuery({ name: 'email', required: false, example: 'usuario@email.com' })
+  @ApiQuery({ name: 'nick', required: false, example: 'joaosilva' })
+  @ApiOkResponse({
+    description: 'Status de disponibilidade.',
+    type: AvailabilityResponseDto,
+  })
+  checkAvailability(
+    @Query('email') email?: string,
+    @Query('nick') nick?: string,
+  ): Promise<AvailabilityResponseDto> {
+    return this.usersService.checkAvailability(email, nick);
   }
 
   @Get(':id')

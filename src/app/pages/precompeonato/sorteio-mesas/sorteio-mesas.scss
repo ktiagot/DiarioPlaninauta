@@ -1,0 +1,172 @@
+.sorteio-mesas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sorteio-mesas__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sorteio-mesas__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--sys-color-white);
+}
+
+.sorteio-mesas__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sorteio-mesas__cta-icon {
+  margin-right: 0.5rem;
+}
+
+.sorteio-mesas__loading,
+.sorteio-mesas__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sorteio-mesas__hint {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(245, 130, 32, 0.35);
+  background: rgba(245, 130, 32, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9375rem;
+}
+
+.sorteio-mesas__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.sorteio-mesa-card {
+  padding: 1rem 1.125rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sorteio-mesa-card__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--sys-color-primary);
+}
+
+.sorteio-mesa-card__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.sorteio-mesa-card__nome {
+  display: block;
+  font-weight: 600;
+  color: var(--sys-color-white);
+  font-size: 0.9375rem;
+}
+
+.sorteio-mesa-card__deck {
+  display: block;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sorteio-mesas__search {
+  width: 100%;
+
+  .sorteio-mesas__search-icon {
+    margin-right: 0.5rem;
+    color: var(--sys-color-primary);
+  }
+}
+
+.sorteio-tabela__wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(217, 217, 217, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sorteio-tabela__table {
+  width: 100%;
+  min-width: 44rem;
+  background: transparent;
+
+  --mat-table-background-color: transparent;
+  --mat-table-header-headline-color: #f58220;
+  --mat-table-row-item-label-text-color: rgba(255, 255, 255, 0.9);
+  --mat-table-row-item-outline-color: rgba(255, 255, 255, 0.1);
+}
+
+.sorteio-tabela__table .mat-mdc-header-cell {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sorteio-tabela__posicao {
+  font-weight: 700;
+  color: var(--sys-color-primary);
+}
+
+.sorteio-tabela__nome {
+  font-weight: 600;
+}
+
+.sorteio-tabela__pontos {
+  font-weight: 700;
+}
+
+.sorteio-tabela__checkin {
+  display: inline-flex;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &--yes {
+    background: rgba(46, 125, 50, 0.35);
+    color: #a5d6a7;
+  }
+
+  &--no {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.sorteio-tabela__row--primeiro {
+  background: rgba(245, 130, 32, 0.12);
+}
+
+.sorteio-tabela__row--secundario {
+  background: rgba(255, 255, 255, 0.04);
+}

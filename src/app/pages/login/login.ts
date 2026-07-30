@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { SessionService } from '../../core/auth/session.service';
 import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
 
 @Component({
@@ -32,6 +33,7 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
+    private session: SessionService,
     private snackBar: MatSnackBar,
     private router: Router,
   ) {}
@@ -51,10 +53,13 @@ export class LoginComponent {
 
     this.authService.login(this.email, this.password).subscribe({
       next: (res) => {
-        localStorage.setItem('access_token', res.accessToken);
-        localStorage.setItem('user_id', res.user.id);
-        localStorage.setItem('user_email', res.user.email);
-        localStorage.setItem('user_role', res.user.role);
+        this.session.setSession({
+          accessToken: res.accessToken,
+          id: res.user.id,
+          email: res.user.email,
+          role: res.user.role,
+          isAdmin: !!res.user.isAdmin,
+        });
         window.location.href = '/';
       },
       error: (err: HttpErrorResponse) => {

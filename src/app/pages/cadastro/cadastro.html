@@ -14,7 +14,7 @@
         <div class="field-group">
           <label for="email" class="text-white">E-mail</label>
           <div class="email-row">
-            <mat-form-field appearance="outline" class="email-field">
+            <mat-form-field appearance="outline" class="email-field" subscriptSizing="dynamic">
               <input
                 matInput
                 id="email"
@@ -27,6 +27,7 @@
                 <mat-error>
                   @if (form.controls.email.hasError('required')) { Informe seu e-mail }
                   @else if (form.controls.email.hasError('email')) { Digite um e-mail válido }
+                  @else if (form.controls.email.hasError('emailTaken')) { E-mail já cadastrado }
                 </mat-error>
               }
             </mat-form-field>
@@ -92,12 +93,14 @@
                 placeholder="Repita a senha"
                 autocomplete="new-password"
               />
-              @if (form.controls.confirmarSenha.touched) {
-                @if (form.controls.confirmarSenha.hasError('required')) {
-                  <mat-error>Confirme sua senha</mat-error>
-                } @else if (form.hasError('senhasDivergentes')) {
-                  <mat-error>As senhas não coincidem</mat-error>
-                }
+              @if (form.controls.confirmarSenha.invalid && form.controls.confirmarSenha.touched) {
+                <mat-error>
+                  @if (form.controls.confirmarSenha.hasError('required')) {
+                    Confirme sua senha
+                  } @else if (form.controls.confirmarSenha.hasError('senhasDivergentes')) {
+                    As senhas não coincidem
+                  }
+                </mat-error>
               }
             </mat-form-field>
           </div>
@@ -130,7 +133,10 @@
           <mat-form-field appearance="outline" class="w-full">
             <input matInput id="nick" formControlName="nick" autocomplete="nickname" />
             @if (form.controls.nick.invalid && form.controls.nick.touched) {
-              <mat-error>Informe seu nick</mat-error>
+              <mat-error>
+                @if (form.controls.nick.hasError('required')) { Informe seu nick }
+                @else if (form.controls.nick.hasError('nickTaken')) { Nick já em uso }
+              </mat-error>
             }
           </mat-form-field>
         </div>

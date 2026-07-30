@@ -258,24 +258,25 @@ Inscreve o usuário no campeonato atual (somente com status `INSCRICOES_ABERTAS`
 
 ```json
 {
+  "discordNick": "usuario#1234",
   "email": "teste@email.com",
-  "deckUrl": "https://moxfield.com/decks/abc123",
+  "deckNome": "Precon Atraxa",
   "comandante": "Atraxa, Praetors' Voice",
   "aceiteTermos": true,
-  "deckNome": "Precon Atraxa"
+  "aceitePrivacidade": true,
+  "entrouDiscord": true
 }
 ```
 
-- `deckNome` opcional; se omitido, usa o valor de `comandante`
 - Usuário inexistente → `404`
-- Termos não aceitos → `400`
+- Qualquer dos três aceites em `false` → `400`
 - Inscrições fechadas ou já inscrito → `409`
 - Append do nome do campeonato em `User.preCampeonatos` se ainda não estiver na lista
 
 ```bash
 curl -X POST http://localhost:3000/api/precompeonato/inscricoes \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"teste@email.com\",\"deckUrl\":\"https://moxfield.com/decks/abc123\",\"comandante\":\"Atraxa, Praetors' Voice\",\"aceiteTermos\":true}"
+  -d "{\"discordNick\":\"usuario#1234\",\"email\":\"teste@email.com\",\"deckNome\":\"Precon Atraxa\",\"comandante\":\"Atraxa, Praetors' Voice\",\"aceiteTermos\":true,\"aceitePrivacidade\":true,\"entrouDiscord\":true}"
 ```
 
 ### `GET /api/precompeonato/atual/jogadores`
@@ -324,6 +325,7 @@ curl http://localhost:3000/api/precompeonato/atual/jogadores
 | `JWT_SECRET` | Segredo para tokens JWT |
 | `JWT_EXPIRES` | Expiração do access token (ex.: `15m`) |
 | `FRONTEND_URL` | Origem CORS do front (ex.: `http://localhost:4200`) |
+| `APOIASE_MOCK` | `true` em local: simula apoiador ativo sem chamar a API |
 | `APOIASE_URL` | Base URL da API APOIA.se |
 | `APOIASE_API_KEY` | Chave da API APOIA.se |
 | `APOIASE_SECRET` | Bearer token APOIA.se |

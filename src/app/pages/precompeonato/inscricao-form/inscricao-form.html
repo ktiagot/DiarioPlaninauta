@@ -1,0 +1,186 @@
+<div
+  class="inscricao-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="inscricao-title"
+  (click)="onBackdropClick($event)"
+>
+  <div class="inscricao-modal" (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      class="inscricao-modal__close"
+      aria-label="Fechar formulário"
+      (click)="close()"
+      [disabled]="submitting()"
+    >
+      <fa-icon [icon]="faXmark" />
+    </button>
+
+    <h2 id="inscricao-title" class="inscricao-modal__title">
+      Inscrição para o Precompeonato
+    </h2>
+
+    <form class="inscricao-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="inscricao-form__grid">
+        <div class="field-group">
+          <label for="discordNick">Nick do Discord</label>
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <input
+              matInput
+              id="discordNick"
+              formControlName="discordNick"
+              placeholder="@usuario ou usuario#1234"
+              autocomplete="nickname"
+            />
+            @if (form.controls.discordNick.invalid && form.controls.discordNick.touched) {
+              <mat-error>Informe seu nick do Discord</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <label for="email">Email Usado na Liga Magic</label>
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <input
+              matInput
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="seu@email.com"
+              autocomplete="email"
+            />
+            @if (form.controls.email.invalid && form.controls.email.touched) {
+              <mat-error>
+                @if (form.controls.email.hasError('required')) {
+                  Informe o e-mail
+                } @else {
+                  Digite um e-mail válido
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <label for="deckNome">Nome oficial do precon</label>
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <mat-select
+              id="deckNome"
+              formControlName="deckNome"
+              placeholder="Selecione"
+              panelClass="inscricao-select-panel"
+              (openedChange)="onPreconOpenedChange($event)"
+            >
+              <div class="select-search" (click)="$event.stopPropagation()">
+                <input
+                  type="search"
+                  placeholder="Buscar..."
+                  [value]="preconSearch()"
+                  (input)="onPreconSearchInput($event)"
+                  (keydown)="$event.stopPropagation()"
+                  aria-label="Buscar precon"
+                />
+              </div>
+              @for (precon of preconsFiltrados(); track precon.nome) {
+                <mat-option [value]="precon.nome">{{ precon.nome }}</mat-option>
+              } @empty {
+                <mat-option disabled>Nenhum resultado</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.deckNome.invalid && form.controls.deckNome.touched) {
+              <mat-error>Selecione o precon</mat-error>
+            }
+          </mat-form-field>
+          <p class="field-hint">
+            Não sabe o nome?
+            <a [href]="preconHelpUrl" target="_blank" rel="noopener noreferrer">Clique aqui</a>
+          </p>
+        </div>
+
+        <div class="field-group">
+          <label for="comandante">Comandante</label>
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <mat-select
+              id="comandante"
+              formControlName="comandante"
+              placeholder="Selecione"
+              panelClass="inscricao-select-panel"
+              (openedChange)="onComandanteOpenedChange($event)"
+            >
+              <div class="select-search" (click)="$event.stopPropagation()">
+                <input
+                  type="search"
+                  placeholder="Buscar..."
+                  [value]="comandanteSearch()"
+                  (input)="onComandanteSearchInput($event)"
+                  (keydown)="$event.stopPropagation()"
+                  aria-label="Buscar comandante"
+                />
+              </div>
+              @for (cmd of comandantesFiltrados(); track cmd) {
+                <mat-option [value]="cmd">{{ cmd }}</mat-option>
+              } @empty {
+                <mat-option disabled>Nenhum resultado</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.comandante.invalid && form.controls.comandante.touched) {
+              <mat-error>Selecione o comandante</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="inscricao-form__checks" role="group" aria-label="Aceites obrigatórios">
+        <mat-checkbox formControlName="aceiteTermos" color="primary">
+          Li, concordo e seguirei as
+          <a [href]="regrasUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
+            Regras do Precompeonato
+          </a>
+        </mat-checkbox>
+        @if (form.controls.aceiteTermos.invalid && form.controls.aceiteTermos.touched) {
+          <span class="check-error">Aceite as regras para continuar</span>
+        }
+
+        <mat-checkbox formControlName="aceitePrivacidade" color="primary">
+          Li e concordo com a nossa
+          <a
+            [href]="privacidadeUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            (click)="$event.stopPropagation()"
+          >
+            Política de Privacidade
+          </a>
+        </mat-checkbox>
+        @if (form.controls.aceitePrivacidade.invalid && form.controls.aceitePrivacidade.touched) {
+          <span class="check-error">Aceite a política de privacidade</span>
+        }
+
+        <mat-checkbox formControlName="entrouDiscord" color="primary">
+          Já entrei no
+          <a [href]="discordUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
+            Discord do Diário Planinauta
+          </a>
+        </mat-checkbox>
+        @if (form.controls.entrouDiscord.invalid && form.controls.entrouDiscord.touched) {
+          <span class="check-error">Confirme que entrou no Discord</span>
+        }
+      </div>
+
+      <div class="inscricao-form__actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="!canSubmit()"
+        >
+          @if (submitting()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Inscrever-se
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

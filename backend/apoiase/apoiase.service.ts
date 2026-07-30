@@ -15,6 +15,17 @@ export class ApoiaSeService {
   ) {}
 
   async verify(email: string): Promise<ApoiaSeResponse> {
+    if (this.isMockEnabled()) {
+      this.logger.warn(
+        `APOIASE_MOCK ativo — tratando ${email} como apoiador pago (R$15) sem chamar a API.`,
+      );
+      return {
+        isBacker: true,
+        isPaidThisMonth: true,
+        thisMonthPaidValue: 15,
+      };
+    }
+
     const url =
       `${this.config.get('APOIASE_URL')}` +
       `/backers/charges/${encodeURIComponent(email)}`;
@@ -59,5 +70,10 @@ export class ApoiaSeService {
         'Não foi possível verificar o status no APOIA.se. Tente novamente.',
       );
     }
+  }
+
+  private isMockEnabled(): boolean {
+    const value = this.config.get<string>('APOIASE_MOCK');
+    return value === 'true' || value === '1';
   }
 }

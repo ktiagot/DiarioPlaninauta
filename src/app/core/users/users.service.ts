@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { API_URL } from '../config/api.config';
-import { CreateUserRequest, User } from './users.models';
+import { AvailabilityResponse, CreateUserRequest, User } from './users.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -14,5 +14,18 @@ export class UsersService {
 
   findById(id: string) {
     return this.http.get<User>(`${API_URL}/users/${id}`);
+  }
+
+  checkAvailability(params: { email?: string; nick?: string }) {
+    let httpParams = new HttpParams();
+    if (params.email) {
+      httpParams = httpParams.set('email', params.email);
+    }
+    if (params.nick) {
+      httpParams = httpParams.set('nick', params.nick);
+    }
+    return this.http.get<AvailabilityResponse>(`${API_URL}/users/availability`, {
+      params: httpParams,
+    });
   }
 }

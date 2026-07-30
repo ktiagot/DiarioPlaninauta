@@ -32,7 +32,7 @@ mat-card-footer {
 .email-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
 }
 
@@ -46,7 +46,9 @@ mat-card-footer {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  min-height: var(--sys-input-height, 36px);
+  // Alinha a tag com o centro vertical do outline do input (não com o bloco do form-field)
+  height: var(--mat-form-field-container-height, 56px);
+  flex-shrink: 0;
 }
 
 .status-label {
@@ -72,8 +74,8 @@ mat-card-footer {
   white-space: nowrap;
 
   &.backer {
-    background: color-mix(in srgb, #2e7d32 15%, transparent);
-    color: #2e7d32;
+    background: #2e7d32;
+    color: #fff;
   }
 
   &.not-backer {

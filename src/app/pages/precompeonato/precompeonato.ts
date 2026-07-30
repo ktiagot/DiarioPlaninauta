@@ -1,28 +1,38 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
+  faCheck,
+  faDice,
   faLayerGroup,
   faMagnifyingGlass,
   faTableCells,
   faTableList,
+  faUserCheck,
   faUserGroup,
   faUserPlus,
   faWandSparkles,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { SessionService } from '../../core/auth/session.service';
 import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
+import { CheckInStatus } from '../../core/sorteio/sorteio.models';
+import { SorteioService } from '../../core/sorteio/sorteio.service';
 import { MesasComponent } from '../mesas/mesas';
+import { InscricaoFormComponent } from './inscricao-form/inscricao-form';
 import { JogadorCardComponent } from './jogador-card/jogador-card';
 import { PrecompeonatoTabelaComponent } from './precompeonato-tabela/precompeonato-tabela';
+import { SorteioMesasComponent } from './sorteio-mesas/sorteio-mesas';
 
-type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela';
+type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela' | 'sorteio';
 
 @Component({
   selector: 'app-precompeonato',
@@ -35,14 +45,19 @@ type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela';
     MatInputModule,
     MatProgressSpinnerModule,
     JogadorCardComponent,
+    InscricaoFormComponent,
     MesasComponent,
     PrecompeonatoTabelaComponent,
+    SorteioMesasComponent,
   ],
   templateUrl: './precompeonato.html',
   styleUrl: './precompeonato.scss',
 })
 export class PrecompeonatoComponent implements OnInit {
   private readonly inscricoesService = inject(InscricoesService);
+  private readonly sorteioService = inject(SorteioService);
+  private readonly session = inject(SessionService);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly faTableCells = faTableCells;
   protected readonly faTableList = faTableList;
@@ -51,6 +66,9 @@ export class PrecompeonatoComponent implements OnInit {
   protected readonly faLayerGroup = faLayerGroup;
   protected readonly faWandSparkles = faWandSparkles;
   protected readonly faMagnifyingGlass = faMagnifyingGlass;
+  protected readonly faDice = faDice;
+  protected readonly faUserCheck = faUserCheck;
+  protected readonly faCheck = faCheck;
 
   protected readonly viewMode = signal<PrecompeonatoViewMode>('jogadores');
   protected readonly loading = signal(true);
@@ -58,6 +76,14 @@ export class PrecompeonatoComponent implements OnInit {
   protected readonly jogadores = signal<JogadorInscrito[]>([]);
   protected readonly searchQuery = signal('');
   protected readonly selectedDeck = signal<string | null>(null);
+  protected readonly inscricaoAberta = signal(false);
+  protected readonly checkInStatus = signal<CheckInStatus | null>(null);
+  protected readonly checkInLoading = signal(false);
+
+  protected readonly isAdmin = computed(() => {
+    this.session.authRevision();
+    return this.session.isAdmin();
+  });
 
   protected readonly ctaMesasLabel = computed(() =>
     this.viewMode() === 'mesas' ? 'Ver Planeswalkers' : 'Ver Mesas da Rodada Atual',
@@ -73,6 +99,10 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected readonly ctaTabelaIcon = computed(() =>
     this.viewMode() === 'tabela' ? this.faUserGroup : this.faTableList,
+  );
+
+  protected readonly ctaSorteioLabel = computed(() =>
+    this.viewMode() === 'sorteio' ? 'Ver Planeswalkers' : 'Sorteio de mesas',
   );
 
   protected readonly deckFilterOptions = computed<DeckFilterOption[]>(() => {
@@ -123,8 +153,14 @@ export class PrecompeonatoComponent implements OnInit {
     return commanders.size;
   });
 
+  protected readonly showCheckInButton = computed(() => {
+    const status = this.checkInStatus();
+    return !!status?.jaInscrito && status.podeCheckIn;
+  });
+
   ngOnInit(): void {
     this.carregarJogadores();
+    this.carregarCheckIn();
   }
 
   protected toggleMesasView(): void {
@@ -133,6 +169,11 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected toggleTabelaView(): void {
     this.viewMode.update((mode) => (mode === 'tabela' ? 'jogadores' : 'tabela'));
+  }
+
+  protected toggleSorteioView(): void {
+    if (!this.isAdmin()) return;
+    this.viewMode.update((mode) => (mode === 'sorteio' ? 'jogadores' : 'sorteio'));
   }
 
   protected carregarJogadores(): void {
@@ -151,6 +192,44 @@ export class PrecompeonatoComponent implements OnInit {
     });
   }
 
+  protected carregarCheckIn(): void {
+    if (!this.session.getToken()) return;
+
+    this.sorteioService.getCheckInStatus().subscribe({
+      next: (status) => this.checkInStatus.set(status),
+      error: () => this.checkInStatus.set(null),
+    });
+  }
+
+  protected toggleCheckIn(): void {
+    const status = this.checkInStatus();
+    if (!status || !status.podeCheckIn || this.checkInLoading()) return;
+
+    this.checkInLoading.set(true);
+    const request = status.checkIn
+      ? this.sorteioService.cancelCheckIn()
+      : this.sorteioService.checkIn();
+
+    request.subscribe({
+      next: (next) => {
+        this.checkInStatus.set(next);
+        this.checkInLoading.set(false);
+        this.snackBar.open(
+          next.checkIn ? 'Check-in realizado!' : 'Check-in cancelado.',
+          'Fechar',
+          { duration: 3000 },
+        );
+      },
+      error: (err: HttpErrorResponse) => {
+        this.checkInLoading.set(false);
+        const message =
+          (typeof err.error?.message === 'string' && err.error.message) ||
+          'Não foi possível atualizar o check-in.';
+        this.snackBar.open(message, 'Fechar', { duration: 5000 });
+      },
+    });
+  }
+
   protected onSearchChange(value: string): void {
     this.searchQuery.set(value);
   }
@@ -161,5 +240,19 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected isDeckAtivo(deck: string | null): boolean {
     return this.selectedDeck() === deck;
+  }
+
+  protected abrirInscricao(): void {
+    this.inscricaoAberta.set(true);
+  }
+
+  protected fecharInscricao(): void {
+    this.inscricaoAberta.set(false);
+  }
+
+  protected onInscricaoEnviada(): void {
+    this.inscricaoAberta.set(false);
+    this.carregarJogadores();
+    this.carregarCheckIn();
   }
 }

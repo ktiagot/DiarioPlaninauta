@@ -1,70 +1,86 @@
-import {
-  Mesa,
-  MesaApi,
-  MesaJogador,
-  MesaJogadorApi,
-  Rodada,
-  RodadaApi,
-} from './rodadas.models';
-
-function mapJogador(j: MesaJogadorApi): MesaJogador {
-  return {
-    inscricaoId: j.inscricao_id ?? j.id ?? 0,
-    nome: j.nome,
-    nickname: j.nickname,
-    comandante: j.comandante ?? j.comandante_principal,
-    deckNome: j.deck_nome,
-    deckUrl: j.deck_url,
-    rankingCampeonato: j.ranking_campeonato ?? j.ranking,
-    posicaoFinal: j.posicao_final,
-    kills: j.kills,
-  };
-}
-
-function sortJogadoresPorResultado(mesa: MesaApi, jogadores: MesaJogador[]): MesaJogador[] {
-  if (!mesa.finalizada || !mesa.vencedor_id) {
-    return jogadores;
-  }
-
-  const byId = new Map(jogadores.map((j) => [j.inscricaoId, j]));
-  const ordenados: MesaJogador[] = [];
-
-  const vencedor = byId.get(mesa.vencedor_id);
-  if (vencedor) ordenados.push(vencedor);
-
-  if (mesa.segundo_id) {
-    const segundo = byId.get(mesa.segundo_id);
-    if (segundo) ordenados.push(segundo);
-  }
-
-  for (const j of jogadores) {
-    if (!ordenados.includes(j)) {
-      ordenados.push(j);
-    }
-  }
-
-  return ordenados;
-}
-
-function mapMesa(m: MesaApi): Mesa {
-  const jogadores = (m.jogadores ?? []).map(mapJogador);
-
-  return {
-    id: m.id,
-    numeroMesa: m.numero_mesa,
-    finalizada: m.finalizada,
-    linkPartida: m.link_partida ?? m.link_jogo,
-    vencedorId: m.vencedor_id,
-    segundoId: m.segundo_id,
-    jogadores: sortJogadoresPorResultado(m, jogadores),
-  };
-}
-
-export function mapRodada(r: RodadaApi): Rodada {
-  return {
-    id: r.id,
-    numero: r.numero,
-    dataRodada: r.data_rodada,
-    mesas: (r.mesas ?? []).map(mapMesa),
-  };
-}
+import {
+  Mesa,
+  MesaApi,
+  MesaAtualApi,
+  MesaJogador,
+  MesaJogadorApi,
+  MesaJogadorAtualApi,
+  Rodada,
+  RodadaApi,
+  RodadaAtualApi,
+} from './rodadas.models';
+
+function mapJogadorAtual(j: MesaJogadorAtualApi): MesaJogador {
+  return {
+    inscricaoId: j.inscricaoId,
+    nome: j.nome,
+    nickname: j.nickname,
+    comandante: j.comandante,
+    deckNome: j.deckNome,
+    deckUrl: j.deckUrl ?? undefined,
+    rankingCampeonato: j.rankingCampeonato ?? undefined,
+    posicaoFinal: j.posicaoFinal ?? undefined,
+    kills: j.kills,
+  };
+}
+
+function mapMesaAtual(m: MesaAtualApi): Mesa {
+  return {
+    id: m.id,
+    numeroMesa: m.numeroMesa,
+    finalizada: m.finalizada,
+    linkPartida: m.linkPartida ?? undefined,
+    empate: m.empate,
+    empatadosInscricaoIds: m.empatadosInscricaoIds ?? [],
+    jogadores: (m.jogadores ?? []).map(mapJogadorAtual),
+  };
+}
+
+export function mapRodadaAtual(r: RodadaAtualApi): Rodada {
+  return {
+    id: r.id,
+    numero: r.numero,
+    dataRodada: r.dataRodada,
+    ativa: r.ativa,
+    finalizada: r.finalizada,
+    podeFinalizar: r.podeFinalizar,
+    mesas: (r.mesas ?? []).map(mapMesaAtual),
+  };
+}
+
+/** Legacy snake_case API — usado pelo fallback de inscricoes. */
+function mapJogadorLegacy(j: MesaJogadorApi): MesaJogador {
+  return {
+    inscricaoId: String(j.inscricao_id ?? j.id ?? 0),
+    nome: j.nome,
+    nickname: j.nickname,
+    comandante: j.comandante ?? j.comandante_principal,
+    deckNome: j.deck_nome,
+    deckUrl: j.deck_url,
+    rankingCampeonato: j.ranking_campeonato ?? j.ranking,
+    posicaoFinal: j.posicao_final,
+    kills: j.kills,
+  };
+}
+
+function mapMesaLegacy(m: MesaApi): Mesa {
+  return {
+    id: String(m.id),
+    numeroMesa: m.numero_mesa,
+    finalizada: m.finalizada,
+    linkPartida: m.link_partida ?? m.link_jogo,
+    vencedorId: m.vencedor_id != null ? String(m.vencedor_id) : undefined,
+    segundoId: m.segundo_id != null ? String(m.segundo_id) : undefined,
+    jogadores: (m.jogadores ?? []).map(mapJogadorLegacy),
+  };
+}
+
+export function mapRodada(r: RodadaApi): Rodada {
+  return {
+    id: String(r.id),
+    numero: r.numero,
+    dataRodada: r.data_rodada,
+    mesas: (r.mesas ?? []).map(mapMesaLegacy),
+  };
+}
+

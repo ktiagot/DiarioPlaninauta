@@ -1,0 +1,183 @@
+.inscricao-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.inscricao-modal {
+  position: relative;
+  width: min(100%, 42rem);
+  max-height: min(92vh, 52rem);
+  overflow: auto;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(24, 20, 18, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--sys-color-white);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+
+  @media (min-width: 640px) {
+    padding: 2rem 2rem 1.75rem;
+  }
+}
+
+.inscricao-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--sys-color-white);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.inscricao-modal__title {
+  margin: 0 2rem 1.5rem 0;
+  font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #7ec8ff;
+  text-shadow:
+    0 0 12px rgba(126, 200, 255, 0.55),
+    0 0 28px rgba(126, 200, 255, 0.35);
+}
+
+.inscricao-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  --mat-select-placeholder-text-color: var(--sys-color-white);
+  --mat-select-enabled-trigger-text-color: var(--sys-color-white);
+
+  .mat-mdc-select-placeholder {
+    color: var(--sys-color-white);
+  }
+
+  .mat-mdc-select-value-text,
+  .mat-mdc-select-min-line {
+    color: var(--sys-color-white);
+  }
+}
+
+.inscricao-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem 1.25rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sys-color-white);
+  }
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+
+  a {
+    color: var(--sys-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.inscricao-form__checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+  a {
+    color: var(--sys-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  ::ng-deep .mdc-checkbox {
+    --mdc-checkbox-selected-checkmark-color: #fff;
+    --mdc-checkbox-selected-focus-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-selected-hover-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-selected-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-selected-pressed-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-unselected-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-unselected-hover-icon-color: var(--sys-color-primary);
+    --mdc-checkbox-unselected-focus-icon-color: var(--sys-color-primary);
+  }
+
+  ::ng-deep .mdc-label {
+    color: var(--sys-color-white);
+    white-space: normal;
+  }
+}
+
+.check-error {
+  margin: -0.25rem 0 0 2rem;
+  font-size: 0.75rem;
+  color: var(--mat-sys-error, #f44336);
+}
+
+.inscricao-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+
+  button {
+    min-width: 9rem;
+
+    &:disabled,
+    &.mat-mdc-button-disabled {
+      cursor: not-allowed;
+      pointer-events: auto;
+    }
+  }
+
+  mat-spinner {
+    display: inline-block;
+  }
+}
