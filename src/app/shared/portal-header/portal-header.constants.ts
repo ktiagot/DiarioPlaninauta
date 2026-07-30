@@ -19,8 +19,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
 ];
 
 export const PORTAL_GUEST_NAV_ITEMS: PortalNavItem[] = [
-  { label: 'Precompeonato', path: '/precompeonato' },
-  { label: 'Meu Perfil', path: '/', exact: true },
   { label: 'Login', path: '/login', exact: true },
+  { label: 'Cadastro', path: '/cadastro', exact: true },
   { label: 'Apoia-se', href: APOIA_SE_URL, external: true },
 ];

@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "decksMaisUsados" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "diasDisponiveis" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "formatos" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "horarios" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "melhoresResultados" SET DEFAULT ARRAY[]::INTEGER[],
+ALTER COLUMN "preCampeonatos" SET DEFAULT ARRAY[]::TEXT[];

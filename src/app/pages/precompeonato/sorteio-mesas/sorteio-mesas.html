@@ -1,0 +1,141 @@
+<section class="sorteio-mesas" aria-label="Sorteio de mesas">
+  <header class="sorteio-mesas__header">
+    <div>
+      <h2 class="sorteio-mesas__title">Sorteio de mesas</h2>
+      <p class="sorteio-mesas__subtitle">
+        @if (snapshot(); as snap) {
+          {{ snap.campeonatoNome }}
+          @if (snap.rodadaNumero) {
+            — Rodada {{ snap.rodadaNumero }}
+          }
+          · {{ snap.totalCheckIns }} check-in(s)
+        } @else {
+          Formato suíço · check-in dos jogadores
+        }
+      </p>
+    </div>
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      (click)="sortear()"
+      [disabled]="sorteando() || loading() || snapshot()?.jaSorteada"
+    >
+      @if (sorteando()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <fa-icon [icon]="faDice" class="sorteio-mesas__cta-icon" />
+        Sortear mesas
+      }
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="sorteio-mesas__loading">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="sorteio-mesas__empty">
+      <p>{{ error() }}</p>
+      <button mat-flat-button color="primary" type="button" (click)="carregar()">
+        Tentar novamente
+      </button>
+    </div>
+  } @else {
+    @if (mesas().length > 0) {
+      <div class="sorteio-mesas__cards" role="list" aria-label="Mesas sorteadas">
+        @for (mesa of mesas(); track mesa.id) {
+          <article class="sorteio-mesa-card" role="listitem">
+            <h3 class="sorteio-mesa-card__title">Mesa {{ mesa.numeroMesa }}</h3>
+            <ul class="sorteio-mesa-card__list">
+              @for (jogador of mesa.jogadores; track jogador.id) {
+                <li>
+                  <span class="sorteio-mesa-card__nome">{{ displayMesaNome(jogador) }}</span>
+                  <span class="sorteio-mesa-card__deck">{{ jogador.comandante }}</span>
+                </li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+    } @else if (snapshot()?.jaSorteada === false) {
+      <p class="sorteio-mesas__hint">
+        Ainda não há mesas sorteadas. Aguarde os check-ins e clique em Sortear mesas.
+      </p>
+    }
+
+    <mat-form-field appearance="outline" class="sorteio-mesas__search w-full">
+      <fa-icon matPrefix [icon]="faMagnifyingGlass" class="sorteio-mesas__search-icon" />
+      <input
+        matInput
+        type="search"
+        placeholder="Buscar jogador, comandante, check-in..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        aria-label="Filtrar tabela de sorteio"
+      />
+    </mat-form-field>
+
+    @if (dataSource().length === 0) {
+      <div class="sorteio-mesas__empty">
+        <p>Nenhum jogador encontrado.</p>
+      </div>
+    } @else {
+      <div class="sorteio-tabela__wrap">
+        <table mat-table [dataSource]="dataSource()" class="sorteio-tabela__table">
+          <ng-container matColumnDef="posicao">
+            <th mat-header-cell *matHeaderCellDef>Posições</th>
+            <td mat-cell *matCellDef="let j">
+              <span class="sorteio-tabela__posicao">#{{ j.posicao ?? '—' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="jogador">
+            <th mat-header-cell *matHeaderCellDef>Primeiro nome / Nick</th>
+            <td mat-cell *matCellDef="let j">
+              <span class="sorteio-tabela__nome">{{ displayNome(j) }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="comandante">
+            <th mat-header-cell *matHeaderCellDef>Comandante</th>
+            <td mat-cell *matCellDef="let j">{{ j.comandante || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="pontos">
+            <th mat-header-cell *matHeaderCellDef>Pontos</th>
+            <td mat-cell *matCellDef="let j">
+              <span class="sorteio-tabela__pontos">{{ j.pontos }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="eliminacoes">
+            <th mat-header-cell *matHeaderCellDef>Eliminação</th>
+            <td mat-cell *matCellDef="let j">{{ j.eliminacoes }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="checkIn">
+            <th mat-header-cell *matHeaderCellDef>Check-in</th>
+            <td mat-cell *matCellDef="let j">
+              <span
+                class="sorteio-tabela__checkin"
+                [class.sorteio-tabela__checkin--yes]="j.checkIn"
+                [class.sorteio-tabela__checkin--no]="!j.checkIn"
+              >
+                {{ j.checkIn ? 'Sim' : 'Não' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            [class]="rowHighlightClass(row)"
+          ></tr>
+        </table>
+      </div>
+    }
+  }
+</section>

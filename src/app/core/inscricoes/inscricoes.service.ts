@@ -7,7 +7,12 @@ import { mapRodada } from '../rodadas/rodadas.mapper';
 import { RodadaApi } from '../rodadas/rodadas.models';
 import { aplicarMeta, mapInscricao, ordenarPorRanking } from './inscricoes.mapper';
 import { INSCRICOES_MOCK } from './inscricoes.mock';
-import { InscricaoApi, JogadorInscrito } from './inscricoes.models';
+import {
+  CreateInscricaoPayload,
+  CreateInscricaoResponse,
+  InscricaoApi,
+  JogadorInscrito,
+} from './inscricoes.models';
 
 @Injectable({ providedIn: 'root' })
 export class InscricoesService {
@@ -36,7 +41,7 @@ export class InscricoesService {
           .filter((i) => i.ativo !== false)
           .map((i) => {
             const base = mapInscricao(i);
-            const mesaInfo = rodadaMap.get(i.id);
+            const mesaInfo = rodadaMap.get(String(i.id));
 
             return {
               id: base.id,
@@ -48,7 +53,7 @@ export class InscricoesService {
               deckUrl: base.deckUrl,
               meta: 0,
               pontos: base.pontos,
-              eliminacoes: eliminacoesMap.get(i.id) ?? 0,
+              eliminacoes: eliminacoesMap.get(String(i.id)) ?? 0,
               rodada: mesaInfo?.rodada,
               mesa: mesaInfo?.mesa,
             } satisfies JogadorInscrito;
@@ -66,16 +71,23 @@ export class InscricoesService {
     );
   }
 
+  createInscricao(payload: CreateInscricaoPayload): Observable<CreateInscricaoResponse> {
+    return this.http.post<CreateInscricaoResponse>(
+      `${API_URL}/precompeonato/inscricoes`,
+      payload,
+    );
+  }
+
   private buildRodadaMesaMap(
     rodadas: RodadaApi[],
-  ): Map<number, { rodada: number; mesa: number }> {
-    const map = new Map<number, { rodada: number; mesa: number }>();
+  ): Map<string, { rodada: number; mesa: number }> {
+    const map = new Map<string, { rodada: number; mesa: number }>();
 
     for (const rodadaApi of rodadas) {
       const rodada = mapRodada(rodadaApi);
       for (const mesa of rodada.mesas) {
         for (const jogador of mesa.jogadores) {
-          map.set(jogador.inscricaoId, {
+          map.set(String(jogador.inscricaoId), {
             rodada: rodada.numero,
             mesa: mesa.numeroMesa,
           });
@@ -86,8 +98,8 @@ export class InscricoesService {
     return map;
   }
 
-  private buildEliminacoesMap(rodadas: RodadaApi[]): Map<number, number> {
-    const map = new Map<number, number>();
+  private buildEliminacoesMap(rodadas: RodadaApi[]): Map<string, number> {
+    const map = new Map<string, number>();
 
     for (const rodadaApi of rodadas) {
       const rodada = mapRodada(rodadaApi);
@@ -95,7 +107,8 @@ export class InscricoesService {
         for (const jogador of mesa.jogadores) {
           const kills = jogador.kills ?? 0;
           if (!kills) continue;
-          map.set(jogador.inscricaoId, (map.get(jogador.inscricaoId) ?? 0) + kills);
+          const key = String(jogador.inscricaoId);
+          map.set(key, (map.get(key) ?? 0) + kills);
         }
       }
     }

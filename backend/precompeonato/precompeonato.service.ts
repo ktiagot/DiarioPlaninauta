@@ -45,7 +45,15 @@ export class PrecompeonatoService {
 
   async createInscricao(dto: CreateInscricaoDto): Promise<InscricaoResponseDto> {
     if (dto.aceiteTermos !== true) {
-      throw new BadRequestException('É necessário aceitar os termos de uso.');
+      throw new BadRequestException('É necessário aceitar as regras do precompeonato.');
+    }
+    if (dto.aceitePrivacidade !== true) {
+      throw new BadRequestException('É necessário aceitar a política de privacidade.');
+    }
+    if (dto.entrouDiscord !== true) {
+      throw new BadRequestException(
+        'É necessário confirmar que você entrou no Discord do Diário Planinauta.',
+      );
     }
 
     const emailNormalized = dto.email.trim().toLowerCase();
@@ -79,7 +87,7 @@ export class PrecompeonatoService {
       throw new ConflictException('Você já está inscrito neste precompeonato.');
     }
 
-    const deckNome = dto.deckNome?.trim() || dto.comandante.trim();
+    const deckNome = dto.deckNome.trim();
     const aceiteTermosEm = new Date();
 
     const inscricao = await this.prisma.$transaction(async (tx) => {
@@ -88,11 +96,13 @@ export class PrecompeonatoService {
           campeonatoId: campeonato.id,
           userId: user.id,
           email: user.email,
-          deckUrl: dto.deckUrl,
+          discordNick: dto.discordNick.trim(),
           deckNome,
           comandante: dto.comandante.trim(),
           aceiteTermos: true,
           aceiteTermosEm,
+          aceitePrivacidade: true,
+          entrouDiscord: true,
         },
         include: {
           user: { select: { nome: true, nick: true } },

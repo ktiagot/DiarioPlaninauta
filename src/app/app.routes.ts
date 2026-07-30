@@ -10,6 +10,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/perfil/perfil').then((m) => m.PerfilComponent),
         data: { title: 'Meu perfil' },
       },
@@ -37,6 +38,7 @@ export const routes: Routes = [
       },
       {
         path: 'precompeonato',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/precompeonato/precompeonato').then((m) => m.PrecompeonatoComponent),
         data: { title: 'Precompeonato' },

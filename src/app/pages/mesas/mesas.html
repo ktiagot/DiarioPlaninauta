@@ -15,15 +15,41 @@
     </div>
   } @else {
     <header class="mesas-header">
-      <h2 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h2>
-      <p class="mesas-header__subtitle">
-        {{ totalMesas() }} {{ totalMesas() === 1 ? 'mesa ativa' : 'mesas ativas' }} · Arraste para definir posições
-      </p>
+      <div class="mesas-header__text">
+        <h2 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h2>
+        <p class="mesas-header__subtitle">
+          @if (rodada()!.finalizada) {
+            Rodada finalizada · classificação atualizada
+          } @else {
+            {{ totalMesas() }} {{ totalMesas() === 1 ? 'mesa ativa' : 'mesas ativas' }} · Arraste para definir posições
+          }
+        </p>
+      </div>
+
+      @if (podeFinalizar()) {
+        <button
+          mat-flat-button
+          color="primary"
+          class="mesas-header__finalizar"
+          [disabled]="finalizando()"
+          (click)="finalizarRodada()"
+        >
+          @if (finalizando()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Finalizar rodada
+          }
+        </button>
+      }
     </header>
 
     <div class="mesas-grid">
       @for (mesa of rodada()!.mesas; track mesa.id) {
-        <app-mesa-card [mesa]="mesa" (mesaAtualizada)="onMesaAtualizada($event)" />
+        <app-mesa-card
+          [mesa]="mesa"
+          (mesaAtualizada)="onMesaAtualizada($event)"
+          (rodadaAtualizada)="onRodadaAtualizada($event)"
+        />
       }
     </div>
   }

@@ -5,6 +5,9 @@ export interface LoginResponse {
     email: string;
     role: string;
     monthlyContribution: number | null;
+    isAdmin: boolean;
+    nome?: string;
+    nick?: string;
   };
 }
 

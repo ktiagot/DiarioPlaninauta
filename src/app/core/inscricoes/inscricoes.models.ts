@@ -32,3 +32,25 @@ export interface InscricaoApi {
   pontos?: number;
   ativo?: boolean;
 }
+
+export interface CreateInscricaoPayload {
+  discordNick: string;
+  email: string;
+  deckNome: string;
+  comandante: string;
+  aceiteTermos: boolean;
+  aceitePrivacidade: boolean;
+  entrouDiscord: boolean;
+}
+
+export interface CreateInscricaoResponse {
+  id: string;
+  campeonatoId: string;
+  email: string;
+  discordNick: string;
+  deckUrl: string | null;
+  deckNome: string;
+  comandante: string;
+  nome: string;
+  nick: string;
+}

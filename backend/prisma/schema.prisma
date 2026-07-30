@@ -27,7 +27,7 @@ model User {
   sobrenome    String
   nick         String @unique
   telefone     String
-  formatos     String[]
+  formatos     String[] @default([])
   cidade       String
   passwordHash String
 
@@ -43,16 +43,16 @@ model User {
   tier               String?
   badge              String?
   formatoFavorito    String?
-  diasDisponiveis    String[]
-  horarios           String[]
+  diasDisponiveis    String[]  @default([])
+  horarios           String[]  @default([])
   partidas           Int?
   vitorias           Int?
   eliminacoes        Int?
   winRate            Float?
   pontosTotais       Float?
-  melhoresResultados Int[]
-  preCampeonatos     String[]
-  decksMaisUsados    String[]
+  melhoresResultados Int[]     @default([])
+  preCampeonatos     String[]  @default([])
+  decksMaisUsados    String[]  @default([])
 
   // --- auth / APOIA.se fields ---
   role                UserRole @default(BACKER)
@@ -95,22 +95,26 @@ model Campeonato {
 }
 
 model Inscricao {
-  id             String    @id @default(uuid())
-  campeonatoId   String
-  userId         String
-  email          String
-  deckUrl        String
-  deckNome       String
-  comandante     String
-  aceiteTermos   Boolean
-  aceiteTermosEm DateTime
-  ativo          Boolean   @default(true)
-  pontos         Int       @default(0)
-  posicao        Int?
+  id                String    @id @default(uuid())
+  campeonatoId      String
+  userId            String
+  email             String
+  discordNick       String
+  deckUrl           String?
+  deckNome          String
+  comandante        String
+  aceiteTermos      Boolean
+  aceiteTermosEm    DateTime
+  aceitePrivacidade Boolean
+  entrouDiscord     Boolean
+  ativo             Boolean   @default(true)
+  pontos            Int       @default(0)
+  posicao           Int?
 
   campeonato Campeonato           @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   user       User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
   mesas      MesaTorneioJogador[]
+  checkIns   CheckInRodada[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -127,9 +131,11 @@ model Rodada {
   campeonatoId String
   numero       Int
   ativa        Boolean @default(false)
+  finalizada   Boolean @default(false)
 
-  campeonato Campeonato    @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  campeonato Campeonato      @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   mesas      MesaTorneio[]
+  checkIns   CheckInRodada[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -139,11 +145,29 @@ model Rodada {
   @@map("rodadas")
 }
 
+model CheckInRodada {
+  id          String   @id @default(uuid())
+  rodadaId    String
+  inscricaoId String
+  createdAt   DateTime @default(now())
+
+  rodada    Rodada    @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
+  inscricao Inscricao @relation(fields: [inscricaoId], references: [id], onDelete: Cascade)
+
+  @@unique([rodadaId, inscricaoId])
+  @@index([rodadaId])
+  @@index([inscricaoId])
+  @@map("checkins_rodada")
+}
+
 model MesaTorneio {
-  id         String  @id @default(uuid())
-  rodadaId   String
-  numeroMesa Int
-  finalizada Boolean @default(false)
+  id                    String   @id @default(uuid())
+  rodadaId              String
+  numeroMesa            Int
+  finalizada            Boolean  @default(false)
+  linkPartida           String?
+  empate                Boolean  @default(false)
+  empatadosInscricaoIds String[] @default([])
 
   rodada    Rodada               @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
   jogadores MesaTorneioJogador[]

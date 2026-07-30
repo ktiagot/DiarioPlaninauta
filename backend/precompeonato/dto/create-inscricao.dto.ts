@@ -2,26 +2,31 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
-  IsUrl,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
 
 export class CreateInscricaoDto {
+  @ApiProperty({ example: 'usuario#1234' })
+  @Transform(trim)
+  @IsString()
+  @IsNotEmpty()
+  discordNick: string;
+
   @ApiProperty({ example: 'usuario@email.com' })
   @Transform(trim)
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'https://moxfield.com/decks/abc123' })
+  @ApiProperty({ example: 'Precon Atraxa' })
   @Transform(trim)
-  @IsUrl({ require_protocol: true }, { message: 'deckUrl deve ser uma URL válida com http/https' })
-  deckUrl: string;
+  @IsString()
+  @IsNotEmpty()
+  deckNome: string;
 
   @ApiProperty({ example: 'Atraxa, Praetors\' Voice' })
   @Transform(trim)
@@ -31,15 +36,22 @@ export class CreateInscricaoDto {
 
   @ApiProperty({
     example: true,
-    description: 'Deve ser true para aceitar os termos de uso',
+    description: 'Deve ser true para aceitar as regras do precompeonato',
   })
   @IsBoolean()
   aceiteTermos: boolean;
 
-  @ApiPropertyOptional({ example: 'Precon Atraxa' })
-  @IsOptional()
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  deckNome?: string;
+  @ApiProperty({
+    example: true,
+    description: 'Deve ser true para aceitar a política de privacidade',
+  })
+  @IsBoolean()
+  aceitePrivacidade: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Deve ser true confirmando entrada no Discord do Diário Planinauta',
+  })
+  @IsBoolean()
+  entrouDiscord: boolean;
 }

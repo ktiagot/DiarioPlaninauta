@@ -42,7 +42,18 @@ export class AuthService {
       role: user.role,
     });
 
-    return { accessToken, user };
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        monthlyContribution: user.monthlyContribution,
+        isAdmin: user.isAdmin,
+        nome: user.nome,
+        nick: user.nick,
+      },
+    };
   }
 
   async requestLogin(email: string) {
@@ -83,6 +94,17 @@ export class AuthService {
       role: updated.role,
     });
 
-    return { accessToken, user: updated };
+    return {
+      accessToken,
+      user: {
+        id: updated.id,
+        email: updated.email,
+        role: updated.role,
+        monthlyContribution: updated.monthlyContribution,
+        isAdmin: updated.isAdmin,
+        nome: updated.nome,
+        nick: updated.nick,
+      },
+    };
   }
 }

@@ -11,6 +11,7 @@ import {
   PORTAL_LOGO_MINIMAL_URL,
   PORTAL_NAV_ITEMS,
 } from './portal-header.constants';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-portal-header',
@@ -20,14 +21,14 @@ import {
 })
 export class PortalHeaderComponent {
   private readonly router = inject(Router);
-  private readonly authRevision = signal(0);
+  private readonly session = inject(SessionService);
 
   protected readonly logoUrl = PORTAL_LOGO_MINIMAL_URL;
   protected readonly mobileMenuOpen = signal(false);
 
   protected readonly isAuthenticated = computed(() => {
-    this.authRevision();
-    return !!localStorage.getItem('access_token');
+    this.session.authRevision();
+    return this.session.isAuthenticated();
   });
 
   protected readonly navItems = computed(() =>
@@ -40,7 +41,9 @@ export class PortalHeaderComponent {
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.authRevision.update((value) => value + 1));
+      .subscribe(() => {
+        // force recompute on navigation
+      });
   }
 
   toggleMobileMenu(): void {
@@ -52,11 +55,7 @@ export class PortalHeaderComponent {
   }
 
   logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('user_email');
-    localStorage.removeItem('user_role');
-    this.authRevision.update((value) => value + 1);
+    this.session.clear();
     this.router.navigate(['/login']);
   }
 }
