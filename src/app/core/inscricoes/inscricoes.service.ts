@@ -20,10 +20,10 @@ export class InscricoesService {
 
   getJogadoresInscritos(): Observable<JogadorInscrito[]> {
     return forkJoin({
-      inscricoes: this.http.get<InscricaoApi[]>(`${API_URL}/inscricoes`).pipe(
+      inscricoes: this.http.get<InscricaoApi[]>(`${API_URL}/precompeonato/atual/jogadores`).pipe(
         catchError(() => of(null)),
       ),
-      rodadas: this.http.get<RodadaApi[]>(`${API_URL}/rodadas`).pipe(
+      rodadas: this.http.get<RodadaApi[]>(`${API_URL}/precompeonato/atual/rodada`).pipe(
         catchError(() => of([] as RodadaApi[])),
       ),
     }).pipe(
