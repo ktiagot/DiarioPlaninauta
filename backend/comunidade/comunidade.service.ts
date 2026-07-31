@@ -146,4 +146,52 @@ export class ComunidadeService {
       where: { deUserId, paraUserId },
     });
   }
+
+  async getMetricas() {
+    const [totalMembros, apoiadoresAtivos, exApoiadores, totalFavoritos] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.user.count({ where: { isApoiadorAtivo: true } }),
+        this.prisma.user.count({ where: { isExApoiador: true } }),
+        this.prisma.favorito.count(),
+      ]);
+
+    // Top cidades
+    const users = await this.prisma.user.findMany({
+      where: { isApoiadorAtivo: true },
+      select: { cidade: true, formatos: true },
+    });
+
+    const cidadeMap = new Map<string, number>();
+    const formatoMap = new Map<string, number>();
+
+    for (const u of users) {
+      if (u.cidade) {
+        const c = u.cidade.trim();
+        cidadeMap.set(c, (cidadeMap.get(c) ?? 0) + 1);
+      }
+      for (const f of u.formatos) {
+        formatoMap.set(f, (formatoMap.get(f) ?? 0) + 1);
+      }
+    }
+
+    const topCidades = Array.from(cidadeMap.entries())
+      .map(([cidade, quantidade]) => ({ cidade, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade)
+      .slice(0, 8);
+
+    const topFormatos = Array.from(formatoMap.entries())
+      .map(([formato, quantidade]) => ({ formato, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade)
+      .slice(0, 8);
+
+    return {
+      totalMembros,
+      apoiadoresAtivos,
+      exApoiadores,
+      totalFavoritos,
+      topCidades,
+      topFormatos,
+    };
+  }
 }

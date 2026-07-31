@@ -20,6 +20,7 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { AuthUser } from '../auth/strategies/jwt.strategy';
 import { ComunidadeService } from './comunidade.service';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
@@ -125,5 +126,17 @@ export class ComunidadeController {
     @Param('userId') userId: string,
   ): Promise<void> {
     await this.comunidadeService.desfavoritar(req.user.id, userId);
+  }
+
+  @Get('metricas')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Métricas da comunidade (admin)',
+    description: 'Retorna métricas gerais da comunidade: membros, favoritos, top cidades e formatos.',
+  })
+  @ApiOkResponse({ description: 'Métricas da comunidade.' })
+  getMetricas() {
+    return this.comunidadeService.getMetricas();
   }
 }

@@ -1,0 +1,54 @@
+@if (loading()) {
+  <div class="comunidade-admin__loading">
+    <mat-spinner diameter="36" />
+  </div>
+} @else if (metricas(); as m) {
+  <!-- KPIs -->
+  <div class="comunidade-admin__kpis">
+    <div class="kpi-card">
+      <mat-icon class="kpi-card__icon">people</mat-icon>
+      <span class="kpi-card__value">{{ m.totalMembros }}</span>
+      <span class="kpi-card__label">Membros</span>
+    </div>
+    <div class="kpi-card">
+      <mat-icon class="kpi-card__icon">verified</mat-icon>
+      <span class="kpi-card__value">{{ m.apoiadoresAtivos }}</span>
+      <span class="kpi-card__label">Apoiadores ativos</span>
+    </div>
+    <div class="kpi-card">
+      <mat-icon class="kpi-card__icon">person_off</mat-icon>
+      <span class="kpi-card__value">{{ m.exApoiadores }}</span>
+      <span class="kpi-card__label">Ex-apoiadores</span>
+    </div>
+    <div class="kpi-card">
+      <mat-icon class="kpi-card__icon">favorite</mat-icon>
+      <span class="kpi-card__value">{{ m.totalFavoritos }}</span>
+      <span class="kpi-card__label">Conexões (favoritos)</span>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="comunidade-admin__charts">
+    <div class="chart-card">
+      <h4 class="chart-card__title">Top Cidades</h4>
+      <canvas
+        baseChart
+        type="bar"
+        [data]="cidadesChartData()"
+        [options]="cidadesChartOptions"
+      ></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h4 class="chart-card__title">Formatos Favoritos</h4>
+      <canvas
+        baseChart
+        type="doughnut"
+        [data]="formatosChartData()"
+        [options]="formatosChartOptions"
+      ></canvas>
+    </div>
+  </div>
+} @else {
+  <p class="comunidade-admin__empty">Nenhuma métrica disponível.</p>
+}

@@ -100,8 +100,22 @@ export const routes: Routes = [
         path: 'admin',
         canActivate: [adminGuard],
         loadComponent: () =>
-          import('./pages/admin/admin').then((m) => m.AdminComponent),
-        data: { title: 'Admin' },
+          import('./pages/admin/admin-layout').then((m) => m.AdminLayoutComponent),
+        children: [
+          { path: '', redirectTo: 'campeonato', pathMatch: 'full' },
+          {
+            path: 'campeonato',
+            loadComponent: () =>
+              import('./pages/admin/campeonato/admin-campeonato').then((m) => m.AdminCampeonatoComponent),
+            data: { title: 'Admin — Campeonato' },
+          },
+          {
+            path: 'comunidade',
+            loadComponent: () =>
+              import('./pages/admin/comunidade/admin-comunidade').then((m) => m.AdminComunidadeComponent),
+            data: { title: 'Admin — Comunidade' },
+          },
+        ],
       },
       {
         path: 'perfil/:userId',
