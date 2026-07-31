@@ -16,6 +16,24 @@
   gap: 0.5rem;
 }
 
+// Allow textarea to expand beyond the fixed 36px input height
+.field-group mat-form-field:has(textarea) {
+  ::ng-deep {
+    .mdc-text-field--outlined,
+    .mat-mdc-form-field-flex,
+    .mat-mdc-form-field-infix {
+      height: auto !important;
+      min-height: 120px;
+    }
+
+    textarea.mat-mdc-input-element {
+      resize: vertical;
+      min-height: 100px;
+      padding: 12px;
+    }
+  }
+}
+
 mat-card-title {
   color: var(--sys-color-white);
 }
