@@ -41,6 +41,8 @@ export class EstatisticasComponent implements OnInit {
     return killers.length > 0 ? killers[0].totalKills : 1;
   });
 
+  encodeURIComponent = encodeURIComponent;
+
   ngOnInit(): void {
     const userId = this.session.getUserId() ?? undefined;
     this.estatisticasService.getEstatisticas(userId).subscribe({

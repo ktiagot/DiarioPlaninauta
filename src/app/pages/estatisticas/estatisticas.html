@@ -11,7 +11,7 @@
       <p class="text-red-300">{{ error() }}</p>
     </div>
   } @else {
-    <mat-tab-group class="w-full max-w-5xl estatisticas-tabs" animationDuration="200ms">
+    <mat-tab-group class="w-full max-w-4xl estatisticas-tabs" animationDuration="200ms">
       <!-- Tab Gerais -->
       <mat-tab label="Estatísticas Gerais">
         <div class="tab-content">
@@ -42,32 +42,42 @@
           <!-- Metagame -->
           <section class="mt-8">
             <h2 class="section-title">Metagame — Decks Mais Usados</h2>
-            <div class="metagame-list">
+            <div class="metagame-grid">
               @for (deck of metagame(); track deck.deckNome) {
                 <div class="metagame-card glass-card">
-                  <div class="metagame-header">
-                    <span class="metagame-deck-name">{{ deck.deckNome }}</span>
-                    <span class="metagame-comandante">{{ deck.comandante }}</span>
-                  </div>
-                  <div class="metagame-stats">
-                    <div class="metagame-stat">
-                      <span class="metagame-stat-value">{{ deck.vezesUsado }}</span>
-                      <span class="metagame-stat-label">Usos</span>
+                  <div class="metagame-card-inner">
+                    <img
+                      class="metagame-art"
+                      [src]="'https://api.scryfall.com/cards/named?exact=' + encodeURIComponent(deck.comandante) + '&format=image&version=art_crop'"
+                      [alt]="deck.comandante"
+                      (error)="$any($event.target).style.display='none'"
+                    />
+                    <div class="metagame-info">
+                      <div class="metagame-header">
+                        <span class="metagame-deck-name">{{ deck.deckNome }}</span>
+                        <span class="metagame-comandante">{{ deck.comandante }}</span>
+                      </div>
+                      <div class="metagame-stats">
+                        <div class="metagame-stat">
+                          <span class="metagame-stat-value">{{ deck.vezesUsado }}</span>
+                          <span class="metagame-stat-label">Usos</span>
+                        </div>
+                        <div class="metagame-stat">
+                          <span class="metagame-stat-value">{{ deck.vitorias }}</span>
+                          <span class="metagame-stat-label">Vitórias</span>
+                        </div>
+                        <div class="metagame-stat">
+                          <span class="metagame-stat-value">{{ deck.winRate }}%</span>
+                          <span class="metagame-stat-label">Win Rate</span>
+                        </div>
+                      </div>
+                      <div class="metagame-bar-wrap">
+                        <div
+                          class="metagame-bar"
+                          [style.width.%]="deck.winRate"
+                        ></div>
+                      </div>
                     </div>
-                    <div class="metagame-stat">
-                      <span class="metagame-stat-value">{{ deck.vitorias }}</span>
-                      <span class="metagame-stat-label">Vitórias</span>
-                    </div>
-                    <div class="metagame-stat">
-                      <span class="metagame-stat-value">{{ deck.winRate }}%</span>
-                      <span class="metagame-stat-label">Win Rate</span>
-                    </div>
-                  </div>
-                  <div class="metagame-bar-wrap">
-                    <div
-                      class="metagame-bar"
-                      [style.width.%]="deck.winRate"
-                    ></div>
                   </div>
                 </div>
               } @empty {

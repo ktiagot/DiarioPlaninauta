@@ -74,14 +74,38 @@
 }
 
 // --- Metagame ---
-.metagame-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.metagame-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
 .metagame-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.metagame-card-inner {
+  display: flex;
+  gap: 0;
+  height: 100%;
+}
+
+.metagame-art {
+  width: 120px;
+  min-height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 1rem 0 0 1rem;
+}
+
+.metagame-info {
   padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .metagame-header {
@@ -239,6 +263,14 @@
 @media (max-width: 767px) {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metagame-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metagame-art {
+    width: 80px;
   }
 
   .metagame-stats {
