@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateMesaDto } from './dto/create-mesa.dto';
 import { MesaResponseDto } from './dto/mesa-response.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
 import { UpdateMesaLinkDto } from './dto/update-mesa-link.dto';
@@ -37,6 +38,20 @@ export class MesasService {
     });
 
     return mesas.map(toMesaResponse);
+  }
+
+  async create(userId: string, dto: CreateMesaDto): Promise<MesaResponseDto> {
+    const mesa = await this.prisma.mesa.create({
+      data: {
+        nome: dto.nome,
+        linkPartida: dto.linkPartida ?? null,
+        jogadores: {
+          create: { userId },
+        },
+      },
+      include: mesaInclude,
+    });
+    return toMesaResponse(mesa);
   }
 
   async updateLink(mesaId: string, dto: UpdateMesaLinkDto): Promise<MesaResponseDto> {

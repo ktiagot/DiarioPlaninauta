@@ -63,8 +63,8 @@ export const routes: Routes = [
         path: 'mesoes',
         canActivate: [authGuard],
         loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
+          import('./pages/mesoes/mesoes').then(
+            (m) => m.MesoesComponent,
           ),
         data: { title: 'Mesões' },
       },

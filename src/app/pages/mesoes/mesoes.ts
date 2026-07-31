@@ -1,0 +1,134 @@
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+import { MesasService } from '../../core/mesas/mesas.service';
+import { SessionService } from '../../core/auth/session.service';
+import { Mesa } from '../../core/mesas/mesas.models';
+
+type Filtro = 'todas' | 'abertas';
+
+@Component({
+  selector: 'app-mesoes',
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+  ],
+  templateUrl: './mesoes.html',
+  styleUrl: './mesoes.scss',
+})
+export class MesoesComponent implements OnInit {
+  private readonly mesasService = inject(MesasService);
+  private readonly session = inject(SessionService);
+
+  readonly mesas = signal<Mesa[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly filtroAtivo = signal<Filtro>('todas');
+  readonly mostrarFormCriar = signal(false);
+  readonly criando = signal(false);
+  readonly linkEditandoId = signal<string | null>(null);
+
+  readonly novaMesaNome = signal('');
+  readonly novaMesaLink = signal('');
+  readonly novoLink = signal('');
+
+  readonly mesasFiltradas = computed(() => {
+    const todas = this.mesas();
+    if (this.filtroAtivo() === 'abertas') {
+      return todas.filter((m) => !m.finalizada);
+    }
+    return todas;
+  });
+
+  readonly userId = computed(() => this.session.getUserId());
+
+  ngOnInit(): void {
+    this.carregarMesas();
+  }
+
+  carregarMesas(): void {
+    this.loading.set(true);
+    this.mesasService.listar().subscribe({
+      next: (mesas) => {
+        this.mesas.set(mesas);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Não foi possível carregar as mesas.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  setFiltro(filtro: Filtro): void {
+    this.filtroAtivo.set(filtro);
+  }
+
+  toggleFormCriar(): void {
+    this.mostrarFormCriar.update((v) => !v);
+    if (!this.mostrarFormCriar()) {
+      this.novaMesaNome.set('');
+      this.novaMesaLink.set('');
+    }
+  }
+
+  criarMesa(): void {
+    const nome = this.novaMesaNome().trim();
+    if (!nome) return;
+
+    this.criando.set(true);
+    const payload = {
+      nome,
+      ...(this.novaMesaLink().trim() ? { linkPartida: this.novaMesaLink().trim() } : {}),
+    };
+
+    this.mesasService.criar(payload).subscribe({
+      next: (mesa) => {
+        this.mesas.update((list) => [...list, mesa]);
+        this.mostrarFormCriar.set(false);
+        this.novaMesaNome.set('');
+        this.novaMesaLink.set('');
+        this.criando.set(false);
+      },
+      error: () => {
+        this.criando.set(false);
+      },
+    });
+  }
+
+  iniciarEdicaoLink(mesaId: string): void {
+    this.linkEditandoId.set(mesaId);
+    this.novoLink.set('');
+  }
+
+  cancelarEdicaoLink(): void {
+    this.linkEditandoId.set(null);
+    this.novoLink.set('');
+  }
+
+  salvarLink(mesaId: string): void {
+    const link = this.novoLink().trim();
+    if (!link) return;
+
+    this.mesasService.atualizarLink(mesaId, link).subscribe({
+      next: (mesaAtualizada) => {
+        this.mesas.update((list) =>
+          list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
+        );
+        this.linkEditandoId.set(null);
+        this.novoLink.set('');
+      },
+    });
+  }
+}

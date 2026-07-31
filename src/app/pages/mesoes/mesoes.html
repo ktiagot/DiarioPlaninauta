@@ -1,0 +1,172 @@
+<div class="mesoes-page flex flex-col items-center px-4 py-8">
+  <h1 class="text-2xl font-bold text-white mb-1">Mesões</h1>
+  <p class="text-gray-400 mb-6 text-sm">Organize mesas casuais de Commander</p>
+
+  <!-- Ações: Criar + Filtros -->
+  <div class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div class="flex gap-2">
+      <button
+        mat-flat-button
+        class="filtro-btn"
+        [class.filtro-ativo]="filtroAtivo() === 'todas'"
+        (click)="setFiltro('todas')"
+      >
+        Todas
+      </button>
+      <button
+        mat-flat-button
+        class="filtro-btn"
+        [class.filtro-ativo]="filtroAtivo() === 'abertas'"
+        (click)="setFiltro('abertas')"
+      >
+        Abertas
+      </button>
+    </div>
+
+    <button mat-flat-button class="criar-btn" (click)="toggleFormCriar()">
+      <mat-icon>add</mat-icon>
+      Criar Mesa
+    </button>
+  </div>
+
+  <!-- Form criar mesa -->
+  @if (mostrarFormCriar()) {
+    <div class="glass-card w-full max-w-4xl p-6 mb-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Nova Mesa Casual</h2>
+      <div class="flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Nome da mesa</mat-label>
+          <input
+            matInput
+            [ngModel]="novaMesaNome()"
+            (ngModelChange)="novaMesaNome.set($event)"
+            placeholder="Ex: Sexta à Noite"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Link da partida (opcional)</mat-label>
+          <input
+            matInput
+            [ngModel]="novaMesaLink()"
+            (ngModelChange)="novaMesaLink.set($event)"
+            placeholder="https://spelltable.com/..."
+          />
+        </mat-form-field>
+
+        <div class="flex gap-3 justify-end">
+          <button mat-button class="text-gray-300" (click)="toggleFormCriar()">
+            Cancelar
+          </button>
+          <button
+            mat-flat-button
+            class="criar-btn"
+            [disabled]="!novaMesaNome().trim() || criando()"
+            (click)="criarMesa()"
+          >
+            @if (criando()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Criar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="glass-card p-6 text-center w-full max-w-3xl">
+      <mat-icon class="text-red-400 mb-2">error_outline</mat-icon>
+      <p class="text-red-300">{{ error() }}</p>
+    </div>
+  } @else {
+    <!-- Grid de mesas -->
+    @if (mesasFiltradas().length === 0) {
+      <div class="glass-card p-8 text-center w-full max-w-3xl">
+        <mat-icon class="empty-icon">table_restaurant</mat-icon>
+        <p class="text-gray-300 mt-4">Nenhuma mesa encontrada.</p>
+      </div>
+    } @else {
+      <div class="mesas-grid w-full max-w-4xl">
+        @for (mesa of mesasFiltradas(); track mesa.id) {
+          <div class="glass-card mesa-card">
+            <!-- Header -->
+            <div class="mesa-header">
+              <span class="mesa-nome">{{ mesa.nome }}</span>
+              <span
+                class="mesa-badge"
+                [class.badge-aberta]="!mesa.finalizada"
+                [class.badge-finalizada]="mesa.finalizada"
+              >
+                {{ mesa.finalizada ? 'Finalizada' : 'Aberta' }}
+              </span>
+            </div>
+
+            <!-- Jogadores -->
+            <div class="mesa-jogadores">
+              <mat-icon class="jogadores-icon">group</mat-icon>
+              <span class="jogadores-text">
+                @if (mesa.jogadores.length === 0) {
+                  Sem jogadores
+                } @else {
+                  @for (j of mesa.jogadores; track j.userId; let last = $last) {
+                    <span class="jogador-nick">{{ j.nick }}</span>{{ last ? '' : ', ' }}
+                  }
+                }
+              </span>
+              <span class="jogadores-count">({{ mesa.quantidadeJogadores }})</span>
+            </div>
+
+            <!-- Link da partida -->
+            <div class="mesa-link-section">
+              @if (mesa.linkPartida) {
+                <a
+                  [href]="mesa.linkPartida"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="link-btn"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                  Abrir Partida
+                </a>
+              } @else if (linkEditandoId() === mesa.id) {
+                <div class="link-edit-row">
+                  <mat-form-field appearance="outline" class="link-input">
+                    <mat-label>Link</mat-label>
+                    <input
+                      matInput
+                      [ngModel]="novoLink()"
+                      (ngModelChange)="novoLink.set($event)"
+                      placeholder="https://..."
+                    />
+                  </mat-form-field>
+                  <button mat-icon-button class="text-green-400" (click)="salvarLink(mesa.id)">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button class="text-gray-400" (click)="cancelarEdicaoLink()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              } @else if (!mesa.finalizada) {
+                <button
+                  mat-button
+                  class="add-link-btn"
+                  (click)="iniciarEdicaoLink(mesa.id)"
+                >
+                  <mat-icon>link</mat-icon>
+                  Adicionar Link
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

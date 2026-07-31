@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -7,11 +7,15 @@ import {
   ApiNotFoundResponse,
   ApiConflictResponse,
   ApiBadRequestResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MesasService } from './mesas.service';
 import { MesaResponseDto } from './dto/mesa-response.dto';
+import { CreateMesaDto } from './dto/create-mesa.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
 import { UpdateMesaLinkDto } from './dto/update-mesa-link.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('Mesas')
 @Controller('mesas')
@@ -26,6 +30,19 @@ export class MesasController {
   @ApiOkResponse({ description: 'Lista de mesas.', type: [MesaResponseDto] })
   findAll(): Promise<MesaResponseDto[]> {
     return this.mesasService.findAll();
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Criar nova mesa casual' })
+  @ApiCreatedResponse({ description: 'Mesa criada.', type: MesaResponseDto })
+  create(
+    @Request() req: { user: AuthUser },
+    @Body() dto: CreateMesaDto,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.create(req.user.id, dto);
   }
 
   @Put(':id/link')
