@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -64,6 +65,12 @@ export class PrecompeonatoService {
 
     if (!user) {
       throw new NotFoundException('Usuário não cadastrado no portal.');
+    }
+
+    if ((user.monthlyContribution ?? 0) < 15) {
+      throw new ForbiddenException(
+        'O tier mínimo para participar do Precompeonato é R$15/mês no APOIA.se.',
+      );
     }
 
     const campeonato = await this.findCampeonatoAtualOrThrow();
