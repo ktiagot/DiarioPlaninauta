@@ -1,0 +1,258 @@
+<div class="admin-page">
+  <h1 class="admin-page__title">Painel Administrativo</h1>
+
+  @if (loading()) {
+    <div class="admin-page__loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <div class="admin-page__error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-flat-button color="primary" (click)="carregarDados()">Tentar novamente</button>
+    </div>
+  } @else {
+    <mat-tab-group animationDuration="200ms" class="admin-page__tabs">
+      <!-- TAB: Pareamento -->
+      <mat-tab label="Pareamento">
+        <div class="admin-tab-content">
+          @if (snapshot(); as snap) {
+            <div class="admin-section">
+              <h3>{{ snap.campeonatoNome }}</h3>
+              @if (snap.rodadaId) {
+                <p class="admin-section__info">
+                  Rodada {{ snap.rodadaNumero }}
+                  @if (snap.rodadaFinalizada) {
+                    <span class="badge badge--done">Finalizada</span>
+                  } @else {
+                    <span class="badge badge--active">Ativa</span>
+                  }
+                </p>
+              }
+
+              <div class="admin-actions">
+                <button
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="sorteando()"
+                  (click)="sortearMesas()"
+                >
+                  @if (sorteando()) {
+                    <mat-spinner diameter="18" />
+                  } @else {
+                    <mat-icon>casino</mat-icon>
+                  }
+                  Sortear Mesas
+                </button>
+
+                @if (snap.rodadaId && !snap.rodadaFinalizada) {
+                  <button
+                    mat-flat-button
+                    color="accent"
+                    [disabled]="finalizando()"
+                    (click)="finalizarRodada()"
+                  >
+                    @if (finalizando()) {
+                      <mat-spinner diameter="18" />
+                    } @else {
+                      <mat-icon>flag</mat-icon>
+                    }
+                    Finalizar Rodada
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Classificação / Check-in -->
+            <div class="admin-section">
+              <h4>Classificação & Check-in</h4>
+              <div class="admin-table-wrapper">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Jogador</th>
+                      <th>Comandante</th>
+                      <th>Pontos</th>
+                      <th>Check-in</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (jogador of snap.classificacao; track jogador.inscricaoId) {
+                      <tr>
+                        <td>{{ jogador.posicao ?? '-' }}</td>
+                        <td>{{ jogador.nick }}</td>
+                        <td>{{ jogador.comandante }}</td>
+                        <td>{{ jogador.pontos }}</td>
+                        <td>
+                          @if (jogador.checkedIn) {
+                            <mat-icon class="text-success">check_circle</mat-icon>
+                          } @else {
+                            <mat-icon class="text-muted">radio_button_unchecked</mat-icon>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Mesas sorteadas -->
+            @if (snap.mesas.length > 0) {
+              <div class="admin-section">
+                <h4>Mesas Sorteadas</h4>
+                <div class="mesas-grid">
+                  @for (mesa of snap.mesas; track mesa.mesaId) {
+                    <div class="mesa-card" [class.mesa-card--finalizada]="mesa.finalizada">
+                      <div class="mesa-card__header">
+                        <span class="mesa-card__numero">Mesa {{ mesa.numeroMesa }}</span>
+                        @if (mesa.finalizada) {
+                          <span class="badge badge--done">Finalizada</span>
+                        } @else {
+                          <span class="badge badge--active">Aberta</span>
+                        }
+                      </div>
+
+                      <ul class="mesa-card__jogadores">
+                        @for (j of mesa.jogadores; track j.inscricaoId) {
+                          <li>
+                            <span class="jogador-nick">{{ j.nick }}</span>
+                            <span class="jogador-deck">{{ j.comandante }}</span>
+                            @if (mesa.finalizada) {
+                              <span class="jogador-resultado">
+                                {{ j.posicaoFinal }}º — {{ j.kills }} kill(s)
+                              </span>
+                            }
+                          </li>
+                        }
+                      </ul>
+
+                      @if (!mesa.finalizada && editandoResultadoMesaId() !== mesa.mesaId) {
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          class="mesa-card__btn"
+                          (click)="iniciarResultado(mesa)"
+                        >
+                          <mat-icon>edit</mat-icon> Reportar Resultado
+                        </button>
+                      }
+
+                      @if (editandoResultadoMesaId() === mesa.mesaId) {
+                        <div class="resultado-form">
+                          <h5>Resultado</h5>
+                          @for (j of resultadoJogadores(); track j.inscricaoId) {
+                            <div class="resultado-jogador">
+                              <span>{{ getNomeJogador(j.inscricaoId, mesa) }}</span>
+                              <label>
+                                Pos:
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="4"
+                                  [ngModel]="j.posicaoFinal"
+                                  (ngModelChange)="updateJogadorPosicao(j.inscricaoId, $event)"
+                                />
+                              </label>
+                              <label>
+                                Kills:
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="3"
+                                  [ngModel]="j.kills"
+                                  (ngModelChange)="updateJogadorKills(j.inscricaoId, $event)"
+                                />
+                              </label>
+                            </div>
+                          }
+
+                          <label class="resultado-empate">
+                            <input
+                              type="checkbox"
+                              [ngModel]="resultadoEmpate()"
+                              (ngModelChange)="resultadoEmpate.set($event)"
+                            />
+                            Empate
+                          </label>
+
+                          <label class="resultado-link">
+                            Link da partida:
+                            <input
+                              type="text"
+                              [ngModel]="resultadoLink()"
+                              (ngModelChange)="resultadoLink.set($event)"
+                              placeholder="https://spelltable.com/..."
+                            />
+                          </label>
+
+                          <div class="resultado-actions">
+                            <button
+                              mat-flat-button
+                              color="primary"
+                              [disabled]="submittingMesaId() === mesa.mesaId"
+                              (click)="submitResultado(mesa.mesaId)"
+                            >
+                              Salvar
+                            </button>
+                            <button mat-stroked-button (click)="cancelarResultado()">
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </mat-tab>
+
+      <!-- TAB: Inscritos -->
+      <mat-tab label="Inscritos">
+        <div class="admin-tab-content">
+          <div class="admin-section">
+            <h4>Inscritos no campeonato atual ({{ inscritos().length }})</h4>
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nick</th>
+                    <th>Nome</th>
+                    <th>Comandante</th>
+                    <th>Deck</th>
+                    <th>Pontos</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (inscrito of inscritosOrdenados(); track inscrito.id) {
+                    <tr [class.row-inativo]="!inscrito.ativo">
+                      <td>{{ inscrito.posicao ?? '-' }}</td>
+                      <td>{{ inscrito.nick }}</td>
+                      <td>{{ inscrito.nome }}</td>
+                      <td>{{ inscrito.comandante }}</td>
+                      <td>{{ inscrito.deckNome }}</td>
+                      <td>{{ inscrito.pontos }}</td>
+                      <td>
+                        @if (inscrito.ativo) {
+                          <span class="badge badge--active">Ativo</span>
+                        } @else {
+                          <span class="badge badge--inativo">Inativo</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>
