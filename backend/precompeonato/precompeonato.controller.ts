@@ -32,6 +32,7 @@ import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto'
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
 import { EstatisticasFullResponseDto } from './dto/estatisticas-response.dto';
+import { MinhasMesasResponseDto } from './dto/minhas-mesas-response.dto';
 import { CheckInStatusDto, SorteioSnapshotDto } from './dto/sorteio.dto';
 import { RodadaAtualDto } from './dto/rodada-atual.dto';
 import { SubmitTorneioMesaResultadoDto } from './dto/submit-torneio-mesa-resultado.dto';
@@ -62,6 +63,24 @@ export class PrecompeonatoController {
   @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
   getAtual(@Query('email') email?: string): Promise<CampeonatoAtualResponseDto> {
     return this.precompeonatoService.getAtual(email);
+  }
+
+  @Get('atual/minhas-mesas')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Minhas mesas no precompeonato atual',
+    description:
+      'Retorna todas as mesas do torneio em que o usuário autenticado participou no campeonato atual.',
+  })
+  @ApiOkResponse({
+    description: 'Lista de mesas do jogador.',
+    type: MinhasMesasResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
+  @ApiUnauthorizedResponse()
+  getMinhasMesas(@Req() req: { user: AuthUser }): Promise<MinhasMesasResponseDto> {
+    return this.precompeonatoService.getMinhasMesas(req.user.id);
   }
 
   @Post('inscricoes')

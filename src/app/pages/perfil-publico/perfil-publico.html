@@ -1,0 +1,187 @@
+<main class="perfil-page mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  @if (loading()) {
+    <div class="flex flex-1 items-center justify-center py-24">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (profile()) {
+    <mat-card class="perfil-card">
+      <div class="perfil-grid">
+        <aside class="perfil-left">
+          <div class="perfil-avatar-wrap">
+            <div class="perfil-avatar">
+              @if (avatarUrl()) {
+                <img
+                  [src]="avatarUrl()!"
+                  [alt]="'Foto de ' + displayNick()"
+                  class="h-full w-full object-cover"
+                />
+              } @else {
+                <span class="text-4xl font-bold text-white/80">{{ avatarInitial() }}</span>
+              }
+            </div>
+
+            <div
+              class="perfil-badge-icon"
+              [class.perfil-badge-icon--default]="!badgeLabel()"
+              [matTooltip]="badgeLabel() ?? 'Membro da comunidade'"
+            >
+              <mat-icon>{{ badgeLabel() ? 'workspace_premium' : 'style' }}</mat-icon>
+            </div>
+          </div>
+
+          <div class="w-full">
+            <p class="perfil-section-label">Formatos</p>
+            @if (displayFormatos().length) {
+              <p class="text-sm leading-relaxed text-white/70">
+                {{ displayFormatos().join(', ') }}
+              </p>
+            } @else {
+              <p class="text-sm text-white/45">Nenhum formato informado</p>
+            }
+          </div>
+
+          @if (mesesApoiando(); as meses) {
+            <span class="perfil-supporter-tag">Apoiando há {{ meses }} {{ meses === 1 ? 'mês' : 'meses' }}</span>
+          }
+
+          <div class="w-full">
+            <p class="perfil-section-label">Melhores resultados</p>
+            @if (displayMelhoresResultados().length) {
+              <ul class="perfil-result-list">
+                @for (resultado of displayMelhoresResultados(); track resultado) {
+                  <li>{{ resultado }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="text-sm text-white/45">Nenhum resultado registrado</p>
+            }
+          </div>
+        </aside>
+
+        <mat-divider class="perfil-divider hidden lg:block" [vertical]="true" />
+
+        <section class="perfil-right">
+          <div class="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 class="text-2xl font-extrabold text-white sm:text-[1.625rem]">
+              {{ displayNick() }}
+            </h1>
+            @if (displayGenero()) {
+              <span class="text-sm text-white/45">({{ displayGenero() }})</span>
+            }
+            <button
+              mat-stroked-button
+              class="ml-auto text-xs"
+              (click)="toggleFavorito()"
+              [matTooltip]="isFavorito() ? 'Remover dos favoritos' : 'Favoritar'"
+            >
+              <fa-icon [icon]="isFavorito() ? faHeart : faHeartOutline" class="mr-1" />
+              {{ isFavorito() ? 'Favoritado' : 'Favoritar' }}
+            </button>
+          </div>
+
+          <div class="mb-5 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+            <span class="text-white/75">{{ displayNome() }}</span>
+          </div>
+
+          <div class="mb-6 flex flex-col">
+            <div class="perfil-info-row">
+              <fa-icon [icon]="faLocationDot" class="perfil-info-icon" />
+              <span>{{ displayCidade() }}</span>
+            </div>
+            <div class="perfil-info-row">
+              <fa-icon [icon]="faLayerGroup" class="perfil-info-icon" />
+              <span>{{ displayColecaoFavorita() }}</span>
+            </div>
+            <div class="perfil-info-row">
+              <fa-icon [icon]="faCalendarDays" class="perfil-info-icon" />
+              <span>{{ displayDias() }}</span>
+            </div>
+            <div class="perfil-info-row">
+              <fa-icon [icon]="faClock" class="perfil-info-icon" />
+              <span>{{ displayHorarios() }}</span>
+            </div>
+          </div>
+
+          <!-- Contato mútuo -->
+          @if (isFavorito()) {
+            <div class="mb-6">
+              @if (contato(); as c) {
+                @if (c.mutuo) {
+                  <div class="perfil-contato-box">
+                    <p class="text-xs font-semibold uppercase text-[var(--sys-color-primary)]">Contato</p>
+                    @if (c.telefone) {
+                      <p class="text-sm text-white/80">📱 {{ c.telefone }}</p>
+                    }
+                    @if (c.discord) {
+                      <p class="text-sm text-white/80">💬 {{ c.discord }}</p>
+                    }
+                  </div>
+                } @else {
+                  <p class="text-xs text-white/45">
+                    Contato indisponível — favorito mútuo necessário.
+                  </p>
+                }
+              } @else {
+                <button
+                  mat-stroked-button
+                  class="text-xs"
+                  [disabled]="loadingContato()"
+                  (click)="verContato()"
+                >
+                  Ver contato
+                </button>
+              }
+            </div>
+          }
+
+          <div class="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p class="perfil-section-label">Precompeonatos</p>
+              @if (displayPreCampeonatos().length) {
+                <ul class="perfil-plain-list">
+                  @for (campeonato of displayPreCampeonatos(); track campeonato) {
+                    <li>{{ campeonato }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="text-sm text-white/45">Nenhum precompeonato registrado</p>
+              }
+            </div>
+
+            <div>
+              <p class="perfil-section-label">Decks mais usados</p>
+              @if (displayDecks().length) {
+                <ul class="perfil-deck-list">
+                  @for (deck of displayDecks(); track deck) {
+                    <li>
+                      <span>{{ deck }}</span>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="text-sm text-white/45">Nenhum deck registrado</p>
+              }
+            </div>
+          </div>
+        </section>
+      </div>
+    </mat-card>
+  } @else {
+    <mat-card class="perfil-card">
+      <mat-card-content class="flex flex-col items-center gap-4 px-6 py-12 text-center sm:px-10">
+        <mat-icon class="!h-12 !w-12 text-[var(--sys-color-primary)]">person_outline</mat-icon>
+        <div>
+          <h1 class="text-xl font-bold text-white">Perfil do Jogador</h1>
+          <p class="mt-2 max-w-md text-sm leading-relaxed text-white/65">
+            Não foi possível encontrar este jogador.
+          </p>
+        </div>
+        <a mat-flat-button color="primary" routerLink="/">
+          Voltar ao início
+        </a>
+      </mat-card-content>
+    </mat-card>
+  }
+
+</main>

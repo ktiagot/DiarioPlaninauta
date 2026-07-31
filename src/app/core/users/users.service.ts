@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 
 import { API_URL } from '../config/api.config';
 import { AvailabilityResponse, CreateUserRequest, User } from './users.models';
+import { UserPublic } from './user-public.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -14,6 +15,10 @@ export class UsersService {
 
   findById(id: string) {
     return this.http.get<User>(`${API_URL}/users/${id}`);
+  }
+
+  findByIdPublic(id: string) {
+    return this.http.get<UserPublic>(`${API_URL}/users/${id}/publico`);
   }
 
   update(id: string, data: Partial<CreateUserRequest>) {

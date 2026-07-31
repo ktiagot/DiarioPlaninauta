@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -10,21 +10,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
-  faArrowUpRightFromSquare,
   faCalendarDays,
   faClock,
+  faHeart,
   faLayerGroup,
   faLocationDot,
 } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartOutline } from '@fortawesome/free-regular-svg-icons';
 
-import { User } from '../../core/users/users.models';
+import { UserPublic } from '../../core/users/user-public.models';
 import { UsersService } from '../../core/users/users.service';
-import { MinhasMesa } from '../../core/precompeonato/minhas-mesas.models';
-import { MinhasMesasService } from '../../core/precompeonato/minhas-mesas.service';
-import { PROFILE_PROMOS } from './perfil.constants';
+import { ComunidadeService } from '../../core/comunidade/comunidade.service';
+import { ContatoResponse } from '../../core/comunidade/comunidade.models';
 
 @Component({
-  selector: 'app-perfil',
+  selector: 'app-perfil-publico',
+  standalone: true,
   imports: [
     RouterLink,
     MatButtonModule,
@@ -35,74 +36,72 @@ import { PROFILE_PROMOS } from './perfil.constants';
     MatTooltipModule,
     FaIconComponent,
   ],
-  templateUrl: './perfil.html',
-  styleUrl: './perfil.scss',
+  templateUrl: './perfil-publico.html',
+  styleUrl: './perfil-publico.scss',
 })
-export class PerfilComponent implements OnInit {
+export class PerfilPublicoComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly usersService = inject(UsersService);
-  private readonly minhasMesasService = inject(MinhasMesasService);
+  private readonly comunidadeService = inject(ComunidadeService);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly faLocationDot = faLocationDot;
   protected readonly faCalendarDays = faCalendarDays;
   protected readonly faClock = faClock;
   protected readonly faLayerGroup = faLayerGroup;
-  protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
+  protected readonly faHeart = faHeart;
+  protected readonly faHeartOutline = faHeartOutline;
 
   protected readonly loading = signal(true);
-  protected readonly profile = signal<User | null>(null);
-  protected readonly isAuthenticated = signal(!!localStorage.getItem('access_token'));
-  protected readonly promos = PROFILE_PROMOS;
-  protected readonly minhasMesas = signal<MinhasMesa[]>([]);
+  protected readonly profile = signal<UserPublic | null>(null);
+  protected readonly isFavorito = signal(false);
+  protected readonly contato = signal<ContatoResponse | null>(null);
+  protected readonly loadingContato = signal(false);
 
   protected readonly displayNick = computed(() => this.profile()?.nick ?? '—');
-  protected readonly displayPronome = computed(() => this.profile()?.genero ?? '');
-  protected readonly displayNome = computed(() => {
-    const user = this.profile();
-    if (!user) return '—';
-    const fullName = [user.nome, user.sobrenome].filter(Boolean).join(' ');
-    return fullName || '—';
-  });
-  protected readonly displayTelefone = computed(() =>
-    formatTelefone(this.profile()?.telefone),
-  );
+  protected readonly displayNome = computed(() => this.profile()?.nome ?? '—');
+  protected readonly displayGenero = computed(() => this.profile()?.genero ?? '');
   protected readonly displayFormatos = computed(() => this.profile()?.formatos ?? []);
-  protected readonly displayCidade = computed(() => this.profile()?.cidade ?? '—');
+  protected readonly displayCidade = computed(() => {
+    const p = this.profile();
+    if (!p) return '—';
+    return [p.cidade, p.estado].filter(Boolean).join(' — ');
+  });
   protected readonly displayColecaoFavorita = computed(
     () => this.profile()?.formatoFavorito ?? '—',
   );
   protected readonly displayDias = computed(() => joinList(this.profile()?.diasDisponiveis));
   protected readonly displayHorarios = computed(() => joinList(this.profile()?.horarios));
+  protected readonly displayDecks = computed(() => this.profile()?.decksMaisUsados ?? []);
   protected readonly displayPreCampeonatos = computed(
     () => this.profile()?.preCampeonatos ?? [],
   );
-  protected readonly displayDecks = computed(() => this.profile()?.decksMaisUsados ?? []);
   protected readonly displayMelhoresResultados = computed(() =>
     formatMelhoresResultados(this.profile()?.melhoresResultados ?? []),
   );
   protected readonly mesesApoiando = computed(() => {
     const apoiandoDesde = this.profile()?.apoiandoDesde;
-    const createdAt = this.profile()?.createdAt;
-    const dataRef = apoiandoDesde || createdAt;
-    return dataRef ? calcMesesApoiando(dataRef) : null;
+    return apoiandoDesde ? calcMesesApoiando(apoiandoDesde) : null;
   });
   protected readonly avatarInitial = computed(() => {
     const user = this.profile();
-    const source = user?.nick ?? user?.nome ?? user?.email ?? '?';
+    const source = user?.nick ?? user?.nome ?? '?';
     return source.charAt(0).toUpperCase();
   });
   protected readonly avatarUrl = computed(() => this.profile()?.foto ?? null);
   protected readonly badgeLabel = computed(() => this.profile()?.badge ?? null);
 
-  ngOnInit(): void {
-    const userId = localStorage.getItem('user_id');
+  private userId = '';
 
-    if (!userId) {
+  ngOnInit(): void {
+    this.userId = this.route.snapshot.paramMap.get('userId') ?? '';
+
+    if (!this.userId) {
       this.loading.set(false);
       return;
     }
 
-    this.usersService.findById(userId).subscribe({
+    this.usersService.findByIdPublic(this.userId).subscribe({
       next: (user) => {
         this.profile.set(user);
         this.loading.set(false);
@@ -111,44 +110,70 @@ export class PerfilComponent implements OnInit {
         this.loading.set(false);
         const message =
           err.status === 404
-            ? 'Perfil não encontrado.'
-            : 'Não foi possível carregar seu perfil.';
+            ? 'Jogador não encontrado.'
+            : 'Não foi possível carregar o perfil.';
         this.snackBar.open(message, 'OK', { duration: 6000 });
       },
     });
 
-    this.minhasMesasService.getMinhasMesas().subscribe({
-      next: (response) => this.minhasMesas.set(response.mesas),
-      error: () => {
-        // Silently fail — minhas mesas is not critical
+    this.comunidadeService.listarFavoritos().subscribe({
+      next: (favoritos) => {
+        this.isFavorito.set(favoritos.includes(this.userId));
       },
+      error: () => {},
     });
   }
 
-  protected openPromoLink(url: string | undefined): void {
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+  protected toggleFavorito(): void {
+    if (this.isFavorito()) {
+      this.comunidadeService.desfavoritar(this.userId).subscribe({
+        next: () => {
+          this.isFavorito.set(false);
+          this.contato.set(null);
+          this.snackBar.open('Removido dos favoritos', 'OK', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Erro ao desfavoritar', 'OK', { duration: 3000 });
+        },
+      });
+    } else {
+      this.comunidadeService.favoritar(this.userId).subscribe({
+        next: () => {
+          this.isFavorito.set(true);
+          this.snackBar.open('Adicionado aos favoritos ❤️', 'OK', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Erro ao favoritar', 'OK', { duration: 3000 });
+        },
+      });
     }
+  }
+
+  protected verContato(): void {
+    this.loadingContato.set(true);
+    this.comunidadeService.obterContato(this.userId).subscribe({
+      next: (contato) => {
+        this.contato.set(contato);
+        this.loadingContato.set(false);
+        if (!contato.mutuo) {
+          this.snackBar.open(
+            'O jogador ainda não te favoritou de volta. Contato indisponível.',
+            'OK',
+            { duration: 5000 },
+          );
+        }
+      },
+      error: () => {
+        this.loadingContato.set(false);
+        this.snackBar.open('Não foi possível obter o contato.', 'OK', { duration: 4000 });
+      },
+    });
   }
 }
 
 function joinList(values: string[] | undefined): string {
   if (!values?.length) return '—';
   return values.join(' / ');
-}
-
-function formatTelefone(telefone: string | null | undefined): string {
-  if (!telefone) return '—';
-
-  const digits = telefone.replace(/\D/g, '');
-  if (digits.length === 11) {
-    return `+55 (${digits.slice(0, 2)}) ${digits.slice(2, 7)}.${digits.slice(7)}`;
-  }
-  if (digits.length === 10) {
-    return `+55 (${digits.slice(0, 2)}) ${digits.slice(2, 6)}.${digits.slice(6)}`;
-  }
-
-  return telefone;
 }
 
 function calcMesesApoiando(createdAt: string): number {
@@ -161,7 +186,6 @@ function calcMesesApoiando(createdAt: string): number {
 
 function formatMelhoresResultados(resultados: number[]): string[] {
   if (!resultados.length) return [];
-
   return resultados.map((posicao) => {
     if (posicao === 1) return '1º Lugar';
     if (posicao === 2) return '2º Lugar';

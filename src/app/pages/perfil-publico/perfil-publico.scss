@@ -2,8 +2,7 @@
   min-height: calc(100vh - 4rem);
 }
 
-.perfil-card,
-.perfil-promo-card {
+.perfil-card {
   --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
   background-color: rgba(217, 217, 217, 0.1);
   backdrop-filter: blur(12px);
@@ -142,7 +141,6 @@
 .perfil-deck-list li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
   padding: 0.35rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -154,24 +152,14 @@
   }
 }
 
-.perfil-promo-banner {
-  display: block;
-  width: 100%;
-  min-height: 6rem;
-  overflow: hidden;
-  border: 1px dashed rgba(245, 130, 32, 0.35);
+.perfil-contato-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(245, 130, 32, 0.2), rgba(120, 40, 0, 0.28));
-  padding: 0;
-  cursor: default;
-
-  &--clickable {
-    cursor: pointer;
-
-    &:hover {
-      border-color: rgba(245, 130, 32, 0.6);
-    }
-  }
+  background: rgba(245, 130, 32, 0.1);
+  border: 1px solid rgba(245, 130, 32, 0.3);
 }
 
 @media (max-width: 1023px) {
@@ -192,74 +180,5 @@
   .perfil-left,
   .perfil-right {
     padding-inline: 1.25rem;
-  }
-}
-
-
-// --- Minhas Mesas ---
-.perfil-mesa-card {
-  --mat-card-elevated-container-color: rgba(217, 217, 217, 0.08);
-  background-color: rgba(217, 217, 217, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1rem;
-  color: var(--sys-color-white);
-}
-
-.perfil-mesa-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-
-  &--finalizada {
-    background: rgba(76, 175, 80, 0.2);
-    color: #81c784;
-  }
-
-  &--andamento {
-    background: rgba(245, 130, 32, 0.2);
-    color: #f58220;
-  }
-}
-
-.perfil-mesa-jogadores {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-}
-
-.perfil-mesa-jogador-nick {
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.perfil-mesa-jogador-pos {
-  margin-left: auto;
-  font-weight: 700;
-  font-size: 0.75rem;
-}
-
-.perfil-mesa-jogador--destaque {
-  .perfil-mesa-jogador-nick,
-  .perfil-mesa-jogador-pos {
-    color: var(--sys-color-primary);
   }
 }

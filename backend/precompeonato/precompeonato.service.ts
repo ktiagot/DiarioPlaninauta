@@ -17,6 +17,7 @@ import {
   MinhasEstatisticasDto,
   TopKillerDto,
 } from './dto/estatisticas-response.dto';
+import { MinhasMesasResponseDto, MinhasMesaDto } from './dto/minhas-mesas-response.dto';
 import {
   toCampeonatoAtualResponse,
   toInscricaoResponse,
@@ -352,6 +353,59 @@ export class PrecompeonatoService {
       .sort((a, b) => b.partidas - a.partidas);
 
     return { partidas, vitorias, kills, winRate, decksMaisUsados };
+  }
+
+  async getMinhasMesas(userId: string): Promise<MinhasMesasResponseDto> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+
+    const inscricao = await this.prisma.inscricao.findFirst({
+      where: {
+        campeonatoId: campeonato.id,
+        userId,
+        ativo: true,
+      },
+      select: { id: true },
+    });
+
+    if (!inscricao) {
+      return { mesas: [] };
+    }
+
+    const mesasJogador = await this.prisma.mesaTorneioJogador.findMany({
+      where: { inscricaoId: inscricao.id },
+      include: {
+        mesa: {
+          include: {
+            rodada: { select: { numero: true } },
+            jogadores: {
+              include: {
+                inscricao: {
+                  include: {
+                    user: { select: { nick: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { mesa: { rodada: { numero: 'asc' } } },
+    });
+
+    const mesas: MinhasMesaDto[] = mesasJogador.map((mj) => ({
+      id: mj.mesa.id,
+      rodadaNumero: mj.mesa.rodada.numero,
+      numeroMesa: mj.mesa.numeroMesa,
+      finalizada: mj.mesa.finalizada,
+      minhaPosicaoFinal: mj.posicaoFinal,
+      jogadores: mj.mesa.jogadores.map((j) => ({
+        nick: j.inscricao.user.nick,
+        deckNome: j.inscricao.deckNome,
+        posicaoFinal: j.posicaoFinal,
+      })),
+    }));
+
+    return { mesas };
   }
 
   private async findCampeonatoAtualOrThrow(): Promise<Campeonato> {

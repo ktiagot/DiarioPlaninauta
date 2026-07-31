@@ -24,6 +24,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { UserPublicResponseDto } from './dto/user-public-response.dto';
 import { AvailabilityResponseDto } from './dto/availability-response.dto';
 
 @ApiTags('Users')
@@ -68,6 +69,18 @@ export class UsersController {
     @Query('nick') nick?: string,
   ): Promise<AvailabilityResponseDto> {
     return this.usersService.checkAvailability(email, nick);
+  }
+
+  @Get(':id/publico')
+  @ApiOperation({
+    summary: 'Perfil público de um usuário',
+    description:
+      'Retorna apenas dados públicos (sem telefone, email, senha). Para uso no perfil público.',
+  })
+  @ApiOkResponse({ description: 'Perfil público.', type: UserPublicResponseDto })
+  @ApiNotFoundResponse({ description: 'Usuário não encontrado.' })
+  findOnePublic(@Param('id') id: string): Promise<UserPublicResponseDto> {
+    return this.usersService.findOnePublic(id);
   }
 
   @Get(':id')

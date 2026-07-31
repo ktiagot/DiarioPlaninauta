@@ -176,6 +176,51 @@
         </div>
       </mat-card-content>
     </mat-card>
+
+    <!-- Minhas Mesas -->
+    <section class="mt-2">
+      <h2 class="perfil-section-label mb-4 text-base">Minhas Mesas</h2>
+      @if (minhasMesas().length) {
+        <div class="grid gap-4 sm:grid-cols-2">
+          @for (mesa of minhasMesas(); track mesa.id) {
+            <mat-card class="perfil-mesa-card">
+              <mat-card-content class="!p-4">
+                <div class="mb-2 flex items-center justify-between">
+                  <span class="text-sm font-bold text-white">
+                    Rodada {{ mesa.rodadaNumero }} — Mesa {{ mesa.numeroMesa }}
+                  </span>
+                  @if (mesa.finalizada) {
+                    <span class="perfil-mesa-badge perfil-mesa-badge--finalizada">Finalizada</span>
+                  } @else {
+                    <span class="perfil-mesa-badge perfil-mesa-badge--andamento">Em andamento</span>
+                  }
+                </div>
+                <ul class="perfil-mesa-jogadores">
+                  @for (jogador of mesa.jogadores; track jogador.nick) {
+                    <li [class.perfil-mesa-jogador--destaque]="jogador.posicaoFinal === 1">
+                      <span class="perfil-mesa-jogador-nick">{{ jogador.nick }}</span>
+                      <span class="text-white/50">{{ jogador.deckNome }}</span>
+                      @if (jogador.posicaoFinal) {
+                        <span class="perfil-mesa-jogador-pos" [class.text-[var(--sys-color-primary)]]="jogador.posicaoFinal === 1">
+                          {{ jogador.posicaoFinal }}º
+                        </span>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (mesa.minhaPosicaoFinal) {
+                  <p class="mt-2 text-xs font-semibold" [class.text-[var(--sys-color-primary)]]="mesa.minhaPosicaoFinal === 1">
+                    Minha posição: {{ mesa.minhaPosicaoFinal }}º lugar
+                  </p>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      } @else {
+        <p class="text-sm text-white/45">Nenhuma mesa ainda</p>
+      }
+    </section>
   } @else {
     <mat-card class="perfil-card">
       <mat-card-content class="flex flex-col items-center gap-4 px-6 py-12 text-center sm:px-10">

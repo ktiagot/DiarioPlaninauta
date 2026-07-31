@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { UserPublicResponseDto } from './dto/user-public-response.dto';
 import { AvailabilityResponseDto } from './dto/availability-response.dto';
 import { toUserResponse } from './mappers/to-user-response';
 
@@ -122,6 +123,36 @@ export class UsersService {
     }
 
     return toUserResponse(user);
+  }
+
+  async findOnePublic(id: string): Promise<UserPublicResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nick: true,
+        nome: true,
+        cidade: true,
+        estado: true,
+        formatos: true,
+        diasDisponiveis: true,
+        horarios: true,
+        foto: true,
+        badge: true,
+        apoiandoDesde: true,
+        genero: true,
+        formatoFavorito: true,
+        decksMaisUsados: true,
+        preCampeonatos: true,
+        melhoresResultados: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário com id "${id}" não encontrado.`);
+    }
+
+    return user as UserPublicResponseDto;
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {

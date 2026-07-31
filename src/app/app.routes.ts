@@ -83,6 +83,15 @@ export const routes: Routes = [
           import('./pages/sugestoes/sugestoes').then((m) => m.SugestoesComponent),
         data: { title: 'Sugestões' },
       },
+      {
+        path: 'perfil/:userId',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./pages/perfil-publico/perfil-publico').then(
+            (m) => m.PerfilPublicoComponent,
+          ),
+        data: { title: 'Perfil' },
+      },
       { path: 'perfil', redirectTo: '', pathMatch: 'full' },
     ],
   },
