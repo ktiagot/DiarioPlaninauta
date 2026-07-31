@@ -46,7 +46,7 @@ export class AdminComunidadeComponent implements OnInit {
     },
     scales: {
       x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-      y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.05)' } },
     },
   };
 
@@ -77,8 +77,8 @@ export class AdminComunidadeComponent implements OnInit {
       datasets: [
         {
           data: data.topCidades.map((c) => c.quantidade),
-          backgroundColor: 'rgba(245, 130, 32, 0.7)',
-          borderColor: '#f58220',
+          backgroundColor: 'rgba(129, 199, 212, 0.7)',
+          borderColor: '#81c7d4',
           borderWidth: 1,
         },
       ],
@@ -90,8 +90,8 @@ export class AdminComunidadeComponent implements OnInit {
         {
           data: data.topFormatos.map((f) => f.quantidade),
           backgroundColor: [
-            '#f58220', '#ff9f44', '#ffb74d', '#e65100',
-            '#ff6d00', '#bf360c', '#d84315', '#ff8f00',
+            '#81c7d4', '#a8d8a8', '#c4b7e6', '#f7d794',
+            '#e6a0c4', '#7ecfc0', '#f3a683', '#aab6d3',
           ],
           borderWidth: 0,
         },

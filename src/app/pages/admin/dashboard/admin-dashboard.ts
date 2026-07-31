@@ -35,15 +35,15 @@ export class AdminDashboardComponent implements OnInit {
         {
           label: 'Jogadores',
           data: m.evolucaoRodadas.map((r) => r.jogadores),
-          backgroundColor: 'rgba(245, 130, 32, 0.7)',
-          borderColor: '#f58220',
+          backgroundColor: 'rgba(129, 199, 212, 0.75)',
+          borderColor: '#81c7d4',
           borderWidth: 1,
         },
         {
           label: 'Mesas',
           data: m.evolucaoRodadas.map((r) => r.mesas),
-          backgroundColor: 'rgba(255, 159, 68, 0.5)',
-          borderColor: '#ff9f44',
+          backgroundColor: 'rgba(245, 130, 32, 0.7)',
+          borderColor: '#f58220',
           borderWidth: 1,
         },
       ],
@@ -70,9 +70,16 @@ export class AdminDashboardComponent implements OnInit {
         {
           data: m.metagameDistribuicao.map((d) => d.quantidade),
           backgroundColor: [
-            '#f58220', '#ff9f44', '#ffb74d', '#e65100',
-            '#ff6d00', '#bf360c', '#d84315', '#ff8f00',
-            '#ef6c00', '#f4511e',
+            '#81c7d4', // azul pastel
+            '#f58220', // laranja (primária)
+            '#a8d8a8', // verde pastel
+            '#e6a0c4', // rosa pastel
+            '#c4b7e6', // lilás pastel
+            '#f7d794', // amarelo pastel
+            '#7ecfc0', // turquesa pastel
+            '#f3a683', // salmão pastel
+            '#aab6d3', // azul acinzentado
+            '#d4a5a5', // rosé pastel
           ],
           borderWidth: 0,
         },
@@ -99,11 +106,11 @@ export class AdminDashboardComponent implements OnInit {
         {
           label: 'Kills por rodada',
           data: m.topKillsPorRodada.map((r) => r.kills),
-          borderColor: '#f58220',
-          backgroundColor: 'rgba(245, 130, 32, 0.15)',
+          borderColor: '#e6a0c4',
+          backgroundColor: 'rgba(230, 160, 196, 0.12)',
           fill: true,
           tension: 0.3,
-          pointBackgroundColor: '#f58220',
+          pointBackgroundColor: '#e6a0c4',
         },
       ],
     };
