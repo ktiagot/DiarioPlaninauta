@@ -77,6 +77,12 @@ export const routes: Routes = [
           ),
         data: { title: 'Loja de Pontos' },
       },
+      {
+        path: 'sugestoes',
+        loadComponent: () =>
+          import('./pages/sugestoes/sugestoes').then((m) => m.SugestoesComponent),
+        data: { title: 'Sugestões' },
+      },
       { path: 'perfil', redirectTo: '', pathMatch: 'full' },
     ],
   },

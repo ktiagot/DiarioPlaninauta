@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ComunidadeModule } from './comunidade/comunidade.module';
 import { MesasModule } from './mesas/mesas.module';
 import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
+import { SugestoesModule } from './sugestoes/sugestoes.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { UsersModule } from './users/users.module';
     MesasModule,
     PrecompeonatoModule,
     ComunidadeModule,
+    SugestoesModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,87 @@
+<div class="portal-page flex min-h-screen flex-col items-center justify-center gap-8 p-4">
+
+  <app-portal-brand />
+
+  @if (!enviado()) {
+    <mat-card class="sugestoes-card w-full max-w-[600px]">
+      <mat-card-header>
+        <mat-card-title>Sugestões</mat-card-title>
+        <mat-card-subtitle>Envie sua sugestão, crítica ou elogio para a equipe</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="pt-4">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4" novalidate>
+
+          <div class="field-group">
+            <label for="nome" class="text-white">Nome <span class="text-orange-400">*</span></label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="nome"
+                formControlName="nome"
+                placeholder="Seu nome"
+                autocomplete="name"
+              />
+              @if (form.controls.nome.invalid && form.controls.nome.touched) {
+                <mat-error>Informe seu nome</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label for="telefone" class="text-white">Telefone / WhatsApp</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="telefone"
+                type="tel"
+                formControlName="telefone"
+                placeholder="11999999999"
+                autocomplete="tel"
+              />
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label for="mensagem" class="text-white">Mensagem <span class="text-orange-400">*</span></label>
+            <mat-form-field appearance="outline" class="w-full">
+              <textarea
+                matInput
+                id="mensagem"
+                formControlName="mensagem"
+                placeholder="Escreva sua sugestão, crítica ou elogio..."
+                rows="5"
+              ></textarea>
+              @if (form.controls.mensagem.invalid && form.controls.mensagem.touched) {
+                <mat-error>Escreva sua mensagem</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="form.invalid || loading()"
+            class="w-full"
+          >
+            @if (loading()) { Enviando… } @else { Enviar sugestão }
+          </button>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card class="sugestoes-card w-full max-w-[600px] text-center">
+      <mat-card-content class="flex flex-col items-center gap-4 py-8">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <h2 class="text-xl font-semibold text-white">Obrigado!</h2>
+        <p class="text-white/70">Sua sugestão foi enviada com sucesso para a equipe.</p>
+        <button mat-stroked-button color="primary" (click)="novasugestao()">
+          Enviar outra sugestão
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+</div>
