@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 
 import { AdminService, InscritoResumo, SubmitResultadoPayload } from '../../core/admin/admin.service';
 import { SorteioSnapshot, SorteioMesa, RodadaAtual } from '../../core/admin/admin.models';
+import { AdminDashboardComponent } from './dashboard/admin-dashboard';
 
 @Component({
   selector: 'app-admin',
@@ -24,6 +25,7 @@ import { SorteioSnapshot, SorteioMesa, RodadaAtual } from '../../core/admin/admi
     MatChipsModule,
     MatSnackBarModule,
     FormsModule,
+    AdminDashboardComponent,
   ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',

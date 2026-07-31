@@ -4,9 +4,29 @@ import { Observable } from 'rxjs';
 import { API_URL } from '../config/api.config';
 import { SorteioSnapshot, RodadaAtual, CheckInStatus } from './admin.models';
 
+export interface DashboardMetricas {
+  gerais: {
+    totalUsuarios: number;
+    apoiadoresAtivos: number;
+    exApoiadores: number;
+    campeonatosRealizados: number;
+    totalRodadas: number;
+    totalPartidas: number;
+    totalMesasCasuais: number;
+  };
+  evolucaoRodadas: { label: string; jogadores: number; mesas: number }[];
+  metagameDistribuicao: { comandante: string; quantidade: number }[];
+  topKillsPorRodada: { label: string; kills: number }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private readonly http = inject(HttpClient);
+
+  /** Dashboard de métricas (admin) */
+  getDashboardMetricas(): Observable<DashboardMetricas> {
+    return this.http.get<DashboardMetricas>(`${API_URL}/precompeonato/dashboard`);
+  }
 
   /** Retorna snapshot admin: classificação + check-in + mesas sorteadas */
   getSorteio(): Observable<SorteioSnapshot> {

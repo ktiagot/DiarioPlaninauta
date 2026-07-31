@@ -18,6 +18,7 @@ import {
   TopKillerDto,
 } from './dto/estatisticas-response.dto';
 import { MinhasMesasResponseDto, MinhasMesaDto } from './dto/minhas-mesas-response.dto';
+import { DashboardMetricasResponseDto } from './dto/dashboard-metricas.dto';
 import {
   toCampeonatoAtualResponse,
   toInscricaoResponse,
@@ -353,6 +354,96 @@ export class PrecompeonatoService {
       .sort((a, b) => b.partidas - a.partidas);
 
     return { partidas, vitorias, kills, winRate, decksMaisUsados };
+  }
+
+  async getDashboardMetricas(): Promise<DashboardMetricasResponseDto> {
+    const [
+      totalUsuarios,
+      apoiadoresAtivos,
+      exApoiadores,
+      campeonatosRealizados,
+      totalRodadas,
+      totalPartidas,
+      totalMesasCasuais,
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { isApoiadorAtivo: true } }),
+      this.prisma.user.count({ where: { isExApoiador: true } }),
+      this.prisma.campeonato.count(),
+      this.prisma.rodada.count(),
+      this.prisma.mesaTorneio.count({ where: { finalizada: true } }),
+      this.prisma.mesa.count(),
+    ]);
+
+    // Evolução por rodada (campeonato atual)
+    const campeonato = await this.prisma.campeonato.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let evolucaoRodadas: { label: string; jogadores: number; mesas: number }[] = [];
+    let metagameDistribuicao: { comandante: string; quantidade: number }[] = [];
+    let topKillsPorRodada: { label: string; kills: number }[] = [];
+
+    if (campeonato) {
+      const rodadas = await this.prisma.rodada.findMany({
+        where: { campeonatoId: campeonato.id },
+        orderBy: { numero: 'asc' },
+        include: {
+          mesas: {
+            where: { finalizada: true },
+            include: {
+              jogadores: { select: { kills: true } },
+            },
+          },
+        },
+      });
+
+      evolucaoRodadas = rodadas.map((r) => ({
+        label: `Rodada ${r.numero}`,
+        jogadores: r.mesas.reduce((sum, m) => sum + m.jogadores.length, 0),
+        mesas: r.mesas.length,
+      }));
+
+      topKillsPorRodada = rodadas.map((r) => ({
+        label: `Rodada ${r.numero}`,
+        kills: r.mesas.reduce(
+          (sum, m) => sum + m.jogadores.reduce((s, j) => s + j.kills, 0),
+          0,
+        ),
+      }));
+
+      // Metagame distribuição
+      const inscricoes = await this.prisma.inscricao.findMany({
+        where: { campeonatoId: campeonato.id, ativo: true },
+        select: { comandante: true },
+      });
+
+      const cmdMap = new Map<string, number>();
+      for (const i of inscricoes) {
+        const cmd = i.comandante.trim();
+        cmdMap.set(cmd, (cmdMap.get(cmd) ?? 0) + 1);
+      }
+
+      metagameDistribuicao = Array.from(cmdMap.entries())
+        .map(([comandante, quantidade]) => ({ comandante, quantidade }))
+        .sort((a, b) => b.quantidade - a.quantidade)
+        .slice(0, 10);
+    }
+
+    return {
+      gerais: {
+        totalUsuarios,
+        apoiadoresAtivos,
+        exApoiadores,
+        campeonatosRealizados,
+        totalRodadas,
+        totalPartidas,
+        totalMesasCasuais,
+      },
+      evolucaoRodadas,
+      metagameDistribuicao,
+      topKillsPorRodada,
+    };
   }
 
   async getMinhasMesas(userId: string): Promise<MinhasMesasResponseDto> {

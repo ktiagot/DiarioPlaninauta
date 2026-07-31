@@ -13,6 +13,13 @@
     </div>
   } @else {
     <mat-tab-group animationDuration="200ms" class="admin-page__tabs">
+      <!-- TAB: Dashboard -->
+      <mat-tab label="Dashboard">
+        <div class="admin-tab-content">
+          <app-admin-dashboard />
+        </div>
+      </mat-tab>
+
       <!-- TAB: Pareamento -->
       <mat-tab label="Pareamento">
         <div class="admin-tab-content">

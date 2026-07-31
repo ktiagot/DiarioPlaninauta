@@ -32,6 +32,7 @@ import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto'
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
 import { EstatisticasFullResponseDto } from './dto/estatisticas-response.dto';
+import { DashboardMetricasResponseDto } from './dto/dashboard-metricas.dto';
 import { MinhasMesasResponseDto } from './dto/minhas-mesas-response.dto';
 import { CheckInStatusDto, SorteioSnapshotDto } from './dto/sorteio.dto';
 import { RodadaAtualDto } from './dto/rodada-atual.dto';
@@ -191,6 +192,17 @@ export class PrecompeonatoController {
   @ApiForbiddenResponse()
   finalizarRodada(@Param('rodadaId') rodadaId: string): Promise<RodadaAtualDto> {
     return this.sorteioService.finalizarRodada(rodadaId);
+  }
+
+  @Get('dashboard')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Dashboard de métricas (admin)' })
+  @ApiOkResponse({ type: DashboardMetricasResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  getDashboard(): Promise<DashboardMetricasResponseDto> {
+    return this.precompeonatoService.getDashboardMetricas();
   }
 
   @Get('atual/sorteio')

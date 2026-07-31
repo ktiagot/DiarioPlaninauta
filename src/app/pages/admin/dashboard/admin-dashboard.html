@@ -1,0 +1,81 @@
+<div class="dashboard">
+  @if (loading()) {
+    <div class="dashboard__loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (metricas(); as m) {
+    <!-- KPIs -->
+    <div class="dashboard__kpis">
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">people</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.totalUsuarios }}</span>
+        <span class="kpi-card__label">Usuários</span>
+      </div>
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">verified</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.apoiadoresAtivos }}</span>
+        <span class="kpi-card__label">Apoiadores ativos</span>
+      </div>
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">person_off</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.exApoiadores }}</span>
+        <span class="kpi-card__label">Ex-apoiadores</span>
+      </div>
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">emoji_events</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.campeonatosRealizados }}</span>
+        <span class="kpi-card__label">Campeonatos</span>
+      </div>
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">sports_esports</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.totalPartidas }}</span>
+        <span class="kpi-card__label">Partidas</span>
+      </div>
+      <div class="kpi-card">
+        <mat-icon class="kpi-card__icon">casino</mat-icon>
+        <span class="kpi-card__value">{{ m.gerais.totalMesasCasuais }}</span>
+        <span class="kpi-card__label">Mesas casuais</span>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="dashboard__charts">
+      <!-- Evolução por rodada -->
+      <div class="chart-card">
+        <h4 class="chart-card__title">Evolução por Rodada</h4>
+        <canvas
+          baseChart
+          type="bar"
+          [data]="evolucaoChartData()"
+          [options]="evolucaoChartOptions"
+        ></canvas>
+      </div>
+
+      <!-- Metagame -->
+      <div class="chart-card">
+        <h4 class="chart-card__title">Metagame — Comandantes</h4>
+        <canvas
+          baseChart
+          type="doughnut"
+          [data]="metagameChartData()"
+          [options]="metagameChartOptions"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Kills por rodada -->
+    <div class="dashboard__charts dashboard__charts--full">
+      <div class="chart-card">
+        <h4 class="chart-card__title">Kills por Rodada</h4>
+        <canvas
+          baseChart
+          type="line"
+          [data]="killsChartData()"
+          [options]="killsChartOptions"
+        ></canvas>
+      </div>
+    </div>
+  } @else {
+    <p class="dashboard__empty">Nenhuma métrica disponível.</p>
+  }
+</div>
