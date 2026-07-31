@@ -15,6 +15,13 @@ export const routes: Routes = [
         data: { title: 'Meu perfil' },
       },
       {
+        path: 'perfil/editar',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./pages/perfil-editar/perfil-editar').then((m) => m.PerfilEditarComponent),
+        data: { title: 'Editar perfil' },
+      },
+      {
         path: 'login',
         loadComponent: () => import('./pages/login/login').then((m) => m.LoginComponent),
       },

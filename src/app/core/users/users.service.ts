@@ -16,6 +16,10 @@ export class UsersService {
     return this.http.get<User>(`${API_URL}/users/${id}`);
   }
 
+  update(id: string, data: Partial<CreateUserRequest>) {
+    return this.http.patch<User>(`${API_URL}/users/${id}`, data);
+  }
+
   checkAvailability(params: { email?: string; nick?: string }) {
     let httpParams = new HttpParams();
     if (params.email) {

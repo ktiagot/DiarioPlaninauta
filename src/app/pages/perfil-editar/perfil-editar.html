@@ -1,0 +1,188 @@
+<main class="perfil-editar-page mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <mat-card class="editar-card">
+    <mat-card-header>
+      <mat-card-title>Editar Perfil</mat-card-title>
+      <mat-card-subtitle>Atualize suas informações</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="pt-4">
+      @if (loading()) {
+        <div class="flex items-center justify-center py-12">
+          <mat-spinner diameter="40" />
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4" novalidate>
+
+          <!-- Avatar (Scryfall) -->
+          <div class="field-group">
+            <label class="text-white">Avatar (buscar criatura lendária)</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                placeholder="Digite o nome da carta..."
+                [value]="avatarSearchTerm()"
+                (input)="onAvatarSearch($event)"
+                autocomplete="off"
+              />
+            </mat-form-field>
+
+            @if (avatarResults().length) {
+              <div class="avatar-results">
+                @for (card of avatarResults(); track card.name) {
+                  <button
+                    type="button"
+                    class="avatar-option"
+                    [class.selected]="form.controls.foto.value === card.artCropUrl"
+                    (click)="selectAvatar(card)"
+                    [matTooltip]="card.name"
+                  >
+                    <img [src]="card.artCropUrl" [alt]="card.name" />
+                  </button>
+                }
+              </div>
+            }
+
+            @if (form.controls.foto.value) {
+              <div class="avatar-preview">
+                <img [src]="form.controls.foto.value" alt="Avatar selecionado" />
+                <span class="text-xs text-white/60">Avatar selecionado</span>
+              </div>
+            }
+          </div>
+
+          <!-- Nome / Sobrenome -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="field-group">
+              <label for="nome" class="text-white">Nome</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input matInput id="nome" formControlName="nome" />
+              </mat-form-field>
+            </div>
+            <div class="field-group">
+              <label for="sobrenome" class="text-white">Sobrenome</label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input matInput id="sobrenome" formControlName="sobrenome" />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Nick -->
+          <div class="field-group">
+            <label for="nick" class="text-white">Nick</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="nick" formControlName="nick" />
+            </mat-form-field>
+          </div>
+
+          <!-- Telefone -->
+          <div class="field-group">
+            <label for="telefone" class="text-white">Telefone</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="telefone" type="tel" formControlName="telefone" />
+            </mat-form-field>
+          </div>
+
+          <!-- Cidade (Nominatim autocomplete) -->
+          <div class="field-group">
+            <label for="cidade" class="text-white">Cidade</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="cidade"
+                formControlName="cidade"
+                placeholder="Digite sua cidade..."
+                autocomplete="off"
+                (input)="onCidadeBusca($event)"
+              />
+            </mat-form-field>
+            @if (sugestoesCidade().length) {
+              <div class="sugestoes-dropdown">
+                @for (s of sugestoesCidade(); track s.displayName) {
+                  <button type="button" class="sugestao-item" (click)="selecionarCidade(s)">
+                    {{ s.displayName }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Formatos -->
+          <div class="field-group">
+            <label for="formatos" class="text-white">Formatos</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select id="formatos" formControlName="formatos" multiple>
+                @for (formato of formatosDisponiveis; track formato) {
+                  <mat-option [value]="formato">{{ formato }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Formato favorito -->
+          <div class="field-group">
+            <label for="formatoFavorito" class="text-white">Formato favorito</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select id="formatoFavorito" formControlName="formatoFavorito">
+                <mat-option value="">Nenhum</mat-option>
+                @for (formato of formatosDisponiveis; track formato) {
+                  <mat-option [value]="formato">{{ formato }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Dias disponíveis -->
+          <div class="field-group">
+            <label for="diasDisponiveis" class="text-white">Dias disponíveis</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select id="diasDisponiveis" formControlName="diasDisponiveis" multiple>
+                @for (dia of diasSemana; track dia) {
+                  <mat-option [value]="dia">{{ dia }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Horários -->
+          <div class="field-group">
+            <label for="horarios" class="text-white">Horários</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="horarios"
+                formControlName="horariosText"
+                placeholder="Ex: 18h-22h, 14h-18h"
+              />
+              <mat-hint>Separe por vírgula</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Gênero/Pronomes -->
+          <div class="field-group">
+            <label for="genero" class="text-white">Pronomes</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="genero" formControlName="genero" placeholder="ele/dele, ela/dela..." />
+            </mat-form-field>
+          </div>
+
+          <!-- Botões -->
+          <div class="flex gap-3 pt-2">
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="saving()"
+              class="flex-1"
+            >
+              @if (saving()) { Salvando… } @else { Salvar alterações }
+            </button>
+            <a mat-stroked-button routerLink="/" class="flex-1 text-center">Cancelar</a>
+          </div>
+
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+
+</main>
