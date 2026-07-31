@@ -54,10 +54,10 @@ export const routes: Routes = [
         path: 'estatisticas',
         canActivate: [authGuard],
         loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
+          import('./pages/estatisticas/estatisticas').then(
+            (m) => m.EstatisticasComponent,
           ),
-        data: { title: 'Estatisticas' },
+        data: { title: 'Estatísticas' },
       },
       {
         path: 'mesoes',

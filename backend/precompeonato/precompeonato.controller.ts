@@ -31,6 +31,7 @@ import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
+import { EstatisticasFullResponseDto } from './dto/estatisticas-response.dto';
 import { CheckInStatusDto, SorteioSnapshotDto } from './dto/sorteio.dto';
 import { RodadaAtualDto } from './dto/rodada-atual.dto';
 import { SubmitTorneioMesaResultadoDto } from './dto/submit-torneio-mesa-resultado.dto';
@@ -95,6 +96,28 @@ export class PrecompeonatoController {
   @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
   listJogadores(): Promise<JogadorPrecompeonatoResponseDto[]> {
     return this.precompeonatoService.listJogadores();
+  }
+
+  @Get('estatisticas')
+  @ApiOperation({
+    summary: 'Estatísticas do precompeonato atual',
+    description:
+      'Retorna estatísticas gerais (partidas, jogadores, rodadas, decks), metagame e top killers. Opcionalmente retorna estatísticas individuais quando userId é informado.',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    description: 'ID do usuário para retornar estatísticas individuais',
+  })
+  @ApiOkResponse({
+    description: 'Estatísticas do campeonato.',
+    type: EstatisticasFullResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
+  getEstatisticas(
+    @Query('userId') userId?: string,
+  ): Promise<EstatisticasFullResponseDto> {
+    return this.precompeonatoService.getEstatisticas(userId);
   }
 
   @Get('atual/rodada')

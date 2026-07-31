@@ -1,0 +1,272 @@
+.estatisticas-page {
+  min-height: calc(100vh - 4rem);
+}
+
+.glass-card {
+  --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1rem;
+  overflow: hidden;
+  color: var(--sys-color-white);
+}
+
+.estatisticas-tabs {
+  --mdc-tab-indicator-active-indicator-color: #f58220;
+  --mat-tab-header-active-label-text-color: #f58220;
+  --mat-tab-header-active-focus-label-text-color: #f58220;
+  --mat-tab-header-active-hover-label-text-color: #f58220;
+  --mat-tab-header-inactive-label-text-color: rgba(255, 255, 255, 0.6);
+}
+
+.tab-content {
+  padding: 1.5rem 0;
+}
+
+// --- Stat cards grid ---
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.stat-icon {
+  color: #f58220;
+  font-size: 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f58220;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// --- Section title ---
+.section-title {
+  margin-bottom: 1rem;
+  color: #f58220;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+// --- Metagame ---
+.metagame-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metagame-card {
+  padding: 1rem 1.25rem;
+}
+
+.metagame-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.metagame-deck-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.metagame-comandante {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+}
+
+.metagame-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.metagame-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metagame-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f58220;
+}
+
+.metagame-stat-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.metagame-bar-wrap {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.metagame-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f58220, #ff9f44);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+// --- Top Killers ---
+.killers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.killer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.killer-rank {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f58220;
+  min-width: 2rem;
+}
+
+.killer-nick {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: white;
+  min-width: 8rem;
+}
+
+.killer-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.killer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f58220, #ff6b00);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.killer-kills {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+// --- Minhas stats - login/empty icons ---
+.login-icon,
+.empty-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+// --- Decks list ---
+.decks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.deck-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+}
+
+.deck-name {
+  font-weight: 600;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.deck-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.deck-stat {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+
+  &--highlight {
+    color: #f58220;
+    font-weight: 600;
+  }
+}
+
+// --- Responsive ---
+@media (max-width: 767px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metagame-stats {
+    gap: 1rem;
+  }
+
+  .killer-nick {
+    min-width: 5rem;
+  }
+
+  .deck-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    padding: 1rem 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,167 @@
+<div class="estatisticas-page flex flex-col items-center px-4 py-8">
+  <h1 class="text-2xl font-bold text-white mb-6">Estatísticas</h1>
+
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="glass-card p-6 text-center w-full max-w-3xl">
+      <mat-icon class="text-red-400 mb-2">error_outline</mat-icon>
+      <p class="text-red-300">{{ error() }}</p>
+    </div>
+  } @else {
+    <mat-tab-group class="w-full max-w-5xl estatisticas-tabs" animationDuration="200ms">
+      <!-- Tab Gerais -->
+      <mat-tab label="Estatísticas Gerais">
+        <div class="tab-content">
+          <!-- Cards de números gerais -->
+          <section class="stat-grid">
+            <div class="stat-card glass-card">
+              <mat-icon class="stat-icon">sports_esports</mat-icon>
+              <span class="stat-value">{{ gerais()?.totalPartidas ?? 0 }}</span>
+              <span class="stat-label">Partidas</span>
+            </div>
+            <div class="stat-card glass-card">
+              <mat-icon class="stat-icon">group</mat-icon>
+              <span class="stat-value">{{ gerais()?.totalJogadores ?? 0 }}</span>
+              <span class="stat-label">Jogadores</span>
+            </div>
+            <div class="stat-card glass-card">
+              <mat-icon class="stat-icon">flag</mat-icon>
+              <span class="stat-value">{{ gerais()?.totalRodadas ?? 0 }}</span>
+              <span class="stat-label">Rodadas</span>
+            </div>
+            <div class="stat-card glass-card">
+              <mat-icon class="stat-icon">style</mat-icon>
+              <span class="stat-value">{{ gerais()?.totalDecks ?? 0 }}</span>
+              <span class="stat-label">Decks Diferentes</span>
+            </div>
+          </section>
+
+          <!-- Metagame -->
+          <section class="mt-8">
+            <h2 class="section-title">Metagame — Decks Mais Usados</h2>
+            <div class="metagame-list">
+              @for (deck of metagame(); track deck.deckNome) {
+                <div class="metagame-card glass-card">
+                  <div class="metagame-header">
+                    <span class="metagame-deck-name">{{ deck.deckNome }}</span>
+                    <span class="metagame-comandante">{{ deck.comandante }}</span>
+                  </div>
+                  <div class="metagame-stats">
+                    <div class="metagame-stat">
+                      <span class="metagame-stat-value">{{ deck.vezesUsado }}</span>
+                      <span class="metagame-stat-label">Usos</span>
+                    </div>
+                    <div class="metagame-stat">
+                      <span class="metagame-stat-value">{{ deck.vitorias }}</span>
+                      <span class="metagame-stat-label">Vitórias</span>
+                    </div>
+                    <div class="metagame-stat">
+                      <span class="metagame-stat-value">{{ deck.winRate }}%</span>
+                      <span class="metagame-stat-label">Win Rate</span>
+                    </div>
+                  </div>
+                  <div class="metagame-bar-wrap">
+                    <div
+                      class="metagame-bar"
+                      [style.width.%]="deck.winRate"
+                    ></div>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-gray-400 text-center py-4">Nenhum dado de metagame disponível.</p>
+              }
+            </div>
+          </section>
+
+          <!-- Top Killers -->
+          <section class="mt-8">
+            <h2 class="section-title">Top Eliminadores</h2>
+            <div class="killers-list">
+              @for (killer of topKillers(); track killer.nick; let i = $index) {
+                <div class="killer-row glass-card">
+                  <span class="killer-rank">#{{ i + 1 }}</span>
+                  <span class="killer-nick">{{ killer.nick }}</span>
+                  <div class="killer-bar-wrap">
+                    <div
+                      class="killer-bar"
+                      [style.width.%]="(killer.totalKills / maxKills()) * 100"
+                    ></div>
+                  </div>
+                  <span class="killer-kills">{{ killer.totalKills }} kills</span>
+                </div>
+              } @empty {
+                <p class="text-gray-400 text-center py-4">Nenhuma eliminação registrada.</p>
+              }
+            </div>
+          </section>
+        </div>
+      </mat-tab>
+
+      <!-- Tab Minhas -->
+      <mat-tab label="Minhas Estatísticas">
+        <div class="tab-content">
+          @if (!isLoggedIn()) {
+            <div class="glass-card p-8 text-center">
+              <mat-icon class="login-icon">lock</mat-icon>
+              <p class="text-gray-300 mt-4 text-lg">
+                Faça login para ver suas estatísticas pessoais.
+              </p>
+            </div>
+          } @else if (!minhas()) {
+            <div class="glass-card p-8 text-center">
+              <mat-icon class="empty-icon">bar_chart</mat-icon>
+              <p class="text-gray-300 mt-4">
+                Você ainda não tem estatísticas neste campeonato. Inscreva-se e jogue para começar!
+              </p>
+            </div>
+          } @else {
+            <!-- Resumo pessoal -->
+            <section class="stat-grid">
+              <div class="stat-card glass-card">
+                <mat-icon class="stat-icon">sports_esports</mat-icon>
+                <span class="stat-value">{{ minhas()!.partidas }}</span>
+                <span class="stat-label">Partidas</span>
+              </div>
+              <div class="stat-card glass-card">
+                <mat-icon class="stat-icon">emoji_events</mat-icon>
+                <span class="stat-value">{{ minhas()!.vitorias }}</span>
+                <span class="stat-label">Vitórias</span>
+              </div>
+              <div class="stat-card glass-card">
+                <mat-icon class="stat-icon">bolt</mat-icon>
+                <span class="stat-value">{{ minhas()!.kills }}</span>
+                <span class="stat-label">Eliminações</span>
+              </div>
+              <div class="stat-card glass-card">
+                <mat-icon class="stat-icon">percent</mat-icon>
+                <span class="stat-value">{{ minhas()!.winRate }}%</span>
+                <span class="stat-label">Win Rate</span>
+              </div>
+            </section>
+
+            <!-- Decks usados -->
+            <section class="mt-8">
+              <h2 class="section-title">Meus Decks</h2>
+              <div class="decks-list">
+                @for (deck of minhas()!.decksMaisUsados; track deck.deckNome) {
+                  <div class="deck-row glass-card">
+                    <span class="deck-name">{{ deck.deckNome }}</span>
+                    <div class="deck-stats">
+                      <span class="deck-stat">{{ deck.partidas }} partidas</span>
+                      <span class="deck-stat deck-stat--highlight">{{ deck.vitorias }} vitórias</span>
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="text-gray-400 text-center py-4">Nenhum deck utilizado ainda.</p>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>
