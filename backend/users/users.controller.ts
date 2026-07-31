@@ -8,6 +8,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -42,6 +43,11 @@ export class UsersController {
     description: 'Serviço de verificação APOIA.se indisponível.',
   })
   create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+    if (process.env.CADASTRO_BLOQUEADO === 'true') {
+      throw new ServiceUnavailableException(
+        'Cadastros estão temporariamente desativados. Tente novamente mais tarde.',
+      );
+    }
     return this.usersService.create(dto);
   }
 
