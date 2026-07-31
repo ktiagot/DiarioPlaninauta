@@ -1,8 +1,15 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
+import { adminGuard } from './core/auth/admin.guard';
 
 export const routes: Routes = [
+  {
+    path: 'landing',
+    loadComponent: () =>
+      import('./pages/landing/landing').then((m) => m.LandingComponent),
+    data: { title: 'Diário Planinauta' },
+  },
   {
     path: '',
     loadComponent: () =>
@@ -88,6 +95,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/sugestoes/sugestoes').then((m) => m.SugestoesComponent),
         data: { title: 'Sugestões' },
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/admin/admin').then((m) => m.AdminComponent),
+        data: { title: 'Admin' },
       },
       {
         path: 'perfil/:userId',
