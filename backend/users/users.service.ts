@@ -93,6 +93,7 @@ export class UsersService {
           isApoiadorAtivo: backer.isBacker,
           monthlyContribution: backer.thisMonthPaidValue ?? null,
           lastValidationAt: new Date(),
+          apoiandoDesde: backer.isBacker ? new Date() : null,
         },
       });
 

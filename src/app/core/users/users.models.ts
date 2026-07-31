@@ -43,6 +43,7 @@ export interface User {
   isApoiadorAtivo: boolean;
   monthlyContribution: number | null;
   lastValidationAt: string | null;
+  apoiandoDesde: string | null;
   createdAt: string;
   updatedAt: string;
 }

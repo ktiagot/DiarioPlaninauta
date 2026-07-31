@@ -58,6 +58,7 @@ model User {
   role                UserRole @default(BACKER)
   monthlyContribution Int?
   lastValidationAt    DateTime?
+  apoiandoDesde       DateTime?
 
   // --- mesas relations ---
   mesaJogadores      MesaJogador[] @relation("MesaJogadorUser")

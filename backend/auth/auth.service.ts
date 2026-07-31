@@ -85,6 +85,8 @@ export class AuthService {
         monthlyContribution: backer.thisMonthPaidValue ?? null,
         isApoiadorAtivo: true,
         lastValidationAt: new Date(),
+        // Setar apoiandoDesde apenas na primeira vez que confirma apoiador
+        ...(user.apoiandoDesde ? {} : { apoiandoDesde: new Date() }),
       },
     });
 

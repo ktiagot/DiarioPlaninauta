@@ -94,6 +94,9 @@ export class UserResponseDto {
   @ApiPropertyOptional({ example: '2026-06-30T12:00:00.000Z' })
   lastValidationAt: Date | null;
 
+  @ApiPropertyOptional({ example: '2025-01-15T00:00:00.000Z' })
+  apoiandoDesde: Date | null;
+
   @ApiProperty({ example: '2026-06-30T12:00:00.000Z' })
   createdAt: Date;
 

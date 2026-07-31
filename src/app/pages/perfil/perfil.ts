@@ -77,8 +77,10 @@ export class PerfilComponent implements OnInit {
     formatMelhoresResultados(this.profile()?.melhoresResultados ?? []),
   );
   protected readonly mesesApoiando = computed(() => {
+    const apoiandoDesde = this.profile()?.apoiandoDesde;
     const createdAt = this.profile()?.createdAt;
-    return createdAt ? calcMesesApoiando(createdAt) : null;
+    const dataRef = apoiandoDesde || createdAt;
+    return dataRef ? calcMesesApoiando(dataRef) : null;
   });
   protected readonly avatarInitial = computed(() => {
     const user = this.profile();
