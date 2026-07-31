@@ -60,6 +60,15 @@ export class AuthService {
     const backer = await this.apoiaseService.verify(email);
 
     if (!backer.isBacker) {
+      // Se o usuário existe no banco, marcar como ex-apoiador
+      const existingUser = await this.prisma.user.findUnique({ where: { email } });
+      if (existingUser && existingUser.isApoiadorAtivo) {
+        await this.prisma.user.update({
+          where: { email },
+          data: { isApoiadorAtivo: false, isExApoiador: true },
+        });
+      }
+
       throw new UnauthorizedException(
         'Você precisa ser apoiador ativo no APOIA.se para acessar o portal.',
       );
@@ -79,15 +88,21 @@ export class AuthService {
       );
     }
 
+    // Reativar caso tenha voltado a apoiar
+    const updateData: Record<string, unknown> = {
+      monthlyContribution: backer.thisMonthPaidValue ?? null,
+      isApoiadorAtivo: true,
+      isExApoiador: false,
+      lastValidationAt: new Date(),
+    };
+
+    if (!user.apoiandoDesde) {
+      updateData.apoiandoDesde = new Date();
+    }
+
     const updated = await this.prisma.user.update({
       where: { email },
-      data: {
-        monthlyContribution: backer.thisMonthPaidValue ?? null,
-        isApoiadorAtivo: true,
-        lastValidationAt: new Date(),
-        // Setar apoiandoDesde apenas na primeira vez que confirma apoiador
-        ...(user.apoiandoDesde ? {} : { apoiandoDesde: new Date() }),
-      },
+      data: updateData,
     });
 
     const accessToken = await this.jwtService.signAsync({
