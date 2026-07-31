@@ -193,7 +193,7 @@ export class PerfilEditarComponent implements OnInit {
       sobrenome: raw.sobrenome || undefined,
       nick: raw.nick || undefined,
       telefone: raw.telefone || undefined,
-      cidade: this.cidadeSelecionada?.cidade ?? raw.cidade || undefined,
+      cidade: (this.cidadeSelecionada?.cidade ?? raw.cidade) || undefined,
       estado: this.cidadeSelecionada?.estado ?? undefined,
       pais: this.cidadeSelecionada?.pais ?? undefined,
       lat: this.cidadeSelecionada?.lat ?? undefined,
