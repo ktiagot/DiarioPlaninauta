@@ -18,16 +18,32 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          script_stop: true
           script: |
             echo "=== Pulling latest code ==="
             cd /var/www/diarioplaninauta
             git pull origin main
 
-            echo "=== Installing backend dependencies ==="
+            echo "=== Building Angular frontend ==="
+            npm install
+            npx ng build
+
+            echo "=== Fixing permissions ==="
+            chown -R www-data:www-data /var/www/diarioplaninauta/dist
+            chmod -R 755 /var/www/diarioplaninauta/dist
+
+            echo "=== Building NestJS backend ==="
             cd /var/www/diarioplaninauta/backend
-            npm install --production
+            npm install
+            npx prisma generate
+            npx prisma migrate deploy
+            npm run build
 
             echo "=== Restarting backend ==="
-            pm2 restart diarioplaninauta-api || pm2 start server.js --name diarioplaninauta-api
+            pm2 restart diarioplaninauta-api || pm2 start dist/main.js --name diarioplaninauta-api
+            pm2 save
+
+            echo "=== Reloading Nginx ==="
+            systemctl reload nginx
 
             echo "=== Deploy complete ==="
