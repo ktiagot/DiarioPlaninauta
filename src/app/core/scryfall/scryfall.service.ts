@@ -25,7 +25,7 @@ export class ScryfallService {
   buscarLendarias(termo: string): Observable<{ name: string; artCropUrl: string }[]> {
     if (!termo || termo.length < 2) return of([]);
 
-    const query = `${termo} type:legendary type:creature`;
+    const query = `${termo} type:legendary`;
     const params = { q: query, unique: 'art' };
 
     return this.http.get<ScryfallSearchResponse>(SCRYFALL_URL, { params }).pipe(
