@@ -72,8 +72,8 @@ export const routes: Routes = [
         path: 'loja',
         canActivate: [authGuard],
         loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
+          import('./pages/loja/loja').then(
+            (m) => m.LojaComponent,
           ),
         data: { title: 'Loja de Pontos' },
       },

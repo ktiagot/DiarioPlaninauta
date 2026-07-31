@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ComunidadeModule } from './comunidade/comunidade.module';
+import { LojaModule } from './loja/loja.module';
 import { MesasModule } from './mesas/mesas.module';
 import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
 import { SugestoesModule } from './sugestoes/sugestoes.module';
@@ -16,6 +17,7 @@ import { UsersModule } from './users/users.module';
     PrecompeonatoModule,
     ComunidadeModule,
     SugestoesModule,
+    LojaModule,
   ],
 })
 export class AppModule {}

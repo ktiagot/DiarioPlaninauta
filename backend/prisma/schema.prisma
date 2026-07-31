@@ -76,6 +76,13 @@ model User {
   // --- precompeonato ---
   inscricoes Inscricao[]
 
+  // --- loja de pontos ---
+  resgates Resgate[]
+  pontos   Ponto[]
+
+  // --- notificações ---
+  notificacoes Notificacao[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -272,4 +279,75 @@ model Favorito {
   @@index([deUserId])
   @@index([paraUserId])
   @@map("favoritos")
+}
+
+// =============================================
+// LOJA DE PONTOS
+// =============================================
+
+model Produto {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  precoPontos Int
+  imagemUrl   String?
+  estoque     Int?     // null = ilimitado
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resgates Resgate[]
+
+  @@map("produtos")
+}
+
+model Resgate {
+  id           String   @id @default(uuid())
+  userId       String
+  produtoId    String
+  pontosGastos Int
+  status       String   @default("pendente") // pendente, aprovado, entregue, cancelado
+  createdAt    DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  @@index([userId])
+  @@map("resgates")
+}
+
+model Ponto {
+  id             String   @id @default(uuid())
+  userId         String
+  tipo           String   // credito, debito
+  quantidade     Int
+  descricao      String
+  referenciaTipo String?  // campeonato, mesa_casual, loja, manual
+  referenciaId   String?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("pontos")
+}
+
+
+// =============================================
+// NOTIFICAÇÕES
+// =============================================
+
+model Notificacao {
+  id        String   @id @default(uuid())
+  userId    String
+  tipo      String   // rodada_nova, resultado_publicado, favorito_mutuo, pontos_creditados, geral
+  titulo    String
+  mensagem  String
+  lida      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lida])
+  @@map("notificacoes")
 }

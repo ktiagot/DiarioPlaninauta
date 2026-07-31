@@ -1,0 +1,302 @@
+$primary: #f58220;
+$glass-bg: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.1);
+$glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+.loja-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+// ─── HEADER ─────────────────────────────────────────────
+
+.loja-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.loja-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+
+  .title-icon {
+    color: $primary;
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.saldo-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: rgba($primary, 0.15);
+  border: 1px solid rgba($primary, 0.4);
+  border-radius: 2rem;
+  color: $primary;
+  font-size: 0.95rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+
+  mat-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  strong {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+}
+
+// ─── LOADING / ERROR / EMPTY ────────────────────────────
+
+.loading-container,
+.error-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+.error-container {
+  color: #ef5350;
+}
+
+// ─── PRODUTOS GRID ──────────────────────────────────────
+
+.produtos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.produto-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: $glass-shadow;
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.produto-imagem {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.placeholder {
+    mat-icon {
+      font-size: 3.5rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.produto-info {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.produto-nome {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.produto-descricao {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.produto-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.produto-preco {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: $primary;
+  font-weight: 700;
+  font-size: 0.95rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.produto-estoque {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+
+  &.esgotado {
+    color: #ef5350;
+    font-weight: 600;
+  }
+
+  &.ilimitado {
+    color: #66bb6a;
+  }
+}
+
+.btn-resgatar {
+  margin-top: 0.75rem;
+  width: 100%;
+  background: $primary !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:disabled {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+// ─── COMO GANHAR PONTOS ─────────────────────────────────
+
+.como-ganhar {
+  margin-top: 2rem;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 1.5rem;
+
+    mat-icon {
+      color: $primary;
+    }
+  }
+}
+
+.como-ganhar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.como-ganhar-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: rgba($primary, 0.4);
+  }
+
+  mat-icon {
+    color: $primary;
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+  }
+}
+
+// ─── RESPONSIVE ─────────────────────────────────────────
+
+@media (max-width: 600px) {
+  .loja-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .produtos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .como-ganhar-grid {
+    grid-template-columns: 1fr;
+  }
+}

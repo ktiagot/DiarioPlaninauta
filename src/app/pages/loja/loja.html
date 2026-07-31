@@ -1,0 +1,127 @@
+<div class="loja-container">
+  <!-- Header -->
+  <div class="loja-header">
+    <h1 class="loja-title">
+      <mat-icon class="title-icon">store</mat-icon>
+      Loja de Pontos
+    </h1>
+
+    @if (isLoggedIn()) {
+      <div class="saldo-badge">
+        <mat-icon>stars</mat-icon>
+        <span>Você tem <strong>{{ saldo() }}</strong> pontos</span>
+      </div>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Carregando produtos...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Produtos Grid -->
+  @if (!loading() && !error()) {
+    @if (produtos().length === 0) {
+      <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <p>Nenhum produto disponível no momento.</p>
+      </div>
+    } @else {
+      <div class="produtos-grid">
+        @for (produto of produtos(); track produto.id) {
+          <div class="produto-card">
+            @if (produto.imagemUrl) {
+              <div class="produto-imagem">
+                <img [src]="produto.imagemUrl" [alt]="produto.nome" />
+              </div>
+            } @else {
+              <div class="produto-imagem placeholder">
+                <mat-icon>redeem</mat-icon>
+              </div>
+            }
+
+            <div class="produto-info">
+              <h3 class="produto-nome">{{ produto.nome }}</h3>
+              @if (produto.descricao) {
+                <p class="produto-descricao">{{ produto.descricao }}</p>
+              }
+
+              <div class="produto-meta">
+                <span class="produto-preco">
+                  <mat-icon>stars</mat-icon>
+                  {{ produto.precoPontos }} pontos
+                </span>
+                @if (produto.estoque !== null) {
+                  <span class="produto-estoque" [class.esgotado]="produto.estoque <= 0">
+                    {{ produto.estoque > 0 ? produto.estoque + ' disponíveis' : 'Esgotado' }}
+                  </span>
+                } @else {
+                  <span class="produto-estoque ilimitado">Ilimitado</span>
+                }
+              </div>
+
+              <button
+                mat-flat-button
+                class="btn-resgatar"
+                [disabled]="!podeResgatar(produto) || resgatando() === produto.id"
+                (click)="resgatar(produto)"
+              >
+                @if (resgatando() === produto.id) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                } @else {
+                  <mat-icon>shopping_cart</mat-icon>
+                  Resgatar
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Como ganhar pontos -->
+    <section class="como-ganhar">
+      <h2>
+        <mat-icon>emoji_events</mat-icon>
+        Como ganhar pontos
+      </h2>
+
+      <div class="como-ganhar-grid">
+        <div class="como-ganhar-card">
+          <mat-icon>military_tech</mat-icon>
+          <h4>Campeonatos</h4>
+          <p>Participe dos pré-campeonatos e ganhe pontos por posição final e kills.</p>
+        </div>
+
+        <div class="como-ganhar-card">
+          <mat-icon>groups</mat-icon>
+          <h4>Mesas Casuais</h4>
+          <p>Jogue nas mesas casuais do portal e ganhe pontos por participação.</p>
+        </div>
+
+        <div class="como-ganhar-card">
+          <mat-icon>favorite</mat-icon>
+          <h4>Apoio Mensal</h4>
+          <p>Apoiadores ativos recebem pontos bônus todo mês automaticamente.</p>
+        </div>
+
+        <div class="como-ganhar-card">
+          <mat-icon>celebration</mat-icon>
+          <h4>Eventos Especiais</h4>
+          <p>Participe de eventos e promoções para ganhar pontos extras.</p>
+        </div>
+      </div>
+    </section>
+  }
+</div>
