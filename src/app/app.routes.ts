@@ -78,6 +78,12 @@ export const routes: Routes = [
         data: { title: 'Loja de Pontos' },
       },
       {
+        path: 'regras',
+        loadComponent: () =>
+          import('./pages/regras/regras').then((m) => m.RegrasComponent),
+        data: { title: 'Regras' },
+      },
+      {
         path: 'sugestoes',
         loadComponent: () =>
           import('./pages/sugestoes/sugestoes').then((m) => m.SugestoesComponent),

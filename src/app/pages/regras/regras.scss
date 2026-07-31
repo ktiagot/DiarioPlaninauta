@@ -1,0 +1,104 @@
+.regras-page {
+  min-height: calc(100vh - 4rem);
+}
+
+.regra-section {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(245, 130, 32, 0.25);
+  }
+
+  h3 {
+    color: #f58220;
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+  }
+
+  h4 {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 1rem 0 0.5rem;
+  }
+
+  ul {
+    margin-left: 1.5rem;
+    list-style: disc;
+  }
+
+  li {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0.5rem 0;
+    line-height: 1.6;
+
+    strong {
+      color: white;
+    }
+  }
+}
+
+.info-destaque {
+  background: rgba(245, 130, 32, 0.08);
+  border-left: 3px solid #f58220;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+
+  p:first-child {
+    color: #f58220;
+    margin-bottom: 0.25rem;
+  }
+
+  p:last-child {
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+  }
+}
+
+.destaque-info {
+  background: rgba(245, 130, 32, 0.06);
+  border: 1px solid rgba(245, 130, 32, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  color: rgba(255, 255, 255, 0.8);
+
+  strong {
+    color: #f58220;
+  }
+}
+
+.destaque-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  color: rgba(255, 255, 255, 0.8);
+
+  strong {
+    color: #ef4444;
+  }
+}
+
+.premio-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.75);
+
+  strong {
+    color: #f58220;
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,8 @@ import {
 import { SessionService } from '../../core/auth/session.service';
 import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
+import { Rodada } from '../../core/rodadas/rodadas.models';
+import { RodadasService } from '../../core/rodadas/rodadas.service';
 import { CheckInStatus } from '../../core/sorteio/sorteio.models';
 import { SorteioService } from '../../core/sorteio/sorteio.service';
 import { MesasComponent } from '../mesas/mesas';
@@ -53,11 +55,14 @@ type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela' | 'sorteio';
   templateUrl: './precompeonato.html',
   styleUrl: './precompeonato.scss',
 })
-export class PrecompeonatoComponent implements OnInit {
+export class PrecompeonatoComponent implements OnInit, OnDestroy {
   private readonly inscricoesService = inject(InscricoesService);
+  private readonly rodadasService = inject(RodadasService);
   private readonly sorteioService = inject(SorteioService);
   private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
+
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   protected readonly faTableCells = faTableCells;
   protected readonly faTableList = faTableList;
@@ -79,6 +84,17 @@ export class PrecompeonatoComponent implements OnInit {
   protected readonly inscricaoAberta = signal(false);
   protected readonly checkInStatus = signal<CheckInStatus | null>(null);
   protected readonly checkInLoading = signal(false);
+
+  // Timer countdown signals
+  protected readonly timerTarget = signal<Date | null>(null);
+  protected readonly timerLabel = signal('');
+  protected readonly timerDays = signal('00');
+  protected readonly timerHours = signal('00');
+  protected readonly timerMinutes = signal('00');
+  protected readonly timerSeconds = signal('00');
+
+  // Rodada ativa notification
+  protected readonly rodadaAtiva = signal<Rodada | null>(null);
 
   protected readonly isAdmin = computed(() => {
     this.session.authRevision();
@@ -161,6 +177,12 @@ export class PrecompeonatoComponent implements OnInit {
   ngOnInit(): void {
     this.carregarJogadores();
     this.carregarCheckIn();
+    this.carregarRodadaAtiva();
+    this.iniciarTimerInscricoes();
+  }
+
+  ngOnDestroy(): void {
+    this.pararTimer();
   }
 
   protected toggleMesasView(): void {
@@ -254,5 +276,64 @@ export class PrecompeonatoComponent implements OnInit {
     this.inscricaoAberta.set(false);
     this.carregarJogadores();
     this.carregarCheckIn();
+  }
+
+  private carregarRodadaAtiva(): void {
+    this.rodadasService.getRodadaAtual().subscribe({
+      next: (rodada) => {
+        if (rodada && rodada.ativa && !rodada.finalizada) {
+          this.rodadaAtiva.set(rodada);
+        } else {
+          this.rodadaAtiva.set(null);
+        }
+      },
+      error: () => this.rodadaAtiva.set(null),
+    });
+  }
+
+  private iniciarTimerInscricoes(): void {
+    // TODO: Quando houver campo `inscricoesAbertasAte` no campeonato, usar aqui.
+    // Por enquanto, sem data de encerramento disponível, o timer não será exibido.
+    // Para testar, descomente e substitua pela data real:
+    // this.iniciarTimer(new Date('2025-02-15T23:59:59'), 'Inscrições encerram em:');
+  }
+
+  private iniciarTimer(target: Date, label: string): void {
+    this.timerTarget.set(target);
+    this.timerLabel.set(label);
+    this.atualizarTimer();
+
+    this.timerInterval = setInterval(() => this.atualizarTimer(), 1000);
+  }
+
+  private atualizarTimer(): void {
+    const target = this.timerTarget();
+    if (!target) return;
+
+    const now = Date.now();
+    const diff = target.getTime() - now;
+
+    if (diff <= 0) {
+      this.timerTarget.set(null);
+      this.pararTimer();
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    this.timerDays.set(String(days).padStart(2, '0'));
+    this.timerHours.set(String(hours).padStart(2, '0'));
+    this.timerMinutes.set(String(minutes).padStart(2, '0'));
+    this.timerSeconds.set(String(seconds).padStart(2, '0'));
+  }
+
+  private pararTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 }

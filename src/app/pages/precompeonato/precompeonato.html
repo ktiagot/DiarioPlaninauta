@@ -1,10 +1,32 @@
 <main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
 
+  @if (rodadaAtiva()) {
+    <div class="notif-rodada glass-card">
+      <mat-icon class="notif-icon">notifications_active</mat-icon>
+      <div>
+        <strong class="text-orange-400">Rodada {{ rodadaAtiva()!.numero }} em andamento!</strong>
+        <p class="text-sm text-white/60">Confira suas mesas e registre os resultados.</p>
+      </div>
+    </div>
+  }
+
   <section class="precompeonato-hero" aria-label="Commander League">
     <h1 class="precompeonato-hero__title">Commander League</h1>
     <p class="precompeonato-hero__subtitle">
       Torneio de Commander Precon — {{ totalJogadores() || '—' }} Planeswalkers prontos para a batalha
     </p>
+
+    @if (timerTarget()) {
+      <div class="timer-section glass-card">
+        <p class="timer-label">{{ timerLabel() }}</p>
+        <div class="timer-grid">
+          <div class="timer-unit"><span class="timer-num">{{ timerDays() }}</span><span class="timer-txt">Dias</span></div>
+          <div class="timer-unit"><span class="timer-num">{{ timerHours() }}</span><span class="timer-txt">Horas</span></div>
+          <div class="timer-unit"><span class="timer-num">{{ timerMinutes() }}</span><span class="timer-txt">Min</span></div>
+          <div class="timer-unit"><span class="timer-num">{{ timerSeconds() }}</span><span class="timer-txt">Seg</span></div>
+        </div>
+      </div>
+    }
 
     <div class="precompeonato-hero__ctas">
       <button mat-flat-button color="primary" type="button" (click)="toggleMesasView()">

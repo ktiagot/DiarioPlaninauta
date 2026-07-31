@@ -208,3 +208,79 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.65);
 }
+
+// Timer countdown
+.timer-section {
+  text-align: center;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.timer-label {
+  color: #f58220;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.timer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.timer-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.timer-num {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f58220;
+  line-height: 1;
+}
+
+.timer-txt {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// Rodada ativa notification
+.notif-rodada {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #f58220;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  p {
+    margin: 0.25rem 0 0;
+  }
+}
+
+.notif-icon {
+  color: #f58220;
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
