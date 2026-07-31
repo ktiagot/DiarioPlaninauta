@@ -12,10 +12,11 @@ import {
   PORTAL_NAV_ITEMS,
 } from './portal-header.constants';
 import { SessionService } from '../../core/auth/session.service';
+import { NotificacoesSinoComponent } from '../notificacoes-sino/notificacoes-sino';
 
 @Component({
   selector: 'app-portal-header',
-  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatTooltipModule, NotificacoesSinoComponent],
   templateUrl: './portal-header.html',
   styleUrl: './portal-header.scss',
 })
@@ -31,9 +32,18 @@ export class PortalHeaderComponent {
     return this.session.isAuthenticated();
   });
 
-  protected readonly navItems = computed(() =>
-    this.isAuthenticated() ? PORTAL_NAV_ITEMS : PORTAL_GUEST_NAV_ITEMS,
-  );
+  protected readonly isAdminUser = computed(() => {
+    this.session.authRevision();
+    return this.session.isAdmin();
+  });
+
+  protected readonly navItems = computed(() => {
+    if (!this.isAuthenticated()) return PORTAL_GUEST_NAV_ITEMS;
+    if (this.isAdminUser()) {
+      return [...PORTAL_NAV_ITEMS, { label: 'Admin', path: '/admin' }];
+    }
+    return PORTAL_NAV_ITEMS;
+  });
 
   constructor() {
     this.router.events
