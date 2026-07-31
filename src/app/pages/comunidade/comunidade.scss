@@ -1,0 +1,253 @@
+.comunidade-page {
+  min-height: calc(100vh - 4rem);
+}
+
+// --- Filters bar ---
+.filters-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+.search-wrapper {
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-field {
+  width: 100%;
+}
+
+.filter-selects {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+  }
+}
+
+.filter-field {
+  min-width: 160px;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+}
+
+// Material overrides for dark theme
+::ng-deep {
+  .comunidade-page {
+    .mat-mdc-form-field {
+      --mdc-outlined-text-field-outline-color: rgba(255, 255, 255, 0.25);
+      --mdc-outlined-text-field-hover-outline-color: rgba(255, 255, 255, 0.5);
+      --mdc-outlined-text-field-focus-outline-color: #f58220;
+      --mdc-outlined-text-field-label-text-color: rgba(255, 255, 255, 0.6);
+      --mdc-outlined-text-field-focus-label-text-color: #f58220;
+      --mdc-outlined-text-field-input-text-color: white;
+      --mat-select-trigger-text-color: white;
+    }
+  }
+}
+
+// --- Grid ---
+.jogadores-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// --- Player card ---
+.player-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 1rem;
+  gap: 0.75rem;
+  background: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(245, 130, 32, 0.5);
+    transform: translateY(-2px);
+  }
+}
+
+// --- Fav button ---
+.fav-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  mat-icon {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    transition: color 0.2s ease;
+
+    &.favorited {
+      color: #f44336;
+    }
+  }
+}
+
+// --- Avatar ---
+.player-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #f58220;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 130, 32, 0.15);
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .initials {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f58220;
+  }
+}
+
+// --- Player info ---
+.player-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.player-nick {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.player-nome {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.player-cidade {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.inline-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+// --- Formatos tags ---
+.player-formatos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.formato-tag {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(245, 130, 32, 0.2);
+  color: #f58220;
+  border: 1px solid rgba(245, 130, 32, 0.4);
+  white-space: nowrap;
+}
+
+// --- Disponibilidade ---
+.player-disponibilidade {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0.25rem 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+
+  .horarios {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// --- Badge apoio ---
+.apoio-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(245, 130, 32, 0.1);
+  color: #f58220;
+  border: 1px solid rgba(245, 130, 32, 0.3);
+}
+
+// --- Botão contato ---
+.contato-btn {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  --mdc-outlined-button-label-text-color: #f58220;
+  --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.4);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 0.3rem;
+  }
+}

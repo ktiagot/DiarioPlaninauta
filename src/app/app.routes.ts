@@ -38,8 +38,8 @@ export const routes: Routes = [
         path: 'comunidade',
         canActivate: [authGuard],
         loadComponent: () =>
-          import('./pages/page-placeholder/page-placeholder').then(
-            (m) => m.PagePlaceholderComponent,
+          import('./pages/comunidade/comunidade').then(
+            (m) => m.ComunidadeComponent,
           ),
         data: { title: 'Comunidade' },
       },

@@ -64,6 +64,10 @@ model User {
   lastValidationAt    DateTime?
   apoiandoDesde       DateTime?
 
+  // --- comunidade / favoritos ---
+  favoritosDe   Favorito[] @relation("FavoritoDe")
+  favoritosPara Favorito[] @relation("FavoritoPara")
+
   // --- mesas relations ---
   mesaJogadores      MesaJogador[] @relation("MesaJogadorUser")
   eliminacoesFeitas  Eliminacao[]  @relation("EliminacaoEliminador")
@@ -253,4 +257,19 @@ model Eliminacao {
   @@unique([mesaId, eliminadoUserId])
   @@index([mesaId])
   @@map("eliminacoes")
+}
+
+model Favorito {
+  id          String   @id @default(uuid())
+  deUserId    String
+  paraUserId  String
+  createdAt   DateTime @default(now())
+
+  deUser   User @relation("FavoritoDe", fields: [deUserId], references: [id], onDelete: Cascade)
+  paraUser User @relation("FavoritoPara", fields: [paraUserId], references: [id], onDelete: Cascade)
+
+  @@unique([deUserId, paraUserId])
+  @@index([deUserId])
+  @@index([paraUserId])
+  @@map("favoritos")
 }
