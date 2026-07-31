@@ -16,6 +16,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { label: 'Estatisticas', path: '/estatisticas' },
   { label: 'Mesões', path: '/mesoes' },
   { label: 'Loja de Pontos', path: '/loja' },
+  { label: 'Sugestões', path: '/sugestoes' },
 ];
 
 export const PORTAL_GUEST_NAV_ITEMS: PortalNavItem[] = [
