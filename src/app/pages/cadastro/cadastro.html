@@ -175,11 +175,27 @@
         <div class="field-group">
           <label for="cidade" class="text-white">Cidade</label>
           <mat-form-field appearance="outline" class="w-full">
-            <input matInput id="cidade" formControlName="cidade" autocomplete="address-level2" />
+            <input
+              matInput
+              id="cidade"
+              formControlName="cidade"
+              placeholder="Digite sua cidade..."
+              autocomplete="off"
+              (input)="onCidadeBusca($event)"
+            />
             @if (form.controls.cidade.invalid && form.controls.cidade.touched) {
-              <mat-error>Informe sua cidade</mat-error>
+              <mat-error>Selecione sua cidade</mat-error>
             }
           </mat-form-field>
+          @if (sugestoesCidade().length) {
+            <div class="sugestoes-dropdown">
+              @for (s of sugestoesCidade(); track s.displayName) {
+                <button type="button" class="sugestao-item" (click)="selecionarCidade(s)">
+                  {{ s.displayName }}
+                </button>
+              }
+            </div>
+          }
         </div>
 
         <button

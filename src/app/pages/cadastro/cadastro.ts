@@ -30,6 +30,8 @@ import {
 
 import { AuthService } from '../../core/auth/auth.service';
 import { UsersService } from '../../core/users/users.service';
+import { LocalidadeService } from '../../core/localidade/localidade.service';
+import { LocalidadeSugestao } from '../../core/localidade/localidade.models';
 import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
 
 const FORMATOS_DISPONIVEIS = [
@@ -95,6 +97,7 @@ export class CadastroComponent {
   private readonly fb = inject(FormBuilder);
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
+  private readonly localidadeService = inject(LocalidadeService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -103,6 +106,9 @@ export class CadastroComponent {
   protected readonly apoiaSeUrl = APOIA_SE_URL;
   protected readonly loading = signal(false);
   protected readonly backerStatus = signal<BackerStatus>('idle');
+  protected readonly sugestoesCidade = signal<LocalidadeSugestao[]>([]);
+  private cidadeSelecionada: LocalidadeSugestao | null = null;
+  private buscaTimeout: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -184,6 +190,30 @@ export class CadastroComponent {
       });
   }
 
+  onCidadeBusca(event: Event): void {
+    const termo = (event.target as HTMLInputElement).value.trim();
+    this.cidadeSelecionada = null;
+
+    if (this.buscaTimeout) clearTimeout(this.buscaTimeout);
+
+    if (termo.length < 3) {
+      this.sugestoesCidade.set([]);
+      return;
+    }
+
+    this.buscaTimeout = setTimeout(() => {
+      this.localidadeService.buscar(termo).subscribe((resultados) => {
+        this.sugestoesCidade.set(resultados);
+      });
+    }, 400);
+  }
+
+  selecionarCidade(sugestao: LocalidadeSugestao): void {
+    this.cidadeSelecionada = sugestao;
+    this.form.controls.cidade.setValue(sugestao.displayName);
+    this.sugestoesCidade.set([]);
+  }
+
   submit(): void {
     if (this.form.invalid || this.loading()) {
       this.form.markAllAsTouched();
@@ -193,7 +223,15 @@ export class CadastroComponent {
     this.loading.set(true);
 
     const { confirmarSenha: _, ...payload } = this.form.getRawValue();
-    this.usersService.create(payload).subscribe({
+    const fullPayload = {
+      ...payload,
+      cidade: this.cidadeSelecionada?.cidade ?? payload.cidade,
+      estado: this.cidadeSelecionada?.estado ?? undefined,
+      pais: this.cidadeSelecionada?.pais ?? undefined,
+      lat: this.cidadeSelecionada?.lat ?? undefined,
+      lng: this.cidadeSelecionada?.lng ?? undefined,
+    };
+    this.usersService.create(fullPayload).subscribe({
       next: () => {
         this.snackBar.open('Cadastro realizado com sucesso! Faça login para continuar.', 'OK', {
           duration: 6000,

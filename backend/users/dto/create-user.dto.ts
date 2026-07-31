@@ -5,6 +5,7 @@ import {
   IsArray,
   IsOptional,
   IsUrl,
+  IsNumber,
   MinLength,
   ArrayNotEmpty,
   IsIn,
@@ -68,6 +69,28 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   cidade: string;
+
+  @ApiPropertyOptional({ example: 'São Paulo' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  estado?: string;
+
+  @ApiPropertyOptional({ example: 'Brasil' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  pais?: string;
+
+  @ApiPropertyOptional({ example: -23.5505 })
+  @IsOptional()
+  @IsNumber()
+  lat?: number;
+
+  @ApiPropertyOptional({ example: -46.6333 })
+  @IsOptional()
+  @IsNumber()
+  lng?: number;
 
   // --- optional profile fields ---
 

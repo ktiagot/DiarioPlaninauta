@@ -31,6 +31,18 @@ export class UserResponseDto {
   @ApiProperty({ example: 'São Paulo' })
   cidade: string;
 
+  @ApiPropertyOptional({ example: 'São Paulo' })
+  estado: string | null;
+
+  @ApiPropertyOptional({ example: 'Brasil' })
+  pais: string | null;
+
+  @ApiPropertyOptional({ example: -23.5505 })
+  lat: number | null;
+
+  @ApiPropertyOptional({ example: -46.6333 })
+  lng: number | null;
+
   @ApiProperty({ example: false })
   isAdmin: boolean;
 

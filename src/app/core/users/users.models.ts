@@ -44,6 +44,10 @@ export interface User {
   monthlyContribution: number | null;
   lastValidationAt: string | null;
   apoiandoDesde: string | null;
+  estado: string | null;
+  pais: string | null;
+  lat: number | null;
+  lng: number | null;
   createdAt: string;
   updatedAt: string;
 }

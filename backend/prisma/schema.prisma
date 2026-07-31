@@ -29,6 +29,10 @@ model User {
   telefone     String
   formatos     String[] @default([])
   cidade       String
+  estado       String?
+  pais         String?
+  lat          Float?
+  lng          Float?
   passwordHash String
 
   // --- role flags ---
