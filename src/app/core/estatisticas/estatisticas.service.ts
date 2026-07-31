@@ -10,7 +10,10 @@ export class EstatisticasService {
   private readonly http = inject(HttpClient);
 
   getEstatisticas(userId?: string): Observable<EstatisticasResponse> {
-    const params = userId ? { userId } : {};
+    const params: Record<string, string> = {};
+    if (userId) {
+      params['userId'] = userId;
+    }
     return this.http
       .get<EstatisticasResponse>(`${API_URL}/precompeonato/estatisticas`, { params })
       .pipe(
