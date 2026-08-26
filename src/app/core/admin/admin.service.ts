@@ -2,7 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URL } from '../config/api.config';
-import { SorteioSnapshot, RodadaAtual, CheckInStatus } from './admin.models';
+import {
+  CreateRodadaPayload,
+  RodadasListResponse,
+  SorteioSnapshot,
+} from '../sorteio/sorteio.models';
+import {
+  CampeonatoAdmin,
+  CreateCampeonatoPayload,
+  InscritoResumo,
+  RodadaAtual,
+  SubmitResultadoPayload,
+} from './admin.models';
 
 export interface DashboardMetricas {
   gerais: {
@@ -23,56 +34,89 @@ export interface DashboardMetricas {
 export class AdminService {
   private readonly http = inject(HttpClient);
 
-  /** Dashboard de métricas (admin) */
   getDashboardMetricas(): Observable<DashboardMetricas> {
     return this.http.get<DashboardMetricas>(`${API_URL}/precompeonato/dashboard`);
   }
 
-  /** Retorna snapshot admin: classificação + check-in + mesas sorteadas */
   getSorteio(): Observable<SorteioSnapshot> {
     return this.http.get<SorteioSnapshot>(`${API_URL}/precompeonato/atual/sorteio`);
   }
 
-  /** Sortear mesas (formato suíço) para a rodada de check-in */
+  listRodadas(): Observable<RodadasListResponse> {
+    return this.http.get<RodadasListResponse>(`${API_URL}/precompeonato/atual/rodadas`);
+  }
+
+  abrirRodada(payload: CreateRodadaPayload): Observable<SorteioSnapshot> {
+    return this.http.post<SorteioSnapshot>(`${API_URL}/precompeonato/atual/rodadas`, payload);
+  }
+
+  adminCheckIn(inscricaoId: string, checkIn: boolean): Observable<SorteioSnapshot> {
+    return this.http.patch<SorteioSnapshot>(`${API_URL}/precompeonato/atual/checkin/admin`, {
+      inscricaoId,
+      checkIn,
+    });
+  }
+
   sortearMesas(): Observable<SorteioSnapshot> {
     return this.http.post<SorteioSnapshot>(`${API_URL}/precompeonato/atual/sortear-mesas`, {});
   }
 
-  /** Finalizar rodada (admin) */
+  reSortearMesas(): Observable<SorteioSnapshot> {
+    return this.http.post<SorteioSnapshot>(`${API_URL}/precompeonato/atual/re-sortear-mesas`, {});
+  }
+
   finalizarRodada(rodadaId: string): Observable<RodadaAtual> {
     return this.http.post<RodadaAtual>(`${API_URL}/precompeonato/rodadas/${rodadaId}/finalizar`, {});
   }
 
-  /** Submeter resultado de uma mesa */
   submitResultado(mesaId: string, payload: SubmitResultadoPayload): Observable<RodadaAtual> {
-    return this.http.post<RodadaAtual>(`${API_URL}/precompeonato/mesas/${mesaId}/resultado`, payload);
+    return this.http.post<RodadaAtual>(`${API_URL}/precompeonato/mesas/${mesaId}/resultado`, {
+      jogadores: payload.jogadores.map((j) => ({
+        inscricaoId: j.inscricaoId,
+        posicao: j.posicaoFinal,
+        kills: j.kills,
+      })),
+      empate: payload.empate,
+      empatadosInscricaoIds: payload.empatadosInscricaoIds,
+      linkPartida: payload.linkPartida,
+    });
   }
 
-  /** Listar inscritos do campeonato atual */
   getInscritos(): Observable<InscritoResumo[]> {
     return this.http.get<InscritoResumo[]>(`${API_URL}/precompeonato/atual/jogadores`);
   }
 
-  /** Rodada atual */
   getRodadaAtual(): Observable<RodadaAtual | null> {
     return this.http.get<RodadaAtual | null>(`${API_URL}/precompeonato/atual/rodada`);
   }
-}
 
-export interface SubmitResultadoPayload {
-  jogadores: { inscricaoId: string; posicaoFinal: number; kills: number }[];
-  empate: boolean;
-  linkPartida?: string;
-}
+  listCampeonatos(): Observable<CampeonatoAdmin[]> {
+    return this.http.get<CampeonatoAdmin[]>(`${API_URL}/precompeonato/campeonatos`);
+  }
 
-export interface InscritoResumo {
-  id: string;
-  nome: string;
-  nick: string;
-  email: string;
-  deckNome: string;
-  comandante: string;
-  pontos: number;
-  posicao: number | null;
-  ativo: boolean;
+  createCampeonato(payload: CreateCampeonatoPayload): Observable<CampeonatoAdmin> {
+    return this.http.post<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos`, payload);
+  }
+
+  updateCampeonato(
+    id: string,
+    payload: Partial<CreateCampeonatoPayload>,
+  ): Observable<CampeonatoAdmin> {
+    return this.http.patch<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos/${id}`, payload);
+  }
+
+  updateCampeonatoStatus(
+    id: string,
+    status: CampeonatoAdmin['statusCode'],
+  ): Observable<CampeonatoAdmin> {
+    return this.http.patch<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos/${id}/status`, {
+      status,
+    });
+  }
+
+  uploadCampeonatoBanner(id: string, file: File): Observable<CampeonatoAdmin> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos/${id}/banner`, body);
+  }
 }

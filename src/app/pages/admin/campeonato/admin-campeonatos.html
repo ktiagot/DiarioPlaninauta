@@ -1,0 +1,208 @@
+@if (loading()) {
+  <div class="admin-page__loading">
+    <mat-spinner diameter="36" />
+  </div>
+} @else {
+  <!-- Criar campeonato -->
+  <div class="admin-section admin-section--card">
+    <h4>Novo campeonato</h4>
+
+    @if (!podeCriar()) {
+      <div class="admin-alert admin-alert--warn">
+        <mat-icon>warning</mat-icon>
+        Finalize o campeonato atual para criar o próximo.
+      </div>
+    }
+
+    <div class="abrir-rodada-form campeonato-form">
+      <label>
+        Nome
+        <input
+          type="text"
+          [ngModel]="formNome()"
+          (ngModelChange)="formNome.set($event)"
+          [disabled]="!podeCriar() || saving()"
+        />
+      </label>
+      <label>
+        Edição
+        <input
+          type="text"
+          [ngModel]="formEdicao()"
+          (ngModelChange)="formEdicao.set($event)"
+          [disabled]="!podeCriar() || saving()"
+        />
+      </label>
+      <label>
+        Data início
+        <input
+          type="date"
+          [ngModel]="formDataInicio()"
+          (ngModelChange)="formDataInicio.set($event)"
+          [disabled]="!podeCriar() || saving()"
+        />
+      </label>
+      <label class="campeonato-form__wide">
+        Descrição
+        <textarea
+          rows="2"
+          [ngModel]="formDescricao()"
+          (ngModelChange)="formDescricao.set($event)"
+          [disabled]="!podeCriar() || saving()"
+        ></textarea>
+      </label>
+      <label>
+        Banner
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          [disabled]="!podeCriar() || saving()"
+          (change)="onCreateBannerSelected($event)"
+        />
+      </label>
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="!podeCriar() || saving()"
+        (click)="criar()"
+      >
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>add</mat-icon>
+        }
+        Criar campeonato
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="admin-section">
+    <h4>Campeonatos ({{ campeonatos().length }})</h4>
+
+    @if (campeonatos().length === 0) {
+      <p class="admin-empty">Nenhum campeonato cadastrado.</p>
+    } @else {
+      @for (c of campeonatos(); track c.id) {
+        <div class="campeonato-card" [class.campeonato-card--encerrado]="c.statusCode === 'ENCERRADO'">
+          <div class="campeonato-card__header">
+            <div>
+              @if (c.statusCode === 'ENCERRADO') {
+                <strong>{{ c.nome }}</strong>
+                <span class="campeonato-card__meta">{{ c.edicao }} · {{ formatDate(c.dataInicio) }}</span>
+              } @else {
+                <span class="campeonato-card__meta">Edição · início</span>
+              }
+            </div>
+            <span [class]="statusBadgeClass(c.statusCode)">{{ c.status }}</span>
+          </div>
+
+          @if (bannerSrc(c.bannerUrl); as src) {
+            <img class="campeonato-card__banner" [src]="src" [alt]="c.nome" />
+          }
+
+          @if (c.statusCode === 'ENCERRADO') {
+            @if (c.descricao) {
+              <p class="campeonato-card__descricao">{{ c.descricao }}</p>
+            }
+          } @else {
+            <div class="abrir-rodada-form campeonato-form campeonato-form--edit">
+              <label>
+                Nome
+                <input
+                  type="text"
+                  [ngModel]="draftFor(c).nome"
+                  (ngModelChange)="updateDraft(c, 'nome', $event)"
+                  [disabled]="savingId() === c.id"
+                />
+              </label>
+              <label>
+                Edição
+                <input
+                  type="text"
+                  [ngModel]="draftFor(c).edicao"
+                  (ngModelChange)="updateDraft(c, 'edicao', $event)"
+                  [disabled]="savingId() === c.id"
+                />
+              </label>
+              <label>
+                Data início
+                <input
+                  type="date"
+                  [ngModel]="draftFor(c).dataInicio"
+                  (ngModelChange)="updateDraft(c, 'dataInicio', $event)"
+                  [disabled]="savingId() === c.id"
+                />
+              </label>
+              <label class="campeonato-form__wide">
+                Descrição
+                <textarea
+                  rows="2"
+                  [ngModel]="draftFor(c).descricao"
+                  (ngModelChange)="updateDraft(c, 'descricao', $event)"
+                  [disabled]="savingId() === c.id"
+                ></textarea>
+              </label>
+              <label>
+                Trocar banner
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  [disabled]="uploadingBannerId() === c.id"
+                  (change)="onEditBannerSelected(c, $event)"
+                />
+              </label>
+            </div>
+
+            <div class="admin-actions campeonato-card__actions">
+              <button
+                mat-flat-button
+                color="primary"
+                [disabled]="savingId() === c.id"
+                (click)="salvar(c)"
+              >
+                @if (savingId() === c.id) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  <mat-icon>save</mat-icon>
+                }
+                Salvar
+              </button>
+
+              @if (c.statusCode === 'INSCRICOES_ABERTAS') {
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="updatingStatusId() === c.id"
+                  (click)="iniciar(c)"
+                >
+                  Iniciar
+                </button>
+              }
+
+              @if (c.statusCode === 'EM_ANDAMENTO') {
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="updatingStatusId() === c.id"
+                  (click)="reabrirInscricoes(c)"
+                >
+                  Reabrir inscrições
+                </button>
+              }
+
+              <button
+                mat-stroked-button
+                color="warn"
+                [disabled]="updatingStatusId() === c.id"
+                (click)="finalizar(c)"
+              >
+                Finalizar
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+}
