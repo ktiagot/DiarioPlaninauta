@@ -147,12 +147,11 @@ model Inscricao {
 }
 
 model Rodada {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   campeonatoId String
   numero       Int
-  dataRodada   DateTime @db.Date
-  ativa        Boolean  @default(false)
-  finalizada   Boolean  @default(false)
+  ativa        Boolean @default(false)
+  finalizada   Boolean @default(false)
 
   campeonato Campeonato      @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   mesas      MesaTorneio[]
@@ -182,14 +181,13 @@ model CheckInRodada {
 }
 
 model MesaTorneio {
-  id                    String    @id @default(uuid())
+  id                    String   @id @default(uuid())
   rodadaId              String
   numeroMesa            Int
+  finalizada            Boolean  @default(false)
   linkPartida           String?
-  empate                Boolean   @default(false)
-  empatadosInscricaoIds String[]  @default([])
-  validada              Boolean   @default(false)
-  validadaEm            DateTime?
+  empate                Boolean  @default(false)
+  empatadosInscricaoIds String[] @default([])
 
   rodada    Rodada               @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
   jogadores MesaTorneioJogador[]
