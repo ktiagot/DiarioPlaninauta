@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +21,7 @@ import {
   faWandSparkles,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { API_URL, bannerSrc } from '../../core/config/api.config';
 import { SessionService } from '../../core/auth/session.service';
 import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
@@ -35,6 +36,17 @@ import { PrecompeonatoTabelaComponent } from './precompeonato-tabela/precompeona
 import { SorteioMesasComponent } from './sorteio-mesas/sorteio-mesas';
 
 type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela' | 'sorteio';
+
+interface CampeonatoAtual {
+  id: string;
+  nome: string;
+  edicao: string;
+  dataInicio: string;
+  descricao: string | null;
+  bannerUrl: string | null;
+  status: string;
+  statusCode: string;
+}
 
 @Component({
   selector: 'app-precompeonato',
@@ -56,11 +68,14 @@ type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela' | 'sorteio';
   styleUrl: './precompeonato.scss',
 })
 export class PrecompeonatoComponent implements OnInit, OnDestroy {
+  private readonly http = inject(HttpClient);
   private readonly inscricoesService = inject(InscricoesService);
   private readonly rodadasService = inject(RodadasService);
   private readonly sorteioService = inject(SorteioService);
   private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
+
+  protected readonly bannerSrc = bannerSrc;
 
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -77,6 +92,8 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
 
   protected readonly viewMode = signal<PrecompeonatoViewMode>('jogadores');
   protected readonly loading = signal(true);
+  protected readonly campeonato = signal<CampeonatoAtual | null>(null);
+  protected readonly campeonatoLoading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly jogadores = signal<JogadorInscrito[]>([]);
   protected readonly searchQuery = signal('');
@@ -175,6 +192,7 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.carregarCampeonato();
     this.carregarJogadores();
     this.carregarCheckIn();
     this.carregarRodadaAtiva();
@@ -265,7 +283,21 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
   }
 
   protected abrirInscricao(): void {
+    if (this.campeonato()?.statusCode !== 'INSCRICOES_ABERTAS') return;
     this.inscricaoAberta.set(true);
+  }
+
+  private carregarCampeonato(): void {
+    this.http.get<CampeonatoAtual>(`${API_URL}/precompeonato/atual`).subscribe({
+      next: (c) => {
+        this.campeonato.set(c);
+        this.campeonatoLoading.set(false);
+      },
+      error: () => {
+        this.campeonato.set(null);
+        this.campeonatoLoading.set(false);
+      },
+    });
   }
 
   protected fecharInscricao(): void {
