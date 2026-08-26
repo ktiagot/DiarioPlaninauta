@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,12 +22,24 @@ function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
 describe('CampeonatoAdminService create/list', () => {
   let service: CampeonatoAdminService;
   let prisma: {
-    campeonato: { findFirst: jest.Mock; findMany: jest.Mock; create: jest.Mock };
+    campeonato: {
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
   };
 
   beforeEach(async () => {
     prisma = {
-      campeonato: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn() },
+      campeonato: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
     };
     const module = await Test.createTestingModule({
       providers: [
@@ -91,5 +103,89 @@ describe('CampeonatoAdminService create/list', () => {
       orderBy: { createdAt: 'desc' },
     });
     expect(list.map((c) => c.id)).toEqual(['c2', 'c1']);
+  });
+});
+
+describe('CampeonatoAdminService update/updateStatus', () => {
+  let service: CampeonatoAdminService;
+  let prisma: {
+    campeonato: {
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      campeonato: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        CampeonatoAdminService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+    service = module.get(CampeonatoAdminService);
+  });
+
+  it('PATCH dados em aberto → 200', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp());
+    prisma.campeonato.update.mockResolvedValue({ ...camp(), nome: 'Novo' });
+    const result = await service.update('c1', { nome: 'Novo' });
+    expect(result.nome).toBe('Novo');
+  });
+
+  it('PATCH dados em ENCERRADO → 409', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    await expect(service.update('c1', { nome: 'X' })).rejects.toThrow(ConflictException);
+  });
+
+  it('INSCRICOES_ABERTAS → EM_ANDAMENTO', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp());
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
+    const result = await service.updateStatus('c1', CampeonatoStatus.EM_ANDAMENTO);
+    expect(result.statusCode).toBe(CampeonatoStatus.EM_ANDAMENTO);
+  });
+
+  it('EM_ANDAMENTO → INSCRICOES_ABERTAS (reabrir) mesmo sem checar rodadas', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.INSCRICOES_ABERTAS }));
+    await expect(
+      service.updateStatus('c1', CampeonatoStatus.INSCRICOES_ABERTAS),
+    ).resolves.toMatchObject({ statusCode: CampeonatoStatus.INSCRICOES_ABERTAS });
+  });
+
+  it('finaliza a partir de INSCRICOES_ABERTAS e de EM_ANDAMENTO', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp());
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    await expect(service.updateStatus('c1', CampeonatoStatus.ENCERRADO)).resolves.toMatchObject({
+      statusCode: CampeonatoStatus.ENCERRADO,
+    });
+
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
+    await expect(service.updateStatus('c1', CampeonatoStatus.ENCERRADO)).resolves.toMatchObject({
+      statusCode: CampeonatoStatus.ENCERRADO,
+    });
+  });
+
+  it('ENCERRADO → qualquer status → 409', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    await expect(
+      service.updateStatus('c1', CampeonatoStatus.INSCRICOES_ABERTAS),
+    ).rejects.toThrow(ConflictException);
+  });
+
+  it('id inexistente → 404', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(null);
+    await expect(service.update('nope', { nome: 'X' })).rejects.toThrow(NotFoundException);
   });
 });
