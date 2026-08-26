@@ -20,6 +20,8 @@ async function main() {
   const campeonato = await prisma.campeonato.create({
     data: {
       nome: 'Precompeonato #1',
+      edicao: '#1',
+      dataInicio: new Date('2026-01-01T00:00:00.000Z'),
       status: CampeonatoStatus.INSCRICOES_ABERTAS,
     },
   });

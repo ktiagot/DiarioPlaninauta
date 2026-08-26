@@ -1,4 +1,5 @@
 import { Campeonato, Inscricao, User } from '@prisma/client';
+import { toDateOnly } from '../date-only';
 import { CAMPEONATO_STATUS_LABEL } from '../constants/status-labels';
 import {
   CampeonatoAtualResponseDto,
@@ -19,6 +20,10 @@ export function toCampeonatoAtualResponse(
     nome: campeonato.nome,
     status: CAMPEONATO_STATUS_LABEL[campeonato.status],
     statusCode: campeonato.status,
+    edicao: campeonato.edicao,
+    dataInicio: toDateOnly(campeonato.dataInicio),
+    descricao: campeonato.descricao || null,
+    bannerUrl: campeonato.bannerUrl || null,
     ...(extras?.jaInscrito !== undefined
       ? {
           jaInscrito: extras.jaInscrito,

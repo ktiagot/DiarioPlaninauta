@@ -37,6 +37,21 @@ export class CampeonatoAtualResponseDto {
   })
   statusCode: CampeonatoStatus;
 
+  @ApiProperty({ example: '#1' })
+  edicao: string;
+
+  @ApiProperty({ example: '2026-01-01' })
+  dataInicio: string;
+
+  @ApiPropertyOptional({ example: 'Temporada 1', nullable: true })
+  descricao: string | null;
+
+  @ApiPropertyOptional({
+    example: '/uploads/campeonatos/c1.webp',
+    nullable: true,
+  })
+  bannerUrl: string | null;
+
   @ApiPropertyOptional({
     example: false,
     description: 'Presente quando a query ?email= é informada',

@@ -98,6 +98,10 @@ enum CampeonatoStatus {
 model Campeonato {
   id                   String           @id @default(uuid())
   nome                 String
+  edicao               String
+  dataInicio           DateTime         @db.Date
+  descricao            String?
+  bannerUrl            String?
   status               CampeonatoStatus @default(INSCRICOES_ABERTAS)
   inscricoesAbertasAte DateTime?
 
@@ -143,11 +147,12 @@ model Inscricao {
 }
 
 model Rodada {
-  id           String  @id @default(uuid())
+  id           String   @id @default(uuid())
   campeonatoId String
   numero       Int
-  ativa        Boolean @default(false)
-  finalizada   Boolean @default(false)
+  dataRodada   DateTime @db.Date
+  ativa        Boolean  @default(false)
+  finalizada   Boolean  @default(false)
 
   campeonato Campeonato      @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   mesas      MesaTorneio[]
@@ -177,13 +182,14 @@ model CheckInRodada {
 }
 
 model MesaTorneio {
-  id                    String   @id @default(uuid())
+  id                    String    @id @default(uuid())
   rodadaId              String
   numeroMesa            Int
-  finalizada            Boolean  @default(false)
   linkPartida           String?
-  empate                Boolean  @default(false)
-  empatadosInscricaoIds String[] @default([])
+  empate                Boolean   @default(false)
+  empatadosInscricaoIds String[]  @default([])
+  validada              Boolean   @default(false)
+  validadaEm            DateTime?
 
   rodada    Rodada               @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
   jogadores MesaTorneioJogador[]
