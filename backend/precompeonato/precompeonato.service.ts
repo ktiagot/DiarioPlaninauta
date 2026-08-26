@@ -7,10 +7,16 @@ import {
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PreconsService } from '../precons/precons.service';
+import {
+  inscricaoPreconInclude,
+  inscricaoWithPreconInclude,
+} from '../precons/mappers/to-precon-response';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
+import { InscritoAdminResponseDto } from './dto/inscrito-admin-response.dto';
 import {
   EstatisticasFullResponseDto,
   MetagameDeckDto,
@@ -23,12 +29,34 @@ import {
   toCampeonatoAtualResponse,
   toInscricaoResponse,
   toInscricaoResumo,
+  toInscritoAdminResponse,
   toJogadorResponse,
+  sortInscritosAdmin,
 } from './mappers/to-precompeonato-response';
+
+/** Mesa encerrada = todos os jogadores têm posicaoFinal (coluna finalizada foi dropada). */
+const mesaTorneioFinalizadaWhere = {
+  jogadores: {
+    some: {},
+    every: { posicaoFinal: { not: null } },
+  },
+};
+
+function isMesaTorneioFinalizada(mesa: {
+  jogadores: { posicaoFinal: number | null }[];
+}): boolean {
+  return (
+    mesa.jogadores.length > 0 &&
+    mesa.jogadores.every((j) => j.posicaoFinal != null)
+  );
+}
 
 @Injectable()
 export class PrecompeonatoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly preconsService: PreconsService,
+  ) {}
 
   async getAtual(email?: string): Promise<CampeonatoAtualResponseDto> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
@@ -44,6 +72,7 @@ export class PrecompeonatoService {
         email: { equals: emailNormalized, mode: 'insensitive' },
         ativo: true,
       },
+      include: inscricaoPreconInclude,
     });
 
     return toCampeonatoAtualResponse(campeonato, {
@@ -102,7 +131,7 @@ export class PrecompeonatoService {
       throw new ConflictException('Você já está inscrito neste precompeonato.');
     }
 
-    const deckNome = dto.deckNome.trim();
+    await this.preconsService.validateForInscricao(dto.preconId, dto.preconComandanteId);
     const aceiteTermosEm = new Date();
 
     const inscricao = await this.prisma.$transaction(async (tx) => {
@@ -112,15 +141,15 @@ export class PrecompeonatoService {
           userId: user.id,
           email: user.email,
           discordNick: dto.discordNick.trim(),
-          deckNome,
-          comandante: dto.comandante.trim(),
+          preconId: dto.preconId,
+          preconComandanteId: dto.preconComandanteId,
           aceiteTermos: true,
           aceiteTermosEm,
           aceitePrivacidade: true,
           entrouDiscord: true,
         },
         include: {
-          user: { select: { nome: true, nick: true } },
+          ...inscricaoWithPreconInclude,
         },
       });
 
@@ -148,7 +177,7 @@ export class PrecompeonatoService {
         ativo: true,
       },
       include: {
-        user: { select: { nome: true, nick: true } },
+        ...inscricaoWithPreconInclude,
         mesas: {
           include: {
             mesa: {
@@ -175,6 +204,80 @@ export class PrecompeonatoService {
     });
   }
 
+  async listInscritosAdmin(): Promise<InscritoAdminResponseDto[]> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+
+    const inscricoes = await this.prisma.inscricao.findMany({
+      where: { campeonatoId: campeonato.id },
+      include: {
+        ...inscricaoWithPreconInclude,
+        mesas: {
+          where: { mesa: mesaTorneioFinalizadaWhere },
+          select: { posicaoFinal: true },
+        },
+      },
+    });
+
+    const inscritos = inscricoes.map(toInscritoAdminResponse);
+    return sortInscritosAdmin(inscritos);
+  }
+
+  async setInscricaoAtivo(
+    inscricaoId: string,
+    ativo: boolean,
+  ): Promise<InscritoAdminResponseDto> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+
+    if (campeonato.status === CampeonatoStatus.ENCERRADO) {
+      throw new ConflictException(
+        'Não é possível alterar inscrições de um campeonato encerrado.',
+      );
+    }
+
+    const inscricao = await this.prisma.inscricao.findFirst({
+      where: { id: inscricaoId, campeonatoId: campeonato.id },
+      include: {
+        ...inscricaoWithPreconInclude,
+        mesas: {
+          where: { mesa: mesaTorneioFinalizadaWhere },
+          select: { posicaoFinal: true },
+        },
+      },
+    });
+
+    if (!inscricao) {
+      throw new NotFoundException('Inscrição não encontrada.');
+    }
+
+    if (inscricao.ativo === ativo) {
+      return toInscritoAdminResponse(inscricao);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.inscricao.update({
+        where: { id: inscricao.id },
+        data: { ativo },
+      });
+
+      if (!ativo) {
+        await this.removeCheckInsPendentes(tx, campeonato.id, inscricao.id);
+      }
+    });
+
+    const updated = await this.prisma.inscricao.findUniqueOrThrow({
+      where: { id: inscricao.id },
+      include: {
+        ...inscricaoWithPreconInclude,
+        mesas: {
+          where: { mesa: mesaTorneioFinalizadaWhere },
+          select: { posicaoFinal: true },
+        },
+      },
+    });
+
+    return toInscritoAdminResponse(updated);
+  }
+
   async getEstatisticas(userId?: string): Promise<EstatisticasFullResponseDto> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
 
@@ -196,7 +299,7 @@ export class PrecompeonatoService {
       await Promise.all([
         this.prisma.mesaTorneio.count({
           where: {
-            finalizada: true,
+            ...mesaTorneioFinalizadaWhere,
             rodada: { campeonatoId },
           },
         }),
@@ -208,8 +311,8 @@ export class PrecompeonatoService {
         }),
         this.prisma.inscricao.findMany({
           where: { campeonatoId, ativo: true },
-          select: { deckNome: true },
-          distinct: ['deckNome'],
+          select: { preconId: true },
+          distinct: ['preconId'],
         }),
       ]);
 
@@ -226,10 +329,11 @@ export class PrecompeonatoService {
       where: { campeonatoId, ativo: true },
       select: {
         id: true,
-        deckNome: true,
-        comandante: true,
+        preconId: true,
+        precon: { select: { nome: true } },
+        preconComandante: { select: { comandante: true } },
         mesas: {
-          where: { mesa: { finalizada: true } },
+          where: { mesa: mesaTorneioFinalizadaWhere },
           select: { posicaoFinal: true },
         },
       },
@@ -241,7 +345,9 @@ export class PrecompeonatoService {
     >();
 
     for (const inscricao of inscricoes) {
-      const key = inscricao.deckNome.toLowerCase().trim();
+      const key = inscricao.preconId;
+      const deckNome = inscricao.precon.nome;
+      const comandante = inscricao.preconComandante.comandante;
       const existing = deckMap.get(key);
 
       const partidasJogadas = inscricao.mesas.length;
@@ -253,8 +359,8 @@ export class PrecompeonatoService {
         existing.vitorias += vitoriasCount;
       } else {
         deckMap.set(key, {
-          deckNome: inscricao.deckNome,
-          comandante: inscricao.comandante,
+          deckNome,
+          comandante,
           vezesUsado: 1,
           partidas: partidasJogadas,
           vitorias: vitoriasCount,
@@ -276,7 +382,7 @@ export class PrecompeonatoService {
   private async buildTopKillers(campeonatoId: string): Promise<TopKillerDto[]> {
     const jogadores = await this.prisma.mesaTorneioJogador.findMany({
       where: {
-        mesa: { rodada: { campeonatoId }, finalizada: true },
+        mesa: { rodada: { campeonatoId }, ...mesaTorneioFinalizadaWhere },
         kills: { gt: 0 },
       },
       select: {
@@ -309,9 +415,9 @@ export class PrecompeonatoService {
       where: { campeonatoId, userId, ativo: true },
       select: {
         id: true,
-        deckNome: true,
+        precon: { select: { nome: true } },
         mesas: {
-          where: { mesa: { finalizada: true } },
+          where: { mesa: mesaTorneioFinalizadaWhere },
           select: { posicaoFinal: true, kills: true },
         },
       },
@@ -328,9 +434,9 @@ export class PrecompeonatoService {
     const todasInscricoes = await this.prisma.inscricao.findMany({
       where: { campeonatoId, userId },
       select: {
-        deckNome: true,
+        precon: { select: { nome: true } },
         mesas: {
-          where: { mesa: { finalizada: true } },
+          where: { mesa: mesaTorneioFinalizadaWhere },
           select: { posicaoFinal: true },
         },
       },
@@ -338,7 +444,7 @@ export class PrecompeonatoService {
 
     const deckStats = new Map<string, { partidas: number; vitorias: number }>();
     for (const insc of todasInscricoes) {
-      const key = insc.deckNome;
+      const key = insc.precon.nome;
       const existing = deckStats.get(key) ?? { partidas: 0, vitorias: 0 };
       existing.partidas += insc.mesas.length;
       existing.vitorias += insc.mesas.filter((m) => m.posicaoFinal === 1).length;
@@ -371,7 +477,7 @@ export class PrecompeonatoService {
       this.prisma.user.count({ where: { isExApoiador: true } }),
       this.prisma.campeonato.count(),
       this.prisma.rodada.count(),
-      this.prisma.mesaTorneio.count({ where: { finalizada: true } }),
+      this.prisma.mesaTorneio.count({ where: mesaTorneioFinalizadaWhere }),
       this.prisma.mesa.count(),
     ]);
 
@@ -390,7 +496,7 @@ export class PrecompeonatoService {
         orderBy: { numero: 'asc' },
         include: {
           mesas: {
-            where: { finalizada: true },
+            where: mesaTorneioFinalizadaWhere,
             include: {
               jogadores: { select: { kills: true } },
             },
@@ -415,12 +521,14 @@ export class PrecompeonatoService {
       // Metagame distribuição
       const inscricoes = await this.prisma.inscricao.findMany({
         where: { campeonatoId: campeonato.id, ativo: true },
-        select: { comandante: true },
+        select: {
+          preconComandante: { select: { comandante: true } },
+        },
       });
 
       const cmdMap = new Map<string, number>();
       for (const i of inscricoes) {
-        const cmd = i.comandante.trim();
+        const cmd = i.preconComandante.comandante.trim();
         cmdMap.set(cmd, (cmdMap.get(cmd) ?? 0) + 1);
       }
 
@@ -473,6 +581,7 @@ export class PrecompeonatoService {
                 inscricao: {
                   include: {
                     user: { select: { nick: true } },
+                    precon: { select: { nome: true } },
                   },
                 },
               },
@@ -487,11 +596,11 @@ export class PrecompeonatoService {
       id: mj.mesa.id,
       rodadaNumero: mj.mesa.rodada.numero,
       numeroMesa: mj.mesa.numeroMesa,
-      finalizada: mj.mesa.finalizada,
+      finalizada: isMesaTorneioFinalizada(mj.mesa),
       minhaPosicaoFinal: mj.posicaoFinal,
       jogadores: mj.mesa.jogadores.map((j) => ({
         nick: j.inscricao.user.nick,
-        deckNome: j.inscricao.deckNome,
+        deckNome: j.inscricao.precon.nome,
         posicaoFinal: j.posicaoFinal,
       })),
     }));
@@ -509,5 +618,28 @@ export class PrecompeonatoService {
     }
 
     return campeonato;
+  }
+
+  /** Rodada aberta para check-in (sem mesas sorteadas). */
+  private async findRodadaCheckIn(campeonatoId: string) {
+    const rodadas = await this.prisma.rodada.findMany({
+      where: { campeonatoId, finalizada: false },
+      orderBy: { numero: 'asc' },
+      include: { _count: { select: { mesas: true } } },
+    });
+    return rodadas.find((r) => r._count.mesas === 0) ?? null;
+  }
+
+  private async removeCheckInsPendentes(
+    tx: Pick<PrismaService, 'checkInRodada'>,
+    campeonatoId: string,
+    inscricaoId: string,
+  ): Promise<void> {
+    const rodada = await this.findRodadaCheckIn(campeonatoId);
+    if (!rodada) return;
+
+    await tx.checkInRodada.deleteMany({
+      where: { rodadaId: rodada.id, inscricaoId },
+    });
   }
 }

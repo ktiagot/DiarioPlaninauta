@@ -1,0 +1,49 @@
+.precon-form__comandantes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+}
+
+.precon-form__label {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+}
+
+.precon-form__cmd-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  input {
+    flex: 1;
+  }
+}
+
+.precon-table__cmds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 12rem;
+}
+
+.precon-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-table__input {
+  width: 100%;
+  min-width: 6rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  font: inherit;
+  background: transparent;
+}
+
+.admin-table__input--narrow {
+  min-width: 4rem;
+  max-width: 5rem;
+}

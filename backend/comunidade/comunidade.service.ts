@@ -1,11 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { JogadorAdminResponseDto } from './dto/jogador-admin-response.dto';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
 import { ContatoResponseDto } from './dto/contato-response.dto';
+import { VerificarApoiaResponseDto } from './dto/verificar-apoia-response.dto';
 
 @Injectable()
 export class ComunidadeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly apoiaseService: ApoiaSeService,
+  ) {}
 
   async listarJogadores(filtros: {
     busca?: string;
@@ -145,6 +155,77 @@ export class ComunidadeService {
     await this.prisma.favorito.deleteMany({
       where: { deUserId, paraUserId },
     });
+  }
+
+  async listAdminJogadores(): Promise<JogadorAdminResponseDto[]> {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        nome: true,
+        nick: true,
+        isApoiadorAtivo: true,
+        isExApoiador: true,
+        lastValidationAt: true,
+        monthlyContribution: true,
+      },
+      orderBy: { nome: 'asc' },
+    });
+  }
+
+  async verificarESincronizar(email: string): Promise<VerificarApoiaResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, apoiandoDesde: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    let backer;
+    try {
+      backer = await this.apoiaseService.verify(email);
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) {
+        return {
+          email,
+          ativo: false,
+          isBacker: false,
+          isPaidThisMonth: false,
+          thisMonthPaidValue: null,
+          apiIndisponivel: true,
+        };
+      }
+      throw err;
+    }
+
+    const ativo = backer.isBacker && backer.isPaidThisMonth;
+
+    const updateData: Record<string, unknown> = {
+      isApoiadorAtivo: ativo,
+      isExApoiador: !backer.isBacker,
+      lastValidationAt: new Date(),
+      monthlyContribution: backer.thisMonthPaidValue ?? null,
+    };
+
+    if (ativo && !user.apoiandoDesde) {
+      updateData.apoiandoDesde = new Date();
+    }
+
+    await this.prisma.user.update({
+      where: { email },
+      data: updateData,
+    });
+
+    return {
+      email,
+      ativo,
+      isBacker: backer.isBacker,
+      isPaidThisMonth: backer.isPaidThisMonth,
+      thisMonthPaidValue: backer.thisMonthPaidValue ?? null,
+      apiIndisponivel: false,
+    };
   }
 
   async getMetricas() {

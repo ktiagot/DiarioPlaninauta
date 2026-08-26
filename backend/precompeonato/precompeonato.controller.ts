@@ -42,6 +42,8 @@ import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto'
 import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
+import { InscritoAdminResponseDto } from './dto/inscrito-admin-response.dto';
+import { UpdateInscricaoAtivoDto } from './dto/update-inscricao-ativo.dto';
 import { EstatisticasFullResponseDto } from './dto/estatisticas-response.dto';
 import { DashboardMetricasResponseDto } from './dto/dashboard-metricas.dto';
 import { MinhasMesasResponseDto } from './dto/minhas-mesas-response.dto';
@@ -131,6 +133,47 @@ export class PrecompeonatoController {
   @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
   listJogadores(): Promise<JogadorPrecompeonatoResponseDto[]> {
     return this.precompeonatoService.listJogadores();
+  }
+
+  @Get('atual/inscritos/admin')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Listar inscritos do campeonato atual (admin)',
+    description:
+      'Retorna todos os inscritos (ativos e suspensos) com e-mail, deck, pontos e vitórias.',
+  })
+  @ApiOkResponse({
+    description: 'Lista de inscritos para admin.',
+    type: [InscritoAdminResponseDto],
+  })
+  @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  listInscritosAdmin(): Promise<InscritoAdminResponseDto[]> {
+    return this.precompeonatoService.listInscritosAdmin();
+  }
+
+  @Patch('inscricoes/:id/ativo')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Suspender ou reativar inscrito no campeonato (admin)',
+    description:
+      'Suspensão soft: remove do ranking e sorteios futuros; mantém pontos e mesas já jogadas.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID da inscrição' })
+  @ApiOkResponse({ type: InscritoAdminResponseDto })
+  @ApiNotFoundResponse()
+  @ApiConflictResponse({ description: 'Campeonato encerrado.' })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  setInscricaoAtivo(
+    @Param('id') id: string,
+    @Body() dto: UpdateInscricaoAtivoDto,
+  ): Promise<InscritoAdminResponseDto> {
+    return this.precompeonatoService.setInscricaoAtivo(id, dto.ativo);
   }
 
   @Get('estatisticas')

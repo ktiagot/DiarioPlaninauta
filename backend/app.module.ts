@@ -5,6 +5,7 @@ import { ComunidadeModule } from './comunidade/comunidade.module';
 import { LojaModule } from './loja/loja.module';
 import { MesasModule } from './mesas/mesas.module';
 import { NotificacoesModule } from './notificacoes/notificacoes.module';
+import { PreconsModule } from './precons/precons.module';
 import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
 import { SugestoesModule } from './sugestoes/sugestoes.module';
 import { UsersModule } from './users/users.module';
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module';
     SugestoesModule,
     LojaModule,
     NotificacoesModule,
+    PreconsModule,
   ],
 })
 export class AppModule {}

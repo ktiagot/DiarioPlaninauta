@@ -20,8 +20,14 @@
           <mat-icon class="mesa-card__watch-tag-external">open_in_new</mat-icon>
         </a>
       }
-      @if (finalizada()) {
-        <span class="mesa-card__badge mesa-card__badge--done">Finalizada</span>
+      @if (badgeLabel(); as badge) {
+        <span
+          class="mesa-card__badge"
+          [class.mesa-card__badge--done]="badge === 'Finalizada' || badge === 'Validada'"
+          [class.mesa-card__badge--pending]="badge === 'Pendente' || badge === 'Aguardando'"
+        >
+          {{ badge }}
+        </span>
       }
     </div>
   </mat-card-header>
@@ -40,12 +46,12 @@
           [ngModel]="linkPartidaInput()"
           (ngModelChange)="linkPartidaInput.set($event)"
           (keydown.enter)="enviarLink()"
-          [disabled]="finalizada()"
+          [disabled]="somenteLeitura()"
           placeholder="Cole o link da partida (Spelltable, Discord...)"
           autocomplete="off"
         />
       </mat-form-field>
-      @if (!finalizada()) {
+      @if (!somenteLeitura()) {
         <button
           mat-stroked-button
           type="button"
@@ -70,7 +76,7 @@
       <mat-slide-toggle
         class="mesa-card__empate-toggle"
         [checked]="resultadoEmpate()"
-        [disabled]="finalizada()"
+        [disabled]="somenteLeitura()"
         (change)="onResultadoEmpateChange($event.checked)"
       >
         Empate
@@ -81,7 +87,7 @@
       class="mesa-jogadores"
       [class.mesa-jogadores--empate]="resultadoEmpate()"
       cdkDropList
-      [cdkDropListDisabled]="finalizada() || resultadoEmpate()"
+      [cdkDropListDisabled]="somenteLeitura() || resultadoEmpate()"
       (cdkDropListDropped)="drop($event)"
     >
       @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId; let i = $index) {
@@ -90,11 +96,11 @@
           [class.mesa-jogador--first]="isPrimeiroLugar(jogador.inscricaoId, i)"
           [class.mesa-jogador--second]="!resultadoEmpate() && i === 1"
           cdkDrag
-          [cdkDragDisabled]="finalizada() || resultadoEmpate()"
+          [cdkDragDisabled]="somenteLeitura() || resultadoEmpate()"
         >
           <div *cdkDragPlaceholder class="mesa-jogador__drag-placeholder"></div>
 
-          @if (!finalizada() && !resultadoEmpate()) {
+          @if (!somenteLeitura() && !resultadoEmpate()) {
             <mat-icon class="mesa-jogador__handle" cdkDragHandle>drag_indicator</mat-icon>
           }
 
@@ -143,7 +149,7 @@
             <mat-slide-toggle
               class="mesa-jogador__empatou-toggle"
               [checked]="jogadorEmpatou(jogador.inscricaoId)"
-              [disabled]="finalizada()"
+              [disabled]="somenteLeitura()"
               (change)="setJogadorEmpatou(jogador.inscricaoId, $event.checked)"
               (click)="$event.stopPropagation()"
             >
@@ -164,7 +170,7 @@
         </p>
       </div>
 
-      @if (!finalizada()) {
+      @if (!somenteLeitura()) {
         <div class="mesa-card__kills-form">
           <mat-form-field appearance="outline" class="mesa-card__kill-field">
             <mat-label>Eliminador</mat-label>
@@ -217,7 +223,7 @@
                 eliminou
                 <strong>{{ displayNome(jogadorPorId(eliminacao.eliminadoInscricaoId)!) }}</strong>
               </span>
-              @if (!finalizada()) {
+              @if (!somenteLeitura()) {
                 <button
                   mat-icon-button
                   type="button"
@@ -231,7 +237,7 @@
             </li>
           }
         </ul>
-      } @else if (!finalizada()) {
+      } @else if (!somenteLeitura()) {
         <p class="mesa-card__kills-empty">Nenhuma eliminação registrada ainda.</p>
       }
 
@@ -250,7 +256,7 @@
         </div>
       </div>
 
-      @if (!finalizada() && eliminacoes().length < 3) {
+      @if (!somenteLeitura() && eliminacoes().length > 0 && eliminacoes().length < 3) {
         <p class="mesa-card__kills-progress">
           {{ eliminacoes().length }}/3 eliminações registradas
         </p>
@@ -259,22 +265,24 @@
   </mat-card-content>
 
   <mat-card-actions class="mesa-card__actions">
-    <button
-      mat-flat-button
-      color="primary"
-      class="mesa-card__confirm-btn"
-      [disabled]="!podeConfirmar()"
-      (click)="confirmarPosicoes()"
-    >
-      @if (confirmando()) {
-        <mat-spinner diameter="20" class="mesa-card__spinner" />
-        Confirmando…
-      } @else {
-        <span class="mesa-card__confirm-content">
-          <mat-icon class="mesa-card__confirm-icon">check</mat-icon>
-          Confirmar Posições
-        </span>
-      }
-    </button>
+    @if (!somenteLeitura()) {
+      <button
+        mat-flat-button
+        color="primary"
+        class="mesa-card__confirm-btn"
+        [disabled]="!podeConfirmar()"
+        (click)="confirmarPosicoes()"
+      >
+        @if (confirmando()) {
+          <mat-spinner diameter="20" class="mesa-card__spinner" />
+          Confirmando…
+        } @else {
+          <span class="mesa-card__confirm-content">
+            <mat-icon class="mesa-card__confirm-icon">check</mat-icon>
+            {{ botaoConfirmarLabel() }}
+          </span>
+        }
+      </button>
+    }
   </mat-card-actions>
 </mat-card>

@@ -22,6 +22,27 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  &__jogadores {
+    margin-top: 0.5rem;
+  }
+
+  &__jogadores-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
   }
 }
 
@@ -91,4 +112,77 @@
   .comunidade-admin__charts {
     grid-template-columns: 1fr;
   }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &--done {
+    background: rgba(76, 175, 80, 0.15);
+    color: #66bb6a;
+  }
+
+  &--active {
+    background: rgba(245, 130, 32, 0.15);
+    color: #f58220;
+  }
+
+  &--inativo {
+    background: rgba(255, 255, 255, 0.08);
+    color: #888;
+  }
+
+  &--warn {
+    background: rgba(229, 57, 53, 0.15);
+    color: #ef5350;
+  }
+
+  &--api {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th,
+  td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  th {
+    color: #aaa;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    color: #fff;
+  }
+}
+
+.jogador-nick {
+  display: block;
+  font-weight: 600;
+  color: #fff;
+}
+
+.jogador-deck {
+  display: block;
+  color: #aaa;
+  font-size: 0.8rem;
 }

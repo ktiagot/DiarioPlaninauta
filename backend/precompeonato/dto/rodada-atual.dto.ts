@@ -36,8 +36,19 @@ export class RodadaAtualMesaDto {
   @ApiProperty()
   numeroMesa: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'Derivado: true quando todos os jogadores têm posicaoFinal preenchida.',
+  })
   finalizada: boolean;
+
+  @ApiProperty({
+    description: 'True quando o admin validou (ou lançou) o resultado.',
+  })
+  validada: boolean;
+
+  @ApiPropertyOptional({ nullable: true })
+  validadaEm?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   linkPartida?: string | null;

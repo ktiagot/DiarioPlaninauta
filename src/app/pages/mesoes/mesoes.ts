@@ -6,10 +6,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 import { MesasService } from '../../core/mesas/mesas.service';
 import { SessionService } from '../../core/auth/session.service';
 import { Mesa } from '../../core/mesas/mesas.models';
+import { PreconComandante, PreconListItem } from '../../core/precons/precons.models';
+import { PreconsService } from '../../core/precons/precons.service';
 
 type Filtro = 'todas' | 'abertas';
 
@@ -23,12 +26,14 @@ type Filtro = 'todas' | 'abertas';
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
   ],
   templateUrl: './mesoes.html',
   styleUrl: './mesoes.scss',
 })
 export class MesoesComponent implements OnInit {
   private readonly mesasService = inject(MesasService);
+  private readonly preconsService = inject(PreconsService);
   private readonly session = inject(SessionService);
 
   readonly mesas = signal<Mesa[]>([]);
@@ -43,6 +48,11 @@ export class MesoesComponent implements OnInit {
   readonly novaMesaLink = signal('');
   readonly novoLink = signal('');
 
+  readonly precons = signal<PreconListItem[]>([]);
+  readonly comandantes = signal<PreconComandante[]>([]);
+  readonly novaMesaPreconId = signal('');
+  readonly novaMesaComandanteId = signal('');
+
   readonly mesasFiltradas = computed(() => {
     const todas = this.mesas();
     if (this.filtroAtivo() === 'abertas') {
@@ -55,6 +65,9 @@ export class MesoesComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarMesas();
+    this.preconsService.search().subscribe({
+      next: (list) => this.precons.set(list),
+    });
   }
 
   carregarMesas(): void {
@@ -78,8 +91,18 @@ export class MesoesComponent implements OnInit {
   toggleFormCriar(): void {
     this.mostrarFormCriar.update((v) => !v);
     if (!this.mostrarFormCriar()) {
-      this.novaMesaNome.set('');
-      this.novaMesaLink.set('');
+      this.resetFormCriar();
+    }
+  }
+
+  onPreconChange(preconId: string): void {
+    this.novaMesaPreconId.set(preconId);
+    this.novaMesaComandanteId.set('');
+    this.comandantes.set([]);
+    if (preconId) {
+      this.preconsService.listComandantes(preconId).subscribe({
+        next: (cmds) => this.comandantes.set(cmds),
+      });
     }
   }
 
@@ -91,14 +114,19 @@ export class MesoesComponent implements OnInit {
     const payload = {
       nome,
       ...(this.novaMesaLink().trim() ? { linkPartida: this.novaMesaLink().trim() } : {}),
+      ...(this.novaMesaPreconId() && this.novaMesaComandanteId()
+        ? {
+            preconId: this.novaMesaPreconId(),
+            preconComandanteId: this.novaMesaComandanteId(),
+          }
+        : {}),
     };
 
     this.mesasService.criar(payload).subscribe({
       next: (mesa) => {
         this.mesas.update((list) => [...list, mesa]);
         this.mostrarFormCriar.set(false);
-        this.novaMesaNome.set('');
-        this.novaMesaLink.set('');
+        this.resetFormCriar();
         this.criando.set(false);
       },
       error: () => {
@@ -130,5 +158,13 @@ export class MesoesComponent implements OnInit {
         this.novoLink.set('');
       },
     });
+  }
+
+  private resetFormCriar(): void {
+    this.novaMesaNome.set('');
+    this.novaMesaLink.set('');
+    this.novaMesaPreconId.set('');
+    this.novaMesaComandanteId.set('');
+    this.comandantes.set([]);
   }
 }

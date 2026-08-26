@@ -82,11 +82,20 @@ export class SorteioSnapshotDto {
   @ApiPropertyOptional({ nullable: true })
   rodadaNumero: number | null;
 
+  @ApiPropertyOptional({ nullable: true })
+  dataRodada: string | null;
+
   @ApiProperty()
   jaSorteada: boolean;
 
   @ApiProperty()
   totalCheckIns: number;
+
+  @ApiProperty()
+  podeSortear: boolean;
+
+  @ApiProperty()
+  podeReSortear: boolean;
 
   @ApiProperty({ type: [SorteioJogadorDto] })
   jogadores: SorteioJogadorDto[];
@@ -96,11 +105,11 @@ export class SorteioSnapshotDto {
 }
 
 export class CheckInStatusDto {
-  @ApiProperty()
-  rodadaId: string;
+  @ApiPropertyOptional({ nullable: true })
+  rodadaId: string | null;
 
-  @ApiProperty()
-  rodadaNumero: number;
+  @ApiPropertyOptional({ nullable: true })
+  rodadaNumero: number | null;
 
   @ApiProperty()
   checkIn: boolean;

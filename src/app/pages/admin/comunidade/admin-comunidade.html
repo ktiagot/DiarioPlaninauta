@@ -49,6 +49,81 @@
       ></canvas>
     </div>
   </div>
+
+  <!-- Jogadores / APOIA.se -->
+  <section class="comunidade-admin__jogadores">
+    <div class="comunidade-admin__jogadores-header">
+      <h4>
+        Jogadores do sistema
+        @if (!jogadoresLoading()) {
+          ({{ jogadores().length }} cadastrados · {{ jogadoresAtivosCount() }} ativos)
+        }
+      </h4>
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="jogadoresLoading() || verifyingTodos() || jogadores().length === 0"
+        (click)="verificarTodos()"
+      >
+        @if (verifyingTodos()) {
+          {{ verifyTodosProgress() }}
+        } @else {
+          Verificar todos na APOIA.se
+        }
+      </button>
+    </div>
+
+    @if (jogadoresLoading()) {
+      <div class="comunidade-admin__loading">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (jogadores().length === 0) {
+      <p class="comunidade-admin__empty">Nenhum jogador cadastrado.</p>
+    } @else {
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Status</th>
+              <th>Última verificação</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (jogador of jogadores(); track jogador.id) {
+              <tr>
+                <td>
+                  <span class="jogador-nick">{{ jogador.nome }}</span>
+                  <span class="jogador-deck">{{ jogador.nick }}</span>
+                </td>
+                <td>{{ jogador.email }}</td>
+                <td>
+                  <span [class]="statusClass(jogador)">{{ statusLabel(jogador) }}</span>
+                </td>
+                <td>{{ formatLastValidation(jogador.lastValidationAt) }}</td>
+                <td>
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    [disabled]="verifyingTodos() || verifyingEmail() === jogador.email"
+                    (click)="verificarUm(jogador)"
+                  >
+                    @if (verifyingEmail() === jogador.email) {
+                      <mat-spinner diameter="18" />
+                    } @else {
+                      Verificar
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
 } @else {
   <p class="comunidade-admin__empty">Nenhuma métrica disponível.</p>
 }

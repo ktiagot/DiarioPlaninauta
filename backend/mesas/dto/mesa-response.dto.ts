@@ -18,6 +18,12 @@ export class MesaJogadorResponseDto {
 
   @ApiProperty({ example: 0 })
   kills: number;
+
+  @ApiPropertyOptional({ example: 'Counter Intelligence' })
+  deckNome?: string;
+
+  @ApiPropertyOptional({ example: 'Phelia, Exuberant Shepherd' })
+  comandante?: string;
 }
 
 export class EliminacaoResponseDto {

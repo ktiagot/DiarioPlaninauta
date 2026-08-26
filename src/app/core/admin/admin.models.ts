@@ -71,14 +71,34 @@ export interface CreateCampeonatoPayload {
 
 export interface InscritoResumo {
   id: string;
-  nomeJogador: string;
+  nome: string;
   nick: string;
+  email: string;
   deckUrl: string | null;
   deckNome: string;
   comandante: string;
-  nome?: string;
-  email?: string;
   pontos: number;
+  vitorias: number;
   posicao: number | null;
-  ativo?: boolean;
+  ativo: boolean;
+}
+
+export interface JogadorAdmin {
+  id: string;
+  email: string;
+  nome: string;
+  nick: string;
+  isApoiadorAtivo: boolean;
+  isExApoiador: boolean;
+  lastValidationAt: string | null;
+  monthlyContribution: number | null;
+}
+
+export interface VerificarApoiaResponse {
+  email: string;
+  ativo: boolean;
+  isBacker: boolean;
+  isPaidThisMonth: boolean;
+  thisMonthPaidValue: number | null;
+  apiIndisponivel: boolean;
 }

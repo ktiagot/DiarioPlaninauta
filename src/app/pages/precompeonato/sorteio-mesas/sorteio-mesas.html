@@ -20,7 +20,7 @@
       color="primary"
       type="button"
       (click)="sortear()"
-      [disabled]="sorteando() || loading() || snapshot()?.jaSorteada"
+      [disabled]="sorteando() || loading() || !snapshot()?.podeSortear"
     >
       @if (sorteando()) {
         <mat-spinner diameter="20" />

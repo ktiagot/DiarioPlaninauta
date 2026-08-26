@@ -10,6 +10,7 @@ export const RODADA_MOCK: Rodada = {
       id: 'mock-mesa-1',
       numeroMesa: 1,
       finalizada: false,
+      validada: false,
       jogadores: [
         {
           inscricaoId: '1',

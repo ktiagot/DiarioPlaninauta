@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMesaDto {
@@ -11,4 +11,14 @@ export class CreateMesaDto {
   @IsOptional()
   @IsString()
   linkPartida?: string;
+
+  @ApiPropertyOptional({ example: 'p0000001-0000-4000-8000-000000000001' })
+  @IsOptional()
+  @IsUUID()
+  preconId?: string;
+
+  @ApiPropertyOptional({ example: 'c0000001-0000-4000-8000-000000000001' })
+  @IsOptional()
+  @IsUUID()
+  preconComandanteId?: string;
 }

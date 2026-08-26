@@ -47,6 +47,7 @@
       @for (mesa of rodada()!.mesas; track mesa.id) {
         <app-mesa-card
           [mesa]="mesa"
+          [rodadaFinalizada]="!!rodada()!.finalizada"
           (mesaAtualizada)="onMesaAtualizada($event)"
           (rodadaAtualizada)="onRodadaAtualizada($event)"
         />

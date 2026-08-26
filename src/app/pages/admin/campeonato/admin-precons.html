@@ -1,0 +1,164 @@
+@if (loading()) {
+  <div class="admin-page__loading">
+    <mat-spinner diameter="36" />
+  </div>
+} @else {
+  <div class="admin-section admin-section--card">
+    <h4>Cadastrar precon</h4>
+    <div class="abrir-rodada-form precon-form">
+      <label>
+        Nome
+        <input type="text" [ngModel]="formNome()" (ngModelChange)="formNome.set($event)" />
+      </label>
+      <label>
+        Set/Coleção
+        <input type="text" [ngModel]="formSetNome()" (ngModelChange)="formSetNome.set($event)" />
+      </label>
+      <label>
+        Cores
+        <input type="text" placeholder="ex: WU" [ngModel]="formCores()" (ngModelChange)="formCores.set($event)" />
+      </label>
+      <label>
+        Ano
+        <input type="number" min="1993" [ngModel]="formAno()" (ngModelChange)="formAno.set(+$event)" />
+      </label>
+      <div class="precon-form__comandantes">
+        <span class="precon-form__label">Comandantes</span>
+        @for (cmd of formComandantes(); track $index) {
+          <div class="precon-form__cmd-row">
+            <input
+              type="text"
+              [ngModel]="cmd"
+              (ngModelChange)="updateFormComandante($index, $event)"
+              placeholder="Nome do comandante"
+            />
+            @if (formComandantes().length > 1) {
+              <button mat-stroked-button type="button" (click)="removeFormComandante($index)">
+                Remover
+              </button>
+            }
+          </div>
+        }
+        <button mat-stroked-button type="button" (click)="addFormComandante()">
+          <mat-icon>add</mat-icon>
+          Comandante
+        </button>
+      </div>
+      <button mat-flat-button color="primary" [disabled]="!podeCriar() || saving()" (click)="criar()">
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>add</mat-icon>
+        }
+        Adicionar precon
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <h4>Catálogo ({{ precons().length }})</h4>
+    @if (precons().length === 0) {
+      <p class="admin-empty">Nenhum precon cadastrado.</p>
+    } @else {
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Set</th>
+              <th>Cores</th>
+              <th>Ano</th>
+              <th>Comandantes</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of precons(); track p.id) {
+              <tr [class.admin-table__row--inativo]="p.banido">
+                <td>
+                  <input
+                    type="text"
+                    class="admin-table__input"
+                    [ngModel]="draftFor(p).nome"
+                    (ngModelChange)="updateDraft(p, 'nome', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="admin-table__input"
+                    [ngModel]="draftFor(p).setNome"
+                    (ngModelChange)="updateDraft(p, 'setNome', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="admin-table__input admin-table__input--narrow"
+                    [ngModel]="draftFor(p).cores"
+                    (ngModelChange)="updateDraft(p, 'cores', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    class="admin-table__input admin-table__input--narrow"
+                    min="1993"
+                    [ngModel]="draftFor(p).ano"
+                    (ngModelChange)="updateDraft(p, 'ano', +$event)"
+                  />
+                </td>
+                <td class="precon-table__cmds">
+                  @for (cmd of draftFor(p).comandantes; track $index) {
+                    <input
+                      type="text"
+                      class="admin-table__input"
+                      [ngModel]="cmd"
+                      (ngModelChange)="updateDraftComandante(p, $index, $event)"
+                    />
+                  }
+                  <button mat-stroked-button type="button" (click)="addDraftComandante(p)">
+                    +
+                  </button>
+                </td>
+                <td>
+                  @if (p.banido) {
+                    <span class="badge badge--inativo">Banido</span>
+                  } @else {
+                    <span class="badge badge--done">Ativo</span>
+                  }
+                </td>
+                <td class="precon-table__actions">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    [disabled]="savingId() === p.id"
+                    (click)="salvar(p)"
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    mat-stroked-button
+                    [disabled]="savingId() === p.id"
+                    (click)="toggleBanido(p)"
+                  >
+                    {{ p.banido ? 'Desbanir' : 'Banir' }}
+                  </button>
+                  <button
+                    mat-stroked-button
+                    color="warn"
+                    [disabled]="deletingId() === p.id"
+                    (click)="excluir(p)"
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}

@@ -11,8 +11,10 @@ import {
   CampeonatoAdmin,
   CreateCampeonatoPayload,
   InscritoResumo,
+  JogadorAdmin,
   RodadaAtual,
   SubmitResultadoPayload,
+  VerificarApoiaResponse,
 } from './admin.models';
 
 export interface DashboardMetricas {
@@ -86,6 +88,16 @@ export class AdminService {
     return this.http.get<InscritoResumo[]>(`${API_URL}/precompeonato/atual/jogadores`);
   }
 
+  getInscritosAdmin(): Observable<InscritoResumo[]> {
+    return this.http.get<InscritoResumo[]>(`${API_URL}/precompeonato/atual/inscritos/admin`);
+  }
+
+  setInscricaoAtivo(id: string, ativo: boolean): Observable<InscritoResumo> {
+    return this.http.patch<InscritoResumo>(`${API_URL}/precompeonato/inscricoes/${id}/ativo`, {
+      ativo,
+    });
+  }
+
   getRodadaAtual(): Observable<RodadaAtual | null> {
     return this.http.get<RodadaAtual | null>(`${API_URL}/precompeonato/atual/rodada`);
   }
@@ -118,5 +130,16 @@ export class AdminService {
     const body = new FormData();
     body.append('file', file);
     return this.http.post<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos/${id}/banner`, body);
+  }
+
+  listJogadoresAdmin(): Observable<JogadorAdmin[]> {
+    return this.http.get<JogadorAdmin[]>(`${API_URL}/comunidade/admin/jogadores`);
+  }
+
+  verificarApoia(email: string): Observable<VerificarApoiaResponse> {
+    return this.http.post<VerificarApoiaResponse>(
+      `${API_URL}/comunidade/admin/apoia/verificar/${encodeURIComponent(email)}`,
+      {},
+    );
   }
 }

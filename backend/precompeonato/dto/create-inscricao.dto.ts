@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
+  IsUUID,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -22,17 +23,13 @@ export class CreateInscricaoDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'Precon Atraxa' })
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  deckNome: string;
+  @ApiProperty({ example: 'p0000001-0000-4000-8000-000000000001' })
+  @IsUUID()
+  preconId: string;
 
-  @ApiProperty({ example: 'Atraxa, Praetors\' Voice' })
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  comandante: string;
+  @ApiProperty({ example: 'c0000001-0000-4000-8000-000000000001' })
+  @IsUUID()
+  preconComandanteId: string;
 
   @ApiProperty({
     example: true,

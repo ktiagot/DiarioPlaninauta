@@ -95,6 +95,42 @@ enum CampeonatoStatus {
   ENCERRADO
 }
 
+model Precon {
+  id        String   @id @default(uuid())
+  nome      String
+  setNome   String
+  cores     String
+  ano       Int
+  banido    Boolean  @default(false)
+
+  comandantes   PreconComandante[]
+  inscricoes    Inscricao[]
+  mesaJogadores MesaJogador[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("precons")
+}
+
+model PreconComandante {
+  id         String @id @default(uuid())
+  preconId   String
+  comandante String
+  ordem      Int    @default(1)
+
+  precon        Precon        @relation(fields: [preconId], references: [id], onDelete: Cascade)
+  inscricoes    Inscricao[]
+  mesaJogadores MesaJogador[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([preconId, comandante])
+  @@index([preconId])
+  @@map("precon_comandantes")
+}
+
 model Campeonato {
   id                   String           @id @default(uuid())
   nome                 String
@@ -120,10 +156,10 @@ model Inscricao {
   userId            String
   email             String
   discordNick       String
-  deckUrl           String?
-  deckNome          String
-  comandante        String
-  aceiteTermos      Boolean
+  deckUrl             String?
+  preconId            String
+  preconComandanteId  String
+  aceiteTermos        Boolean
   aceiteTermosEm    DateTime
   aceitePrivacidade Boolean
   entrouDiscord     Boolean
@@ -131,10 +167,12 @@ model Inscricao {
   pontos            Int       @default(0)
   posicao           Int?
 
-  campeonato Campeonato           @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
-  user       User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
-  mesas      MesaTorneioJogador[]
-  checkIns   CheckInRodada[]
+  campeonato       Campeonato       @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  precon           Precon           @relation(fields: [preconId], references: [id], onDelete: Restrict)
+  preconComandante PreconComandante @relation(fields: [preconComandanteId], references: [id], onDelete: Restrict)
+  mesas            MesaTorneioJogador[]
+  checkIns         CheckInRodada[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -143,15 +181,18 @@ model Inscricao {
   @@index([campeonatoId])
   @@index([userId])
   @@index([email])
+  @@index([preconId])
+  @@index([preconComandanteId])
   @@map("inscricoes")
 }
 
 model Rodada {
-  id           String  @id @default(uuid())
+  id           String   @id @default(uuid())
   campeonatoId String
   numero       Int
-  ativa        Boolean @default(false)
-  finalizada   Boolean @default(false)
+  ativa        Boolean  @default(false)
+  finalizada   Boolean  @default(false)
+  dataRodada   DateTime @db.Date
 
   campeonato Campeonato      @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   mesas      MesaTorneio[]
@@ -181,13 +222,15 @@ model CheckInRodada {
 }
 
 model MesaTorneio {
-  id                    String   @id @default(uuid())
+  id                    String    @id @default(uuid())
   rodadaId              String
   numeroMesa            Int
-  finalizada            Boolean  @default(false)
+  finalizada            Boolean   @default(false)
   linkPartida           String?
-  empate                Boolean  @default(false)
-  empatadosInscricaoIds String[] @default([])
+  empate                Boolean   @default(false)
+  empatadosInscricaoIds String[]  @default([])
+  validada              Boolean   @default(false)
+  validadaEm            DateTime?
 
   rodada    Rodada               @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
   jogadores MesaTorneioJogador[]
@@ -235,14 +278,18 @@ model Mesa {
 }
 
 model MesaJogador {
-  id           String @id @default(uuid())
-  mesaId       String
-  userId       String
-  posicaoFinal Int?
-  kills        Int    @default(0)
+  id                 String  @id @default(uuid())
+  mesaId             String
+  userId             String
+  preconId           String?
+  preconComandanteId String?
+  posicaoFinal       Int?
+  kills              Int     @default(0)
 
-  mesa Mesa @relation(fields: [mesaId], references: [id], onDelete: Cascade)
-  user User @relation("MesaJogadorUser", fields: [userId], references: [id], onDelete: Restrict)
+  mesa             Mesa              @relation(fields: [mesaId], references: [id], onDelete: Cascade)
+  user             User              @relation("MesaJogadorUser", fields: [userId], references: [id], onDelete: Restrict)
+  precon           Precon?           @relation(fields: [preconId], references: [id], onDelete: Restrict)
+  preconComandante PreconComandante? @relation(fields: [preconComandanteId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -250,6 +297,8 @@ model MesaJogador {
   @@unique([mesaId, userId])
   @@index([mesaId])
   @@index([userId])
+  @@index([preconId])
+  @@index([preconComandanteId])
   @@map("mesa_jogadores")
 }
 

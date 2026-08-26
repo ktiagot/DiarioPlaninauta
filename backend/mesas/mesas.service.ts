@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PreconsService } from '../precons/precons.service';
+import { mesaJogadorPreconInclude } from '../precons/mappers/to-precon-response';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { MesaResponseDto } from './dto/mesa-response.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
@@ -22,6 +24,7 @@ const mesaInclude = {
           nick: true,
         },
       },
+      ...mesaJogadorPreconInclude,
     },
   },
   eliminacoes: true,
@@ -29,7 +32,10 @@ const mesaInclude = {
 
 @Injectable()
 export class MesasService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly preconsService: PreconsService,
+  ) {}
 
   async findAll(): Promise<MesaResponseDto[]> {
     const mesas = await this.prisma.mesa.findMany({
@@ -41,12 +47,21 @@ export class MesasService {
   }
 
   async create(userId: string, dto: CreateMesaDto): Promise<MesaResponseDto> {
+    const precon = await this.preconsService.validateOptionalForMesa(
+      dto.preconId,
+      dto.preconComandanteId,
+    );
+
     const mesa = await this.prisma.mesa.create({
       data: {
         nome: dto.nome,
         linkPartida: dto.linkPartida ?? null,
         jogadores: {
-          create: { userId },
+          create: {
+            userId,
+            preconId: precon.preconId,
+            preconComandanteId: precon.preconComandanteId,
+          },
         },
       },
       include: mesaInclude,

@@ -23,8 +23,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AuthUser } from '../auth/strategies/jwt.strategy';
 import { ComunidadeService } from './comunidade.service';
+import { JogadorAdminResponseDto } from './dto/jogador-admin-response.dto';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
 import { ContatoResponseDto } from './dto/contato-response.dto';
+import { VerificarApoiaResponseDto } from './dto/verificar-apoia-response.dto';
 
 interface AuthenticatedRequest {
   user: AuthUser;
@@ -138,5 +140,39 @@ export class ComunidadeController {
   @ApiOkResponse({ description: 'Métricas da comunidade.' })
   getMetricas() {
     return this.comunidadeService.getMetricas();
+  }
+
+  @Get('admin/jogadores')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Listar jogadores do sistema (admin)',
+    description: 'Retorna todos os usuários cadastrados com flags de apoiador e última verificação.',
+  })
+  @ApiOkResponse({
+    description: 'Lista de jogadores para administração.',
+    type: [JogadorAdminResponseDto],
+  })
+  listAdminJogadores(): Promise<JogadorAdminResponseDto[]> {
+    return this.comunidadeService.listAdminJogadores();
+  }
+
+  @Post('admin/apoia/verificar/:email')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Verificar apoiador na APOIA.se (admin)',
+    description:
+      'Consulta a API APOIA.se e sincroniza isApoiadorAtivo, isExApoiador e demais flags no banco.',
+  })
+  @ApiParam({ name: 'email', description: 'E-mail do usuário a verificar' })
+  @ApiOkResponse({
+    description: 'Resultado da verificação.',
+    type: VerificarApoiaResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Usuário não encontrado.' })
+  verificarApoia(@Param('email') email: string): Promise<VerificarApoiaResponseDto> {
+    return this.comunidadeService.verificarESincronizar(decodeURIComponent(email));
   }
 }

@@ -5,6 +5,8 @@ export interface MesaJogador {
   sobrenome: string;
   posicaoFinal: number | null;
   kills: number;
+  deckNome?: string;
+  comandante?: string;
 }
 
 export interface Mesa {
@@ -19,4 +21,6 @@ export interface Mesa {
 export interface CreateMesaPayload {
   nome: string;
   linkPartida?: string;
+  preconId?: string;
+  preconComandanteId?: string;
 }

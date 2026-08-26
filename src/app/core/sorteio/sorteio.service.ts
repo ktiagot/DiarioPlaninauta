@@ -25,6 +25,14 @@ export class SorteioService {
     );
   }
 
+  reSortearMesas(): Observable<SorteioSnapshot> {
+    return this.http.post<SorteioSnapshot>(
+      `${API_URL}/precompeonato/atual/re-sortear-mesas`,
+      {},
+      { headers: this.headers() },
+    );
+  }
+
   getCheckInStatus(): Observable<CheckInStatus> {
     return this.http.get<CheckInStatus>(`${API_URL}/precompeonato/atual/checkin`, {
       headers: this.headers(),

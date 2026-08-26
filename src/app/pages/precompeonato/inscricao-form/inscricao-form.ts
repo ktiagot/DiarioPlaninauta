@@ -3,6 +3,7 @@ import {
   computed,
   DestroyRef,
   inject,
+  OnInit,
   output,
   signal,
 } from '@angular/core';
@@ -27,10 +28,11 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { map, startWith } from 'rxjs';
 
 import { InscricoesService } from '../../../core/inscricoes/inscricoes.service';
+import { PreconComandante, PreconListItem } from '../../../core/precons/precons.models';
+import { PreconsService } from '../../../core/precons/precons.service';
 import {
   DISCORD_URL,
   PRECON_HELP_URL,
-  PRECONS_MOCK,
   PRIVACIDADE_URL,
   REGRAS_URL,
 } from './inscricao-form.constants';
@@ -54,9 +56,10 @@ function requiredTrue(control: AbstractControl): ValidationErrors | null {
   templateUrl: './inscricao-form.html',
   styleUrl: './inscricao-form.scss',
 })
-export class InscricaoFormComponent {
+export class InscricaoFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly inscricoesService = inject(InscricoesService);
+  private readonly preconsService = inject(PreconsService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -64,78 +67,96 @@ export class InscricaoFormComponent {
   readonly submitted = output<void>();
 
   protected readonly faXmark = faXmark;
-  protected readonly precons = PRECONS_MOCK;
   protected readonly preconHelpUrl = PRECON_HELP_URL;
   protected readonly regrasUrl = REGRAS_URL;
   protected readonly privacidadeUrl = PRIVACIDADE_URL;
   protected readonly discordUrl = DISCORD_URL;
 
   protected readonly submitting = signal(false);
+  protected readonly loadingPrecons = signal(true);
+  protected readonly precons = signal<PreconListItem[]>([]);
+  protected readonly comandantes = signal<PreconComandante[]>([]);
   protected readonly preconSearch = signal('');
   protected readonly comandanteSearch = signal('');
 
   protected readonly form = this.fb.nonNullable.group({
     discordNick: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    deckNome: ['', [Validators.required]],
-    comandante: [{ value: '', disabled: true }, [Validators.required]],
+    preconId: ['', [Validators.required]],
+    preconComandanteId: [{ value: '', disabled: true }, [Validators.required]],
     aceiteTermos: [false, [requiredTrue]],
     aceitePrivacidade: [false, [requiredTrue]],
     entrouDiscord: [false, [requiredTrue]],
   });
 
-  private readonly selectedDeckNome = signal('');
-
   private readonly formValid = toSignal(
     this.form.statusChanges.pipe(
       startWith(this.form.status),
-      map(() => this.form.valid && !!this.form.controls.comandante.value),
+      map(() => this.form.valid && !!this.form.controls.preconComandanteId.value),
     ),
     { initialValue: false },
   );
 
   protected readonly canSubmit = computed(
-    () => this.formValid() && !this.submitting(),
+    () => this.formValid() && !this.submitting() && !this.loadingPrecons(),
   );
-
-  protected readonly comandantesDisponiveis = computed(() => {
-    const deckNome = this.selectedDeckNome();
-    if (!deckNome) return [];
-    return this.precons.find((p) => p.nome === deckNome)?.comandantes ?? [];
-  });
 
   protected readonly preconsFiltrados = computed(() => {
     const term = this.preconSearch().trim().toLowerCase();
-    if (!term) return this.precons;
-    return this.precons.filter((p) => p.nome.toLowerCase().includes(term));
+    const list = this.precons();
+    if (!term) return list;
+    return list.filter(
+      (p) =>
+        p.nome.toLowerCase().includes(term) ||
+        p.setNome.toLowerCase().includes(term),
+    );
   });
 
   protected readonly comandantesFiltrados = computed(() => {
     const term = this.comandanteSearch().trim().toLowerCase();
-    const list = this.comandantesDisponiveis();
+    const list = this.comandantes();
     if (!term) return list;
-    return list.filter((cmd) => cmd.toLowerCase().includes(term));
+    return list.filter((cmd) => cmd.comandante.toLowerCase().includes(term));
   });
 
-  constructor() {
-    this.form.controls.deckNome.valueChanges
+  ngOnInit(): void {
+    this.preconsService.search().subscribe({
+      next: (list) => {
+        this.precons.set(list);
+        this.loadingPrecons.set(false);
+      },
+      error: () => {
+        this.loadingPrecons.set(false);
+        this.snackBar.open('Não foi possível carregar a lista de precons.', 'Fechar', {
+          duration: 5000,
+        });
+      },
+    });
+
+    this.form.controls.preconId.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((nome) => {
-        this.selectedDeckNome.set(nome);
+      .subscribe((preconId) => {
         this.preconSearch.set('');
         this.comandanteSearch.set('');
-        const comandanteCtrl = this.form.controls.comandante;
+        const comandanteCtrl = this.form.controls.preconComandanteId;
         comandanteCtrl.reset('');
-        if (nome) {
+        this.comandantes.set([]);
+
+        if (preconId) {
           comandanteCtrl.enable({ emitEvent: false });
+          this.preconsService.listComandantes(preconId).subscribe({
+            next: (cmds) => this.comandantes.set(cmds),
+            error: () => {
+              this.snackBar.open('Erro ao carregar comandantes.', 'Fechar', { duration: 4000 });
+            },
+          });
         } else {
           comandanteCtrl.disable({ emitEvent: false });
         }
-        // statusChanges não emite ao só habilitar/desabilitar com emitEvent:false
         this.form.updateValueAndValidity({ emitEvent: true });
       });
 
-    this.form.controls.comandante.valueChanges
+    this.form.controls.preconComandanteId.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.comandanteSearch.set('');
@@ -186,8 +207,8 @@ export class InscricaoFormComponent {
       .createInscricao({
         discordNick: raw.discordNick.trim(),
         email: raw.email.trim(),
-        deckNome: raw.deckNome,
-        comandante: raw.comandante,
+        preconId: raw.preconId,
+        preconComandanteId: raw.preconComandanteId,
         aceiteTermos: raw.aceiteTermos,
         aceitePrivacidade: raw.aceitePrivacidade,
         entrouDiscord: raw.entrouDiscord,

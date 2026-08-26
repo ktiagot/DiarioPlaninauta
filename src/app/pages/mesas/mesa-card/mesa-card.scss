@@ -123,6 +123,12 @@
   color: #86efac;
 }
 
+.mesa-card__badge--pending {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+}
+
 .mesa-card__divider {
   border-top-color: rgba(255, 255, 255, 0.12);
   margin: 0 1.5rem;

@@ -19,6 +19,7 @@ import { Mesa, Rodada } from '../../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../../core/rodadas/rodadas.service';
 import { AdminDashboardComponent } from '../dashboard/admin-dashboard';
 import { AdminCampeonatosComponent } from './admin-campeonatos';
+import { AdminPreconsComponent } from './admin-precons';
 import { MesaCardComponent } from '../../mesas/mesa-card/mesa-card';
 
 @Component({
@@ -33,6 +34,7 @@ import { MesaCardComponent } from '../../mesas/mesa-card/mesa-card';
     FormsModule,
     AdminDashboardComponent,
     AdminCampeonatosComponent,
+    AdminPreconsComponent,
     MesaCardComponent,
   ],
   templateUrl: './admin-campeonato.html',
@@ -54,13 +56,21 @@ export class AdminCampeonatoComponent implements OnInit {
   readonly reSorteando = signal(false);
   readonly abrindoRodada = signal(false);
   readonly togglingCheckInId = signal<string | null>(null);
+  readonly togglingInscricaoId = signal<string | null>(null);
+  readonly campeonatoEncerrado = signal(false);
   readonly finalizandoRodada = signal(false);
 
   readonly rodadaNumero = signal(1);
   readonly rodadaData = signal('');
 
-  readonly inscritosOrdenados = computed(() =>
-    [...this.inscritos()].sort((a, b) => (a.posicao ?? 999) - (b.posicao ?? 999)),
+  readonly inscritosOrdenados = computed(() => this.inscritos());
+
+  readonly inscritosAtivosCount = computed(
+    () => this.inscritos().filter((i) => i.ativo).length,
+  );
+
+  readonly inscritosSuspensosCount = computed(
+    () => this.inscritos().filter((i) => !i.ativo).length,
   );
 
   readonly rodadaEmCheckIn = computed(() => {
@@ -112,8 +122,15 @@ export class AdminCampeonatoComponent implements OnInit {
       },
     });
 
-    this.adminService.getInscritos().subscribe({
+    this.adminService.getInscritosAdmin().subscribe({
       next: (list) => this.inscritos.set(list),
+    });
+
+    this.adminService.listCampeonatos().subscribe({
+      next: (list) => {
+        const atual = list[0];
+        this.campeonatoEncerrado.set(atual?.statusCode === 'ENCERRADO');
+      },
     });
 
     this.carregarRodadaAtual();
@@ -222,6 +239,49 @@ export class AdminCampeonatoComponent implements OnInit {
     return `${d}/${m}/${y}`;
   }
 
+  toggleInscricaoAtivo(inscrito: InscritoResumo): void {
+    if (this.campeonatoEncerrado() || this.togglingInscricaoId()) return;
+
+    const suspender = inscrito.ativo;
+    if (suspender) {
+      const ok = window.confirm(
+        `Suspender ${inscrito.nome} deste campeonato? O jogador sairá do ranking e não participará das próximas rodadas. Pontos e mesas já jogadas são mantidos.`,
+      );
+      if (!ok) return;
+    }
+
+    this.togglingInscricaoId.set(inscrito.id);
+    this.adminService.setInscricaoAtivo(inscrito.id, !inscrito.ativo).subscribe({
+      next: () => {
+        this.togglingInscricaoId.set(null);
+        this.snackBar.open(
+          suspender ? 'Inscrição suspensa.' : 'Inscrição reativada.',
+          'OK',
+          { duration: 3000 },
+        );
+        this.adminService.getInscritosAdmin().subscribe({
+          next: (list) => this.inscritos.set(list),
+        });
+        this.adminService.getSorteio().subscribe({
+          next: (snap) => this.snapshot.set(snap),
+        });
+      },
+      error: (err) => {
+        this.togglingInscricaoId.set(null);
+        this.snackBar.open(err?.error?.message || 'Erro ao atualizar inscrição.', 'Fechar', {
+          duration: 5000,
+        });
+      },
+    });
+  }
+
+  private carregarRodadaAtual(): void {
+    this.rodadasService.getRodadaAtual().subscribe({
+      next: (rodada) => this.rodadaAtual.set(rodada),
+      error: () => this.rodadaAtual.set(null),
+    });
+  }
+
   onMesaAtualizada(mesaAtualizada: Mesa): void {
     const rodada = this.rodadaAtual();
     if (!rodada) return;
@@ -258,7 +318,7 @@ export class AdminCampeonatoComponent implements OnInit {
             duration: 4000,
           });
           this.recarregarListas();
-          this.adminService.getInscritos().subscribe({
+          this.adminService.getInscritosAdmin().subscribe({
             next: (list) => this.inscritos.set(list),
           });
         },
@@ -269,13 +329,6 @@ export class AdminCampeonatoComponent implements OnInit {
           this.carregarRodadaAtual();
         },
       });
-  }
-
-  private carregarRodadaAtual(): void {
-    this.rodadasService.getRodadaAtual().subscribe({
-      next: (rodada) => this.rodadaAtual.set(rodada),
-      error: () => this.rodadaAtual.set(null),
-    });
   }
 
   private recarregarListas(): void {

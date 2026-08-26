@@ -28,7 +28,8 @@ export class MesasComponent implements OnInit {
   protected readonly podeFinalizar = computed(() => {
     const rodada = this.rodada();
     if (!rodada || !this.session.isAdmin() || rodada.finalizada) return false;
-    return rodada.mesas.length > 0 && rodada.mesas.every((m) => m.finalizada);
+    if (rodada.podeFinalizar != null) return rodada.podeFinalizar;
+    return rodada.mesas.length > 0 && rodada.mesas.every((m) => m.validada);
   });
 
   ngOnInit(): void {
@@ -63,7 +64,7 @@ export class MesasComponent implements OnInit {
     this.rodada.set({
       ...rodada,
       mesas,
-      podeFinalizar: !rodada.finalizada && mesas.length > 0 && mesas.every((m) => m.finalizada),
+      podeFinalizar: !rodada.finalizada && mesas.length > 0 && mesas.every((m) => m.validada),
     });
   }
 
@@ -74,6 +75,11 @@ export class MesasComponent implements OnInit {
   protected finalizarRodada(): void {
     const rodada = this.rodada();
     if (!rodada || !this.podeFinalizar() || this.finalizando()) return;
+
+    const ok = window.confirm(
+      'Finalizar a rodada? Os pontos serão somados na classificação e os resultados ficarão travados.',
+    );
+    if (!ok) return;
 
     this.finalizando.set(true);
     this.rodadasService

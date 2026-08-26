@@ -5,7 +5,7 @@ import {
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -21,6 +21,7 @@ import { finalize } from 'rxjs';
 
 import { EliminacaoRegistro, Mesa, MesaJogador, Rodada } from '../../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../../core/rodadas/rodadas.service';
+import { SessionService } from '../../../core/auth/session.service';
 
 @Component({
   selector: 'app-mesa-card',
@@ -44,16 +45,18 @@ import { RodadasService } from '../../../core/rodadas/rodadas.service';
 })
 export class MesaCardComponent {
   private readonly rodadasService = inject(RodadasService);
+  private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly mesa = input.required<Mesa>();
+  readonly modoAdmin = input(false);
+  readonly rodadaFinalizada = input(false);
   readonly mesaAtualizada = output<Mesa>();
   readonly rodadaAtualizada = output<Rodada>();
 
   protected readonly jogadoresOrdenados = signal<MesaJogador[]>([]);
   protected readonly linkPartidaInput = signal('');
   protected readonly linkPartidaSalvo = signal('');
-  protected readonly finalizada = signal(false);
   protected readonly confirmando = signal(false);
   protected readonly salvandoLink = signal(false);
   protected readonly eliminacoes = signal<EliminacaoRegistro[]>([]);
@@ -62,15 +65,40 @@ export class MesaCardComponent {
   protected readonly resultadoEmpate = signal(false);
   protected readonly jogadoresEmpatados = signal<Record<string, boolean>>({});
 
+  protected readonly somenteLeitura = computed(() => {
+    if (this.rodadaFinalizada()) return true;
+    const admin = this.modoAdmin() || this.session.isAdmin();
+    return this.mesa().validada === true && !admin;
+  });
+
+  protected readonly botaoConfirmarLabel = computed(() => {
+    if (!this.modoAdmin()) return 'Confirmar Posições';
+    const mesa = this.mesa();
+    if (!mesa.finalizada) return 'Lançar e validar';
+    if (!mesa.validada) return 'Validar resultado';
+    return 'Salvar correção';
+  });
+
+  protected readonly badgeLabel = computed(() => {
+    if (this.rodadaFinalizada()) return 'Finalizada';
+    if (this.mesa().validada) return 'Validada';
+    if (this.mesa().finalizada) return 'Aguardando';
+    return this.modoAdmin() ? 'Pendente' : null;
+  });
+
   constructor() {
     effect(() => {
       const mesa = this.mesa();
       const link = mesa.linkPartida ?? '';
 
-      this.jogadoresOrdenados.set([...mesa.jogadores]);
+      const jogadores = [...mesa.jogadores].sort((a, b) => {
+        const pa = a.posicaoFinal ?? 99;
+        const pb = b.posicaoFinal ?? 99;
+        return pa - pb;
+      });
+      this.jogadoresOrdenados.set(jogadores);
       this.linkPartidaInput.set(link);
       this.linkPartidaSalvo.set(link);
-      this.finalizada.set(mesa.finalizada);
       this.eliminacoes.set(mesa.eliminacoes ? [...mesa.eliminacoes] : []);
       this.novoEliminadorId.set(null);
       this.novoEliminadoId.set(null);
@@ -84,7 +112,7 @@ export class MesaCardComponent {
   }
 
   protected drop(event: CdkDragDrop<MesaJogador[]>): void {
-    if (this.finalizada() || this.resultadoEmpate()) return;
+    if (this.somenteLeitura() || this.resultadoEmpate()) return;
 
     const jogadores = [...this.jogadoresOrdenados()];
     moveItemInArray(jogadores, event.previousIndex, event.currentIndex);
@@ -129,7 +157,10 @@ export class MesaCardComponent {
   }
 
   protected killCount(inscricaoId: string): number {
-    return this.eliminacoes().filter((e) => e.eliminadorInscricaoId === inscricaoId).length;
+    if (this.eliminacoes().length > 0) {
+      return this.eliminacoes().filter((e) => e.eliminadorInscricaoId === inscricaoId).length;
+    }
+    return this.jogadoresOrdenados().find((j) => j.inscricaoId === inscricaoId)?.kills ?? 0;
   }
 
   protected killLabel(count: number): string {
@@ -180,7 +211,7 @@ export class MesaCardComponent {
   }
 
   protected removerEliminacao(index: number): void {
-    if (this.finalizada()) return;
+    if (this.somenteLeitura()) return;
     this.eliminacoes.update((lista) => lista.filter((_, i) => i !== index));
   }
 
@@ -192,7 +223,7 @@ export class MesaCardComponent {
   }
 
   protected podeEnviarLink(): boolean {
-    if (this.finalizada() || this.salvandoLink()) return false;
+    if (this.somenteLeitura() || this.salvandoLink()) return false;
 
     const normalized = this.rodadasService.normalizeLink(this.linkPartidaInput());
     return normalized.length > 0 && normalized !== this.linkPartidaSalvo();
@@ -232,10 +263,14 @@ export class MesaCardComponent {
     const empateOk =
       !this.resultadoEmpate() ||
       Object.values(this.jogadoresEmpatados()).filter(Boolean).length >= 2;
+    const killsFromApi = this.jogadoresOrdenados().reduce((sum, j) => sum + (j.kills ?? 0), 0);
+    const killsOk =
+      this.eliminacoes().length === killsNeeded ||
+      (this.eliminacoes().length === 0 && killsFromApi === killsNeeded);
     return (
-      !this.finalizada() &&
+      !this.somenteLeitura() &&
       total >= 3 &&
-      this.eliminacoes().length === killsNeeded &&
+      killsOk &&
       empateOk &&
       !this.confirmando()
     );
@@ -271,11 +306,12 @@ export class MesaCardComponent {
       .pipe(finalize(() => this.confirmando.set(false)))
       .subscribe({
         next: (rodada) => {
-          this.finalizada.set(true);
           this.rodadaAtualizada.emit(rodada);
-          this.snackBar.open('Posições confirmadas com sucesso!', 'Fechar', {
-            duration: 4000,
-          });
+          this.snackBar.open(
+            this.modoAdmin() ? 'Resultado salvo.' : 'Posições confirmadas com sucesso!',
+            'Fechar',
+            { duration: 4000 },
+          );
         },
         error: (err: Error) => {
           this.snackBar.open(err.message || 'Erro ao confirmar posições.', 'Fechar', {

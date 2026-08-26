@@ -36,8 +36,8 @@ export interface InscricaoApi {
 export interface CreateInscricaoPayload {
   discordNick: string;
   email: string;
-  deckNome: string;
-  comandante: string;
+  preconId: string;
+  preconComandanteId: string;
   aceiteTermos: boolean;
   aceitePrivacidade: boolean;
   entrouDiscord: boolean;

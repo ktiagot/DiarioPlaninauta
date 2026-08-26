@@ -337,28 +337,82 @@
     <mat-tab label="Inscritos">
       <div class="admin-tab-content">
         <div class="admin-section">
-          <h4>Inscritos no campeonato atual ({{ inscritos().length }})</h4>
+          <h4>
+            Inscritos no campeonato
+            ({{ inscritosAtivosCount() }} ativos · {{ inscritosSuspensosCount() }} suspensos)
+          </h4>
           <div class="admin-table-wrapper">
             <table class="admin-table">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Nick</th>
                   <th>Nome</th>
-                  <th>Comandante</th>
+                  <th>E-mail</th>
                   <th>Deck</th>
                   <th>Pontos</th>
+                  <th>Vitórias</th>
+                  <th>Status</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 @for (inscrito of inscritosOrdenados(); track inscrito.id) {
-                  <tr>
+                  <tr [class.admin-table__row--inativo]="!inscrito.ativo">
                     <td>{{ inscrito.posicao ?? '-' }}</td>
-                    <td>{{ inscrito.nick }}</td>
-                    <td>{{ inscrito.nomeJogador }}</td>
-                    <td>{{ inscrito.comandante }}</td>
-                    <td>{{ inscrito.deckNome }}</td>
+                    <td>
+                      <span class="jogador-nick">{{ inscrito.nome }}</span>
+                      @if (inscrito.nick) {
+                        <span class="jogador-deck">{{ inscrito.nick }}</span>
+                      }
+                    </td>
+                    <td>{{ inscrito.email }}</td>
+                    <td>
+                      @if (inscrito.deckUrl) {
+                        <a [href]="inscrito.deckUrl" target="_blank" rel="noopener">
+                          {{ inscrito.deckNome }}
+                        </a>
+                      } @else {
+                        {{ inscrito.deckNome }}
+                      }
+                    </td>
                     <td>{{ inscrito.pontos }}</td>
+                    <td>{{ inscrito.vitorias }}</td>
+                    <td>
+                      @if (inscrito.ativo) {
+                        <span class="badge badge--done">Ativo</span>
+                      } @else {
+                        <span class="badge badge--inativo">Suspenso</span>
+                      }
+                    </td>
+                    <td>
+                      @if (inscrito.ativo) {
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          [disabled]="campeonatoEncerrado() || togglingInscricaoId() === inscrito.id"
+                          (click)="toggleInscricaoAtivo(inscrito)"
+                        >
+                          @if (togglingInscricaoId() === inscrito.id) {
+                            <mat-spinner diameter="18" />
+                          } @else {
+                            Suspender
+                          }
+                        </button>
+                      } @else {
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          [disabled]="campeonatoEncerrado() || togglingInscricaoId() === inscrito.id"
+                          (click)="toggleInscricaoAtivo(inscrito)"
+                        >
+                          @if (togglingInscricaoId() === inscrito.id) {
+                            <mat-spinner diameter="18" />
+                          } @else {
+                            Reativar
+                          }
+                        </button>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -371,6 +425,12 @@
     <mat-tab label="Campeonatos">
       <div class="admin-tab-content">
         <app-admin-campeonatos />
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Precons">
+      <div class="admin-tab-content">
+        <app-admin-precons />
       </div>
     </mat-tab>
   </mat-tab-group>
