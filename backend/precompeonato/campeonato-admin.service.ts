@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { BannerStorage } from './banner-storage';
 import { CAMPEONATO_STATUS_LABEL } from './constants/status-labels';
 import { parseDateOnly, toDateOnly } from './date-only';
 import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
@@ -29,7 +30,10 @@ export function toAdminResponse(c: Campeonato): CampeonatoAdminResponseDto {
 
 @Injectable()
 export class CampeonatoAdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly bannerStorage: BannerStorage,
+  ) {}
 
   async list(): Promise<CampeonatoAdminResponseDto[]> {
     const campeonatos = await this.prisma.campeonato.findMany({
@@ -100,6 +104,24 @@ export class CampeonatoAdminService {
     const updated = await this.prisma.campeonato.update({
       where: { id },
       data: { status },
+    });
+    return toAdminResponse(updated);
+  }
+
+  async updateBanner(
+    id: string,
+    file: { mimetype: string; buffer: Buffer; size: number },
+  ): Promise<CampeonatoAdminResponseDto> {
+    const campeonato = await this.findOrThrow(id);
+
+    if (campeonato.status === CampeonatoStatus.ENCERRADO) {
+      throw new ConflictException('Campeonato encerrado não pode ser editado.');
+    }
+
+    const bannerUrl = await this.bannerStorage.save(id, file);
+    const updated = await this.prisma.campeonato.update({
+      where: { id },
+      data: { bannerUrl },
     });
     return toAdminResponse(updated);
   }

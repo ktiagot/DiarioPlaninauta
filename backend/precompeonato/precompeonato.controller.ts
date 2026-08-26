@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Query,
@@ -10,6 +11,9 @@ import {
   HttpStatus,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,17 +28,27 @@ import {
   ApiForbiddenResponse,
   ApiUnauthorizedResponse,
   ApiParam,
+  ApiConsumes,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { PrecompeonatoService } from './precompeonato.service';
 import { SorteioService } from './sorteio/sorteio.service';
+import { CampeonatoAdminService } from './campeonato-admin.service';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
+import { CreateCampeonatoDto } from './dto/create-campeonato.dto';
+import { UpdateCampeonatoDto } from './dto/update-campeonato.dto';
+import { UpdateCampeonatoStatusDto } from './dto/update-campeonato-status.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
+import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
 import { EstatisticasFullResponseDto } from './dto/estatisticas-response.dto';
 import { DashboardMetricasResponseDto } from './dto/dashboard-metricas.dto';
 import { MinhasMesasResponseDto } from './dto/minhas-mesas-response.dto';
 import { CheckInStatusDto, SorteioSnapshotDto } from './dto/sorteio.dto';
+import { CreateRodadaDto } from './dto/create-rodada.dto';
+import { AdminCheckInDto } from './dto/admin-checkin.dto';
+import { RodadasListResponseDto } from './dto/rodadas-list.dto';
 import { RodadaAtualDto } from './dto/rodada-atual.dto';
 import { SubmitTorneioMesaResultadoDto } from './dto/submit-torneio-mesa-resultado.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -47,6 +61,7 @@ export class PrecompeonatoController {
   constructor(
     private readonly precompeonatoService: PrecompeonatoService,
     private readonly sorteioService: SorteioService,
+    private readonly campeonatoAdminService: CampeonatoAdminService,
   ) {}
 
   @Get('atual')
@@ -159,7 +174,7 @@ export class PrecompeonatoController {
   @ApiOperation({
     summary: 'Confirmar resultado de uma mesa de torneio',
     description:
-      'Persiste posicaoFinal/kills dos jogadores, empate e link da partida; marca a mesa como finalizada.',
+      'Persiste posicaoFinal/kills, empate e link. Jogador da mesa grava sem validar; admin grava e valida.',
   })
   @ApiParam({ name: 'mesaId', description: 'UUID da MesaTorneio' })
   @ApiOkResponse({ description: 'Rodada atualizada.', type: RodadaAtualDto })
@@ -167,11 +182,16 @@ export class PrecompeonatoController {
   @ApiConflictResponse()
   @ApiNotFoundResponse()
   @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
   submitMesaResultado(
     @Param('mesaId') mesaId: string,
     @Body() dto: SubmitTorneioMesaResultadoDto,
+    @Req() req: { user: AuthUser },
   ): Promise<RodadaAtualDto> {
-    return this.sorteioService.submitMesaResultado(mesaId, dto);
+    return this.sorteioService.submitMesaResultado(mesaId, dto, {
+      id: req.user.id,
+      isAdmin: req.user.isAdmin,
+    });
   }
 
   @Post('rodadas/:rodadaId/finalizar')
@@ -181,7 +201,7 @@ export class PrecompeonatoController {
   @ApiOperation({
     summary: 'Finalizar rodada (admin)',
     description:
-      'Soma pontos nas inscrições (1º=3, 2º=1, empate=1), recalcula classificação e marca a rodada como finalizada.',
+      'Exige todas as mesas validadas. Soma pontos nas inscrições (1º=3, 2º=1, empate=1), recalcula classificação e marca a rodada como finalizada.',
   })
   @ApiParam({ name: 'rodadaId', description: 'UUID da Rodada' })
   @ApiOkResponse({ description: 'Rodada finalizada.', type: RodadaAtualDto })
@@ -216,6 +236,45 @@ export class PrecompeonatoController {
     return this.sorteioService.getSnapshot();
   }
 
+  @Get('atual/rodadas')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar rodadas do campeonato atual (admin)' })
+  @ApiOkResponse({ type: RodadasListResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  listRodadas(): Promise<RodadasListResponseDto> {
+    return this.sorteioService.listRodadas();
+  }
+
+  @Post('atual/rodadas')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Abrir nova rodada para check-in (admin)' })
+  @ApiOkResponse({ type: SorteioSnapshotDto })
+  @ApiBadRequestResponse()
+  @ApiConflictResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  abrirRodada(@Body() dto: CreateRodadaDto): Promise<SorteioSnapshotDto> {
+    return this.sorteioService.abrirRodada(dto);
+  }
+
+  @Patch('atual/checkin/admin')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Marcar ou remover check-in de um inscrito (admin)' })
+  @ApiOkResponse({ type: SorteioSnapshotDto })
+  @ApiConflictResponse()
+  @ApiNotFoundResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  adminCheckIn(@Body() dto: AdminCheckInDto): Promise<SorteioSnapshotDto> {
+    return this.sorteioService.adminToggleCheckIn(dto.inscricaoId, dto.checkIn);
+  }
+
   @Post('atual/sortear-mesas')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
@@ -228,6 +287,24 @@ export class PrecompeonatoController {
   @ApiForbiddenResponse()
   sortearMesas(): Promise<SorteioSnapshotDto> {
     return this.sorteioService.sortearMesas();
+  }
+
+  @Post('atual/re-sortear-mesas')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Re-sortear mesas (admin)',
+    description:
+      'Apaga mesas sem resultado e gera novo pareamento com os mesmos check-ins.',
+  })
+  @ApiOkResponse({ type: SorteioSnapshotDto })
+  @ApiBadRequestResponse()
+  @ApiConflictResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  reSortearMesas(): Promise<SorteioSnapshotDto> {
+    return this.sorteioService.reSortearMesas();
   }
 
   @Get('atual/checkin')
@@ -260,5 +337,84 @@ export class PrecompeonatoController {
   @ApiConflictResponse()
   cancelCheckIn(@Req() req: { user: AuthUser }): Promise<CheckInStatusDto> {
     return this.sorteioService.cancelCheckIn(req.user.id);
+  }
+
+  @Get('campeonatos')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar campeonatos (admin)' })
+  @ApiOkResponse({ type: [CampeonatoAdminResponseDto] })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  listCampeonatos(): Promise<CampeonatoAdminResponseDto[]> {
+    return this.campeonatoAdminService.list();
+  }
+
+  @Post('campeonatos')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Criar campeonato (admin)' })
+  @ApiCreatedResponse({ type: CampeonatoAdminResponseDto })
+  @ApiConflictResponse()
+  @ApiBadRequestResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  createCampeonato(@Body() dto: CreateCampeonatoDto): Promise<CampeonatoAdminResponseDto> {
+    return this.campeonatoAdminService.create(dto);
+  }
+
+  @Patch('campeonatos/:id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar dados do campeonato (admin)' })
+  @ApiOkResponse({ type: CampeonatoAdminResponseDto })
+  @ApiNotFoundResponse()
+  @ApiConflictResponse()
+  @ApiBadRequestResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  updateCampeonato(
+    @Param('id') id: string,
+    @Body() dto: UpdateCampeonatoDto,
+  ): Promise<CampeonatoAdminResponseDto> {
+    return this.campeonatoAdminService.update(id, dto);
+  }
+
+  @Patch('campeonatos/:id/status')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar status do campeonato (admin)' })
+  @ApiOkResponse({ type: CampeonatoAdminResponseDto })
+  @ApiNotFoundResponse()
+  @ApiConflictResponse()
+  @ApiBadRequestResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  updateCampeonatoStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateCampeonatoStatusDto,
+  ): Promise<CampeonatoAdminResponseDto> {
+    return this.campeonatoAdminService.updateStatus(id, dto.status);
+  }
+
+  @Post('campeonatos/:id/banner')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload de banner do campeonato (admin)' })
+  @ApiOkResponse({ type: CampeonatoAdminResponseDto })
+  @ApiNotFoundResponse()
+  @ApiConflictResponse()
+  @ApiBadRequestResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  updateBanner(
+    @Param('id') id: string,
+    @UploadedFile() file?: { mimetype: string; buffer: Buffer; size: number },
+  ): Promise<CampeonatoAdminResponseDto> {
+    if (!file) throw new BadRequestException('Envie o arquivo no campo file.');
+    return this.campeonatoAdminService.updateBanner(id, file);
   }
 }

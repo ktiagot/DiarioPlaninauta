@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { BannerStorage } from './banner-storage';
 import { CampeonatoAdminService } from './campeonato-admin.service';
 
 function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
@@ -17,6 +18,18 @@ function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
     createdAt: new Date('2026-08-01T00:00:00.000Z'),
     updatedAt: new Date(),
   };
+}
+
+const bannerStorageMock = { save: jest.fn() };
+
+function createTestingModule(prisma: object) {
+  return Test.createTestingModule({
+    providers: [
+      CampeonatoAdminService,
+      { provide: PrismaService, useValue: prisma },
+      { provide: BannerStorage, useValue: bannerStorageMock },
+    ],
+  }).compile();
 }
 
 describe('CampeonatoAdminService create/list', () => {
@@ -41,12 +54,8 @@ describe('CampeonatoAdminService create/list', () => {
         update: jest.fn(),
       },
     };
-    const module = await Test.createTestingModule({
-      providers: [
-        CampeonatoAdminService,
-        { provide: PrismaService, useValue: prisma },
-      ],
-    }).compile();
+    bannerStorageMock.save.mockReset();
+    const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
 
@@ -128,12 +137,8 @@ describe('CampeonatoAdminService update/updateStatus', () => {
         update: jest.fn(),
       },
     };
-    const module = await Test.createTestingModule({
-      providers: [
-        CampeonatoAdminService,
-        { provide: PrismaService, useValue: prisma },
-      ],
-    }).compile();
+    bannerStorageMock.save.mockReset();
+    const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
 
@@ -187,5 +192,55 @@ describe('CampeonatoAdminService update/updateStatus', () => {
   it('id inexistente → 404', async () => {
     prisma.campeonato.findUnique.mockResolvedValue(null);
     await expect(service.update('nope', { nome: 'X' })).rejects.toThrow(NotFoundException);
+  });
+});
+
+describe('CampeonatoAdminService updateBanner', () => {
+  let service: CampeonatoAdminService;
+  let prisma: {
+    campeonato: {
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      campeonato: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
+    };
+    bannerStorageMock.save.mockReset();
+    const module = await createTestingModule(prisma);
+    service = module.get(CampeonatoAdminService);
+  });
+
+  it('updateBanner grava path e recusa encerrado', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp());
+    bannerStorageMock.save.mockResolvedValue('/uploads/campeonatos/c1.webp');
+    prisma.campeonato.update.mockResolvedValue({
+      ...camp(),
+      bannerUrl: '/uploads/campeonatos/c1.webp',
+    });
+
+    const file = { mimetype: 'image/webp', buffer: Buffer.from('x'), size: 10 };
+    const result = await service.updateBanner('c1', file);
+    expect(bannerStorageMock.save).toHaveBeenCalledWith('c1', file);
+    expect(result.bannerUrl).toBe('/uploads/campeonatos/c1.webp');
+  });
+
+  it('updateBanner em ENCERRADO → 409 e não chama storage', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    await expect(
+      service.updateBanner('c1', { mimetype: 'image/png', buffer: Buffer.from('x'), size: 10 }),
+    ).rejects.toThrow(ConflictException);
+    expect(bannerStorageMock.save).not.toHaveBeenCalled();
   });
 });
