@@ -278,6 +278,44 @@ export class ComunidadeService {
     };
   }
 
+  /**
+   * Revalida no APOIA.se o status de apoio de todos os usuários e sincroniza o banco.
+   * Processa em sequência com um pequeno intervalo para não sobrecarregar a API.
+   * Resiliente: erros por usuário não interrompem o lote. Retorna um resumo.
+   */
+  async sincronizarTodosApoiadores(): Promise<{
+    total: number;
+    ativos: number;
+    inativados: number;
+    falhas: number;
+  }> {
+    const users = await this.prisma.user.findMany({ select: { email: true } });
+
+    let ativos = 0;
+    let inativados = 0;
+    let falhas = 0;
+
+    for (const { email } of users) {
+      try {
+        const resultado = await this.verificarESincronizar(email);
+        if (resultado.apiIndisponivel) {
+          falhas++;
+        } else if (resultado.ativo) {
+          ativos++;
+        } else {
+          inativados++;
+        }
+      } catch {
+        falhas++;
+      }
+
+      // Intervalo curto entre chamadas para respeitar a API do APOIA.se.
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    return { total: users.length, ativos, inativados, falhas };
+  }
+
   async getMetricas() {
     const [totalMembros, apoiadoresAtivos, exApoiadores, totalFavoritos] =
       await Promise.all([

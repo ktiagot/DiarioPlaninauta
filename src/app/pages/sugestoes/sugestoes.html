@@ -6,7 +6,7 @@
     <mat-card class="sugestoes-card w-full max-w-[600px]">
       <mat-card-header>
         <mat-card-title>Sugestões</mat-card-title>
-        <mat-card-subtitle>Envie sua sugestão, crítica ou elogio para a equipe</mat-card-subtitle>
+        <mat-card-subtitle>Envie sua sugestão, crítica ou outros comentários para a equipe</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content class="pt-4">
@@ -49,7 +49,7 @@
                 matInput
                 id="mensagem"
                 formControlName="mensagem"
-                placeholder="Escreva sua sugestão, crítica ou elogio..."
+                placeholder="Escreva sua sugestão, crítica ou outros comentários..."
                 rows="5"
               ></textarea>
               @if (form.controls.mensagem.invalid && form.controls.mensagem.touched) {

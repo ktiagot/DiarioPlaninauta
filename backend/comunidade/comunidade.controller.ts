@@ -175,4 +175,25 @@ export class ComunidadeController {
   verificarApoia(@Param('email') email: string): Promise<VerificarApoiaResponseDto> {
     return this.comunidadeService.verificarESincronizar(decodeURIComponent(email));
   }
+
+  @Post('admin/apoia/verificar-todos')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Revalidar todos os apoiadores na APOIA.se (admin)',
+    description:
+      'Consulta a APOIA.se para todos os usuários e sincroniza as flags no banco. A mesma rotina roda automaticamente todo domingo.',
+  })
+  @ApiOkResponse({
+    description: 'Resumo da sincronização (total, ativos, inativados, falhas).',
+  })
+  sincronizarTodos(): Promise<{
+    total: number;
+    ativos: number;
+    inativados: number;
+    falhas: number;
+  }> {
+    return this.comunidadeService.sincronizarTodosApoiadores();
+  }
 }
