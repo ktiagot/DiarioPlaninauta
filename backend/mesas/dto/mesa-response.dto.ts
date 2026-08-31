@@ -41,6 +41,9 @@ export class MesaResponseDto {
   @ApiProperty({ example: 'Mesa 1' })
   nome: string;
 
+  @ApiPropertyOptional({ example: 'Sexta 20h, cEDH', nullable: true })
+  descricao: string | null;
+
   @ApiProperty({ example: 4 })
   quantidadeJogadores: number;
 
@@ -49,6 +52,9 @@ export class MesaResponseDto {
 
   @ApiProperty({ example: false })
   finalizada: boolean;
+
+  @ApiPropertyOptional({ example: '550e8400-e29b-41d4-a716-446655440000', nullable: true })
+  criadorUserId: string | null;
 
   @ApiProperty({ type: [MesaJogadorResponseDto] })
   jogadores: MesaJogadorResponseDto[];

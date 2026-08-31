@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import { CreateMesaDto } from './dto/create-mesa.dto';
 import { MesaResponseDto } from './dto/mesa-response.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
 import { UpdateMesaLinkDto } from './dto/update-mesa-link.dto';
+import { UpdateMesaDto } from './dto/update-mesa.dto';
 import { toMesaResponse } from './mappers/to-mesa-response';
 
 const mesaInclude = {
@@ -55,7 +57,9 @@ export class MesasService {
     const mesa = await this.prisma.mesa.create({
       data: {
         nome: dto.nome,
+        descricao: dto.descricao ?? null,
         linkPartida: dto.linkPartida ?? null,
+        criadorUserId: userId,
         jogadores: {
           create: {
             userId,
@@ -69,7 +73,54 @@ export class MesasService {
     return toMesaResponse(mesa);
   }
 
-  async updateLink(mesaId: string, dto: UpdateMesaLinkDto): Promise<MesaResponseDto> {
+  async updateLink(
+    mesaId: string,
+    userId: string,
+    dto: UpdateMesaLinkDto,
+  ): Promise<MesaResponseDto> {
+    return this.update(mesaId, userId, { linkPartida: dto.linkPartida });
+  }
+
+  async update(
+    mesaId: string,
+    userId: string,
+    dto: UpdateMesaDto,
+  ): Promise<MesaResponseDto> {
+    const mesa = await this.findMesaDoDono(mesaId, userId);
+
+    if (mesa.finalizada) {
+      throw new ConflictException('Esta mesa já foi finalizada.');
+    }
+
+    const atualizada = await this.prisma.mesa.update({
+      where: { id: mesaId },
+      data: {
+        ...(dto.linkPartida !== undefined ? { linkPartida: dto.linkPartida } : {}),
+        ...(dto.descricao !== undefined ? { descricao: dto.descricao } : {}),
+      },
+      include: mesaInclude,
+    });
+
+    return toMesaResponse(atualizada);
+  }
+
+  async fechar(mesaId: string, userId: string): Promise<MesaResponseDto> {
+    const mesa = await this.findMesaDoDono(mesaId, userId);
+
+    if (mesa.finalizada) {
+      throw new ConflictException('Esta mesa já foi finalizada.');
+    }
+
+    const atualizada = await this.prisma.mesa.update({
+      where: { id: mesaId },
+      data: { finalizada: true },
+      include: mesaInclude,
+    });
+
+    return toMesaResponse(atualizada);
+  }
+
+  private async findMesaDoDono(mesaId: string, userId: string) {
     const mesa = await this.prisma.mesa.findUnique({
       where: { id: mesaId },
       include: mesaInclude,
@@ -79,17 +130,11 @@ export class MesasService {
       throw new NotFoundException(`Mesa com id "${mesaId}" não encontrada.`);
     }
 
-    if (mesa.finalizada) {
-      throw new ConflictException('Esta mesa já foi finalizada.');
+    if (mesa.criadorUserId !== userId) {
+      throw new ForbiddenException('Apenas o dono da mesa pode alterá-la.');
     }
 
-    const atualizada = await this.prisma.mesa.update({
-      where: { id: mesaId },
-      data: { linkPartida: dto.linkPartida },
-      include: mesaInclude,
-    });
-
-    return toMesaResponse(atualizada);
+    return mesa;
   }
 
   async submitResultado(mesaId: string, dto: SubmitMesaResultadoDto): Promise<MesaResponseDto> {

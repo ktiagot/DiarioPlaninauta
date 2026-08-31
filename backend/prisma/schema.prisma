@@ -69,6 +69,7 @@ model User {
   favoritosPara Favorito[] @relation("FavoritoPara")
 
   // --- mesas relations ---
+  mesasCriadas       Mesa[]        @relation("MesaCriador")
   mesaJogadores      MesaJogador[] @relation("MesaJogadorUser")
   eliminacoesFeitas  Eliminacao[]  @relation("EliminacaoEliminador")
   eliminacoesSofridas Eliminacao[] @relation("EliminacaoEliminado")
@@ -263,17 +264,21 @@ model MesaTorneioJogador {
 }
 
 model Mesa {
-  id          String  @id @default(uuid())
-  nome        String
-  linkPartida String?
-  finalizada  Boolean @default(false)
+  id            String  @id @default(uuid())
+  nome          String
+  descricao     String?
+  linkPartida   String?
+  finalizada    Boolean @default(false)
+  criadorUserId String?
 
   jogadores    MesaJogador[]
   eliminacoes  Eliminacao[]
+  criador      User?         @relation("MesaCriador", fields: [criadorUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([criadorUserId])
   @@map("mesas")
 }
 

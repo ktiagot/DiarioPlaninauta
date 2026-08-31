@@ -35,22 +35,30 @@
       <h2 class="text-lg font-semibold text-white mb-4">Nova Mesa Casual</h2>
       <div class="flex flex-col gap-4">
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Nome da mesa</mat-label>
           <input
             matInput
             [ngModel]="novaMesaNome()"
             (ngModelChange)="novaMesaNome.set($event)"
-            placeholder="Ex: Sexta à Noite"
+            placeholder="Nome da mesa (ex: Sexta à Noite)"
           />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Link da partida (opcional)</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            [ngModel]="novaMesaDescricao()"
+            (ngModelChange)="novaMesaDescricao.set($event)"
+            placeholder="Descreva data/hora da mesa e qualquer outra informação relevante..."
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
           <input
             matInput
             [ngModel]="novaMesaLink()"
             (ngModelChange)="novaMesaLink.set($event)"
-            placeholder="https://spelltable.com/..."
+            placeholder="Link da partida (opcional) — https://spelltable.com/..."
           />
         </mat-form-field>
 
@@ -135,6 +143,10 @@
               </span>
             </div>
 
+            @if (mesa.descricao) {
+              <p class="mesa-descricao">{{ mesa.descricao }}</p>
+            }
+
             <!-- Jogadores -->
             <div class="mesa-jogadores">
               <mat-icon class="jogadores-icon">group</mat-icon>
@@ -157,43 +169,75 @@
 
             <!-- Link da partida -->
             <div class="mesa-link-section">
-              @if (mesa.linkPartida) {
-                <a
-                  [href]="mesa.linkPartida"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="link-btn"
-                >
-                  <mat-icon>open_in_new</mat-icon>
-                  Abrir Partida
-                </a>
-              } @else if (linkEditandoId() === mesa.id) {
-                <div class="link-edit-row">
-                  <mat-form-field appearance="outline" class="link-input">
-                    <mat-label>Link</mat-label>
+              @if (linkEditandoId() === mesa.id) {
+                <div class="mesa-edit-form">
+                  <mat-form-field appearance="outline" class="w-full">
                     <input
                       matInput
                       [ngModel]="novoLink()"
                       (ngModelChange)="novoLink.set($event)"
-                      placeholder="https://..."
+                      placeholder="Link da partida — https://spelltable.com/..."
                     />
                   </mat-form-field>
-                  <button mat-icon-button class="text-green-400" (click)="salvarLink(mesa.id)">
-                    <mat-icon>check</mat-icon>
-                  </button>
-                  <button mat-icon-button class="text-gray-400" (click)="cancelarEdicaoLink()">
-                    <mat-icon>close</mat-icon>
-                  </button>
+                  <mat-form-field appearance="outline" class="w-full">
+                    <textarea
+                      matInput
+                      rows="3"
+                      [ngModel]="novaDescricao()"
+                      (ngModelChange)="novaDescricao.set($event)"
+                      placeholder="Descreva data/hora da mesa e qualquer outra informação relevante..."
+                    ></textarea>
+                  </mat-form-field>
+                  <div class="mesa-edit-actions">
+                    <button mat-button class="text-gray-300" (click)="cancelarEdicaoLink()">
+                      Cancelar
+                    </button>
+                    <button mat-flat-button class="criar-btn" (click)="salvarEdicao(mesa.id)">
+                      Salvar
+                    </button>
+                  </div>
                 </div>
-              } @else if (!mesa.finalizada) {
-                <button
-                  mat-button
-                  class="add-link-btn"
-                  (click)="iniciarEdicaoLink(mesa.id)"
-                >
-                  <mat-icon>link</mat-icon>
-                  Adicionar Link
-                </button>
+              } @else {
+                <div class="mesa-link-actions">
+                  @if (mesa.linkPartida) {
+                    <a
+                      [href]="mesa.linkPartida"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="link-btn"
+                    >
+                      <mat-icon>open_in_new</mat-icon>
+                      Abrir Partida
+                    </a>
+                  }
+
+                  @if (!mesa.finalizada && isDono(mesa)) {
+                    <button
+                      mat-button
+                      class="add-link-btn"
+                      (click)="iniciarEdicaoLink(mesa)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                      Editar Mesa
+                    </button>
+
+                    <button
+                      mat-button
+                      class="fechar-btn"
+                      [disabled]="fechandoId() === mesa.id"
+                      (click)="fecharMesa(mesa.id)"
+                    >
+                      @if (fechandoId() === mesa.id) {
+                        <mat-spinner diameter="16"></mat-spinner>
+                      } @else {
+                        <ng-container>
+                          <mat-icon>lock</mat-icon>
+                          Fechar Mesa
+                        </ng-container>
+                      }
+                    </button>
+                  }
+                </div>
               }
             </div>
           </div>

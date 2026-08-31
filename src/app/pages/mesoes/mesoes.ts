@@ -43,10 +43,13 @@ export class MesoesComponent implements OnInit {
   readonly mostrarFormCriar = signal(false);
   readonly criando = signal(false);
   readonly linkEditandoId = signal<string | null>(null);
+  readonly fechandoId = signal<string | null>(null);
 
   readonly novaMesaNome = signal('');
+  readonly novaMesaDescricao = signal('');
   readonly novaMesaLink = signal('');
   readonly novoLink = signal('');
+  readonly novaDescricao = signal('');
 
   readonly precons = signal<PreconListItem[]>([]);
   readonly comandantes = signal<PreconComandante[]>([]);
@@ -113,6 +116,7 @@ export class MesoesComponent implements OnInit {
     this.criando.set(true);
     const payload = {
       nome,
+      ...(this.novaMesaDescricao().trim() ? { descricao: this.novaMesaDescricao().trim() } : {}),
       ...(this.novaMesaLink().trim() ? { linkPartida: this.novaMesaLink().trim() } : {}),
       ...(this.novaMesaPreconId() && this.novaMesaComandanteId()
         ? {
@@ -135,33 +139,59 @@ export class MesoesComponent implements OnInit {
     });
   }
 
-  iniciarEdicaoLink(mesaId: string): void {
-    this.linkEditandoId.set(mesaId);
-    this.novoLink.set('');
+  isDono(mesa: Mesa): boolean {
+    return !!mesa.criadorUserId && mesa.criadorUserId === this.userId();
+  }
+
+  iniciarEdicaoLink(mesa: Mesa): void {
+    this.linkEditandoId.set(mesa.id);
+    this.novoLink.set(mesa.linkPartida ?? '');
+    this.novaDescricao.set(mesa.descricao ?? '');
   }
 
   cancelarEdicaoLink(): void {
     this.linkEditandoId.set(null);
     this.novoLink.set('');
+    this.novaDescricao.set('');
   }
 
-  salvarLink(mesaId: string): void {
+  salvarEdicao(mesaId: string): void {
     const link = this.novoLink().trim();
-    if (!link) return;
+    const descricao = this.novaDescricao().trim();
 
-    this.mesasService.atualizarLink(mesaId, link).subscribe({
+    this.mesasService
+      .editar(mesaId, {
+        linkPartida: link || undefined,
+        descricao,
+      })
+      .subscribe({
+        next: (mesaAtualizada) => {
+          this.mesas.update((list) =>
+            list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
+          );
+          this.cancelarEdicaoLink();
+        },
+      });
+  }
+
+  fecharMesa(mesaId: string): void {
+    this.fechandoId.set(mesaId);
+    this.mesasService.fechar(mesaId).subscribe({
       next: (mesaAtualizada) => {
         this.mesas.update((list) =>
           list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
         );
-        this.linkEditandoId.set(null);
-        this.novoLink.set('');
+        this.fechandoId.set(null);
+      },
+      error: () => {
+        this.fechandoId.set(null);
       },
     });
   }
 
   private resetFormCriar(): void {
     this.novaMesaNome.set('');
+    this.novaMesaDescricao.set('');
     this.novaMesaLink.set('');
     this.novaMesaPreconId.set('');
     this.novaMesaComandanteId.set('');

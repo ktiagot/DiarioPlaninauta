@@ -12,14 +12,17 @@ export interface MesaJogador {
 export interface Mesa {
   id: string;
   nome: string;
+  descricao: string | null;
   linkPartida: string | null;
   finalizada: boolean;
+  criadorUserId: string | null;
   quantidadeJogadores: number;
   jogadores: MesaJogador[];
 }
 
 export interface CreateMesaPayload {
   nome: string;
+  descricao?: string;
   linkPartida?: string;
   preconId?: string;
   preconComandanteId?: string;

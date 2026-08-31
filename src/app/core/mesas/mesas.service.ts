@@ -19,4 +19,15 @@ export class MesasService {
   atualizarLink(mesaId: string, linkPartida: string): Observable<Mesa> {
     return this.http.put<Mesa>(`${API_URL}/mesas/${mesaId}/link`, { linkPartida });
   }
+
+  editar(
+    mesaId: string,
+    dados: { linkPartida?: string; descricao?: string },
+  ): Observable<Mesa> {
+    return this.http.put<Mesa>(`${API_URL}/mesas/${mesaId}`, dados);
+  }
+
+  fechar(mesaId: string): Observable<Mesa> {
+    return this.http.patch<Mesa>(`${API_URL}/mesas/${mesaId}/fechar`, {});
+  }
 }

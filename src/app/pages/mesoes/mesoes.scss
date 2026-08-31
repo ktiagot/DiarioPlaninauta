@@ -92,6 +92,14 @@
   }
 }
 
+.mesa-descricao {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
 // --- Jogadores ---
 .mesa-jogadores {
   display: flex;
@@ -166,9 +174,46 @@
   }
 }
 
+.mesa-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fechar-btn {
+  color: #f87171 !important;
+  font-size: 0.8rem !important;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Placeholder sempre visível nos inputs (appearance outline sem label)
+::ng-deep .mat-mdc-form-field input.mat-mdc-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.55);
+  opacity: 1;
+}
+
 .link-edit-row {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.mesa-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mesa-edit-actions {
+  display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 

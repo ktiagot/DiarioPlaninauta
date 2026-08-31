@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -14,6 +14,7 @@ import { MesaResponseDto } from './dto/mesa-response.dto';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
 import { UpdateMesaLinkDto } from './dto/update-mesa-link.dto';
+import { UpdateMesaDto } from './dto/update-mesa.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthUser } from '../auth/strategies/jwt.strategy';
 
@@ -46,19 +47,60 @@ export class MesasController {
   }
 
   @Put(':id/link')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Cadastrar link da mesa',
-    description: 'Atualiza o link da partida vinculado à mesa (Spelltable, Discord, etc.).',
+    description:
+      'Atualiza o link da partida vinculado à mesa (Spelltable, Discord, etc.). Apenas o dono da mesa.',
   })
   @ApiOkResponse({ description: 'Link atualizado.', type: MesaResponseDto })
   @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
   @ApiConflictResponse({ description: 'Mesa já finalizada.' })
   @ApiBadRequestResponse({ description: 'Link inválido.' })
   updateLink(
+    @Request() req: { user: AuthUser },
     @Param('id') id: string,
     @Body() dto: UpdateMesaLinkDto,
   ): Promise<MesaResponseDto> {
-    return this.mesasService.updateLink(id, dto);
+    return this.mesasService.updateLink(id, req.user.id, dto);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Editar mesa casual',
+    description: 'Atualiza link e/ou descrição da mesa. Apenas o dono da mesa.',
+  })
+  @ApiOkResponse({ description: 'Mesa atualizada.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
+  @ApiConflictResponse({ description: 'Mesa já finalizada.' })
+  @ApiBadRequestResponse({ description: 'Payload inválido.' })
+  update(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+    @Body() dto: UpdateMesaDto,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.update(id, req.user.id, dto);
+  }
+
+  @Patch(':id/fechar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Fechar mesa casual',
+    description: 'Marca a mesa como finalizada. Apenas o dono da mesa.',
+  })
+  @ApiOkResponse({ description: 'Mesa fechada.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
+  @ApiConflictResponse({ description: 'Mesa já finalizada.' })
+  fechar(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.fechar(id, req.user.id);
   }
 
   @Post(':id/resultado')

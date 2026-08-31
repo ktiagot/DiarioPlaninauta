@@ -7,6 +7,11 @@ export class CreateMesaDto {
   @IsNotEmpty()
   nome: string;
 
+  @ApiPropertyOptional({ example: 'Sexta 20h, formato cEDH, chamar no Discord.' })
+  @IsOptional()
+  @IsString()
+  descricao?: string;
+
   @ApiPropertyOptional({ example: 'https://spelltable.com/...' })
   @IsOptional()
   @IsString()

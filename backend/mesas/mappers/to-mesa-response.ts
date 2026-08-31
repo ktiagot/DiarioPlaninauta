@@ -20,9 +20,11 @@ export function toMesaResponse(mesa: MesaComRelacoes): MesaResponseDto {
   return {
     id: mesa.id,
     nome: mesa.nome,
+    descricao: mesa.descricao,
     quantidadeJogadores: mesa.jogadores.length,
     linkPartida: mesa.linkPartida,
     finalizada: mesa.finalizada,
+    criadorUserId: mesa.criadorUserId,
     jogadores: mesa.jogadores.map((jogador) => ({
       userId: jogador.userId,
       nome: jogador.user.nome,
