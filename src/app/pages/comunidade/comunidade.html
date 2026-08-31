@@ -38,6 +38,17 @@
           }
         </mat-select>
       </mat-form-field>
+
+      <button
+        mat-stroked-button
+        type="button"
+        class="filter-favoritos"
+        [class.filter-favoritos--ativo]="soFavoritos()"
+        (click)="toggleSoFavoritos()"
+      >
+        <mat-icon>{{ soFavoritos() ? 'favorite' : 'favorite_border' }}</mat-icon>
+        Meus favoritos
+      </button>
     </div>
   </div>
 

@@ -251,3 +251,22 @@
     margin-right: 0.3rem;
   }
 }
+
+.filter-favoritos {
+  align-self: center;
+  --mdc-outlined-button-label-text-color: #f58220;
+  --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.4);
+
+  mat-icon {
+    margin-right: 0.25rem;
+  }
+
+  &--ativo {
+    background: rgba(245, 130, 32, 0.18);
+    --mdc-outlined-button-outline-color: #f58220;
+  }
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+}

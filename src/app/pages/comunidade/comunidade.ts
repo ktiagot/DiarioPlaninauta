@@ -40,6 +40,7 @@ export class ComunidadeComponent implements OnInit {
   readonly filtroCidade = signal('');
   readonly filtroFormato = signal('');
   readonly filtroDisponibilidade = signal('');
+  readonly soFavoritos = signal(false);
 
   readonly cidadesDisponiveis = computed(() => {
     const cidades = this.jogadores().map((j) => j.cidade).filter(Boolean);
@@ -61,7 +62,11 @@ export class ComunidadeComponent implements OnInit {
     const cidade = this.filtroCidade();
     const formato = this.filtroFormato();
     const disponibilidade = this.filtroDisponibilidade();
+    const favs = this.favoritos();
 
+    if (this.soFavoritos()) {
+      lista = lista.filter((j) => favs.has(j.id));
+    }
     if (cidade) {
       lista = lista.filter((j) => j.cidade.toLowerCase() === cidade.toLowerCase());
     }
@@ -74,6 +79,10 @@ export class ComunidadeComponent implements OnInit {
 
     return lista;
   });
+
+  toggleSoFavoritos(): void {
+    this.soFavoritos.update((v) => !v);
+  }
 
   ngOnInit(): void {
     this.carregarDados();
