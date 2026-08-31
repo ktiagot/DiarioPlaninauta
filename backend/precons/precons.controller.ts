@@ -29,6 +29,7 @@ import {
   PreconListItemDto,
   PreconResponseDto,
 } from './dto/precon-response.dto';
+import { PreconSyncResponseDto } from './dto/precon-sync-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 
@@ -53,6 +54,21 @@ export class PreconsController {
   @ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' })
   listAdmin(): Promise<PreconResponseDto[]> {
     return this.preconsService.listAdmin();
+  }
+
+  @Post('sync')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Sincronizar precons oficiais (admin)',
+    description:
+      'Busca os precons oficiais da lista pública e faz upsert por nome + set. Não remove precons.',
+  })
+  @ApiOkResponse({ description: 'Resumo da sincronização.', type: PreconSyncResponseDto })
+  @ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' })
+  sync(): Promise<PreconSyncResponseDto> {
+    return this.preconsService.sync();
   }
 
   @Get(':id/comandantes')

@@ -2,7 +2,6 @@ export interface PreconListItem {
   id: string;
   nome: string;
   setNome: string;
-  cores: string;
   ano: number;
 }
 
@@ -20,7 +19,6 @@ export interface PreconAdmin extends PreconListItem {
 export interface CreatePreconPayload {
   nome: string;
   setNome: string;
-  cores: string;
   ano: number;
   comandantes: string[];
 }
@@ -28,8 +26,13 @@ export interface CreatePreconPayload {
 export interface UpdatePreconPayload {
   nome?: string;
   setNome?: string;
-  cores?: string;
   ano?: number;
   banido?: boolean;
   comandantes?: string[];
+}
+
+export interface PreconSyncResult {
+  criados: number;
+  atualizados: number;
+  total: number;
 }

@@ -100,7 +100,6 @@ model Precon {
   id        String   @id @default(uuid())
   nome      String
   setNome   String
-  cores     String
   ano       Int
   banido    Boolean  @default(false)
 

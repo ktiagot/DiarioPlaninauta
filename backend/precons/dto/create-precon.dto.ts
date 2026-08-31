@@ -27,12 +27,6 @@ export class CreatePreconDto {
   @IsNotEmpty()
   setNome: string;
 
-  @ApiProperty({ example: 'WU' })
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  cores: string;
-
   @ApiProperty({ example: 2025 })
   @IsInt()
   @Min(1993)
@@ -65,13 +59,6 @@ export class UpdatePreconDto {
   @IsString()
   @IsNotEmpty()
   setNome?: string;
-
-  @ApiPropertyOptional({ example: 'WU' })
-  @Transform(trim)
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  cores?: string;
 
   @ApiPropertyOptional({ example: 2025 })
   @IsOptional()

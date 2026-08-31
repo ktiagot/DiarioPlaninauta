@@ -22,9 +22,6 @@ export class PreconResponseDto {
   setNome: string;
 
   @ApiProperty()
-  cores: string;
-
-  @ApiProperty()
   ano: number;
 
   @ApiProperty()
@@ -43,9 +40,6 @@ export class PreconListItemDto {
 
   @ApiProperty()
   setNome: string;
-
-  @ApiProperty()
-  cores: string;
 
   @ApiProperty()
   ano: number;

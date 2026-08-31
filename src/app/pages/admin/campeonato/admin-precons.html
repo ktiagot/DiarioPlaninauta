@@ -15,10 +15,6 @@
         <input type="text" [ngModel]="formSetNome()" (ngModelChange)="formSetNome.set($event)" />
       </label>
       <label>
-        Cores
-        <input type="text" placeholder="ex: WU" [ngModel]="formCores()" (ngModelChange)="formCores.set($event)" />
-      </label>
-      <label>
         Ano
         <input type="number" min="1993" [ngModel]="formAno()" (ngModelChange)="formAno.set(+$event)" />
       </label>
@@ -55,6 +51,22 @@
     </div>
   </div>
 
+  <div class="admin-section admin-section--card">
+    <h4>Sincronizar com lista oficial</h4>
+    <p class="admin-hint">
+      Busca os precons oficiais de Commander e atualiza o cadastro (por nome + set).
+      Precons existentes são atualizados e novos são adicionados; nada é removido.
+    </p>
+    <button mat-flat-button color="primary" [disabled]="syncing()" (click)="sincronizar()">
+      @if (syncing()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        <mat-icon>sync</mat-icon>
+      }
+      Sincronizar precons oficiais
+    </button>
+  </div>
+
   <div class="admin-section">
     <h4>Catálogo ({{ precons().length }})</h4>
     @if (precons().length === 0) {
@@ -66,7 +78,6 @@
             <tr>
               <th>Nome</th>
               <th>Set</th>
-              <th>Cores</th>
               <th>Ano</th>
               <th>Comandantes</th>
               <th>Status</th>
@@ -90,14 +101,6 @@
                     class="admin-table__input"
                     [ngModel]="draftFor(p).setNome"
                     (ngModelChange)="updateDraft(p, 'setNome', $event)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    class="admin-table__input admin-table__input--narrow"
-                    [ngModel]="draftFor(p).cores"
-                    (ngModelChange)="updateDraft(p, 'cores', $event)"
                   />
                 </td>
                 <td>

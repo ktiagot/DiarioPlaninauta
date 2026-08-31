@@ -12,7 +12,6 @@ const PRECONS_SEED = [
     id: 'p0000001-0000-4000-8000-000000000001',
     nome: 'Counter Intelligence',
     setNome: 'Tarkir: Dragonstorm',
-    cores: 'WU',
     ano: 2025,
     comandantes: [
       { id: 'c0000001-0000-4000-8000-000000000001', comandante: 'Phelia, Exuberant Shepherd', ordem: 1 },
@@ -23,7 +22,6 @@ const PRECONS_SEED = [
     id: 'p0000001-0000-4000-8000-000000000002',
     nome: 'Living Energy',
     setNome: 'Tarkir: Dragonstorm',
-    cores: 'GU',
     ano: 2025,
     comandantes: [
       { id: 'c0000001-0000-4000-8000-000000000003', comandante: 'Zimone, Paradox Mage', ordem: 1 },
@@ -34,7 +32,6 @@ const PRECONS_SEED = [
     id: 'p0000001-0000-4000-8000-000000000003',
     nome: 'Eternal Might',
     setNome: 'Tarkir: Dragonstorm',
-    cores: 'RG',
     ano: 2025,
     comandantes: [
       { id: 'c0000001-0000-4000-8000-000000000005', comandante: 'Teval, the Balanced Scale', ordem: 1 },
@@ -45,7 +42,6 @@ const PRECONS_SEED = [
     id: 'p0000001-0000-4000-8000-000000000004',
     nome: 'World Shaper',
     setNome: 'Tarkir: Dragonstorm',
-    cores: 'BG',
     ano: 2025,
     comandantes: [
       { id: 'c0000001-0000-4000-8000-000000000007', comandante: 'Henzie "Toolbox" Torre', ordem: 1 },
@@ -56,7 +52,6 @@ const PRECONS_SEED = [
     id: 'p0000001-0000-4000-8000-000000000005',
     nome: 'Grave Danger',
     setNome: 'Tarkir: Dragonstorm',
-    cores: 'UB',
     ano: 2025,
     comandantes: [
       { id: 'c0000001-0000-4000-8000-000000000009', comandante: 'Sidisi, Brood Tyrant', ordem: 1 },
@@ -78,7 +73,6 @@ async function seedPrecons() {
         id: precon.id,
         nome: precon.nome,
         setNome: precon.setNome,
-        cores: precon.cores,
         ano: precon.ano,
         comandantes: {
           create: precon.comandantes.map((c) => ({

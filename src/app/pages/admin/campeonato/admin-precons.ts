@@ -12,7 +12,6 @@ import { PreconsService } from '../../../core/precons/precons.service';
 interface PreconDraft {
   nome: string;
   setNome: string;
-  cores: string;
   ano: number;
   comandantes: string[];
 }
@@ -38,10 +37,10 @@ export class AdminPreconsComponent implements OnInit {
   readonly saving = signal(false);
   readonly savingId = signal<string | null>(null);
   readonly deletingId = signal<string | null>(null);
+  readonly syncing = signal(false);
 
   readonly formNome = signal('');
   readonly formSetNome = signal('');
-  readonly formCores = signal('');
   readonly formAno = signal(new Date().getFullYear());
   readonly formComandantes = signal<string[]>(['']);
 
@@ -52,7 +51,6 @@ export class AdminPreconsComponent implements OnInit {
     return (
       this.formNome().trim() &&
       this.formSetNome().trim() &&
-      this.formCores().trim() &&
       this.formAno() >= 1993 &&
       cmds.length > 0
     );
@@ -79,12 +77,42 @@ export class AdminPreconsComponent implements OnInit {
     });
   }
 
+  sincronizar(): void {
+    if (this.syncing()) return;
+    if (
+      !window.confirm(
+        'Buscar precons oficiais da lista pública e atualizar o cadastro? Precons existentes (por nome + set) são atualizados; novos são adicionados. Nada é removido.',
+      )
+    ) {
+      return;
+    }
+
+    this.syncing.set(true);
+    this.preconsService
+      .sync()
+      .pipe(finalize(() => this.syncing.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.snackBar.open(
+            `Sincronizado: ${res.criados} novo(s), ${res.atualizados} atualizado(s). Total: ${res.total}.`,
+            'OK',
+            { duration: 6000 },
+          );
+          this.carregar();
+        },
+        error: (err) => {
+          this.snackBar.open(err?.error?.message || 'Erro ao sincronizar precons.', 'Fechar', {
+            duration: 6000,
+          });
+        },
+      });
+  }
+
   draftFor(p: PreconAdmin): PreconDraft {
     return (
       this.editDrafts()[p.id] ?? {
         nome: p.nome,
         setNome: p.setNome,
-        cores: p.cores,
         ano: p.ano,
         comandantes: p.comandantes.map((c) => c.comandante),
       }
@@ -154,7 +182,6 @@ export class AdminPreconsComponent implements OnInit {
       .create({
         nome: this.formNome().trim(),
         setNome: this.formSetNome().trim(),
-        cores: this.formCores().trim(),
         ano: this.formAno(),
         comandantes,
       })
@@ -163,7 +190,6 @@ export class AdminPreconsComponent implements OnInit {
         next: () => {
           this.formNome.set('');
           this.formSetNome.set('');
-          this.formCores.set('');
           this.formAno.set(new Date().getFullYear());
           this.formComandantes.set(['']);
           this.snackBar.open('Precon cadastrado.', 'Fechar', { duration: 3000 });
@@ -192,7 +218,6 @@ export class AdminPreconsComponent implements OnInit {
       .update(p.id, {
         nome: draft.nome.trim(),
         setNome: draft.setNome.trim(),
-        cores: draft.cores.trim(),
         ano: draft.ano,
         comandantes,
       })
@@ -257,7 +282,6 @@ export class AdminPreconsComponent implements OnInit {
       drafts[p.id] = {
         nome: p.nome,
         setNome: p.setNome,
-        cores: p.cores,
         ano: p.ano,
         comandantes: p.comandantes.map((c) => c.comandante),
       };

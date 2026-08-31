@@ -8,6 +8,7 @@ import {
   PreconAdmin,
   PreconComandante,
   PreconListItem,
+  PreconSyncResult,
   UpdatePreconPayload,
 } from './precons.models';
 
@@ -38,5 +39,9 @@ export class PreconsService {
 
   remove(id: string): Observable<void> {
     return this.http.delete<void>(`${API_URL}/precons/${id}`);
+  }
+
+  sync(): Observable<PreconSyncResult> {
+    return this.http.post<PreconSyncResult>(`${API_URL}/precons/sync`, {});
   }
 }

@@ -55,7 +55,6 @@ describe('PreconsService', () => {
         id: '1',
         nome: 'Counter Intelligence',
         setNome: 'Tarkir',
-        cores: 'WU',
         ano: 2025,
       },
     ]);

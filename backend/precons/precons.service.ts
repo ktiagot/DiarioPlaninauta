@@ -76,7 +76,6 @@ export class PreconsService {
       data: {
         nome: dto.nome,
         setNome: dto.setNome,
-        cores: dto.cores,
         ano: dto.ano,
         comandantes: {
           create: comandantes.map((comandante, index) => ({
@@ -110,7 +109,6 @@ export class PreconsService {
       data: {
         ...(dto.nome !== undefined ? { nome: dto.nome } : {}),
         ...(dto.setNome !== undefined ? { setNome: dto.setNome } : {}),
-        ...(dto.cores !== undefined ? { cores: dto.cores } : {}),
         ...(dto.ano !== undefined ? { ano: dto.ano } : {}),
         ...(dto.banido !== undefined ? { banido: dto.banido } : {}),
       },
@@ -179,6 +177,113 @@ export class PreconsService {
 
     await this.validateForInscricao(preconId, preconComandanteId);
     return { preconId, preconComandanteId };
+  }
+
+  /**
+   * Sincroniza o catálogo de precons a partir do repositório público
+   * Westly/CommanderPrecons (precons oficiais extraídos do Moxfield).
+   * Upsert por (nome + setNome). Não remove precons existentes.
+   */
+  async sync(): Promise<{ criados: number; atualizados: number; total: number }> {
+    const arquivos = await this.listarArquivosRepo();
+    let criados = 0;
+    let atualizados = 0;
+    let total = 0;
+
+    for (const path of arquivos) {
+      const parsed = await this.baixarEParsear(path);
+      if (!parsed) continue;
+      total++;
+
+      const existente = await this.prisma.precon.findFirst({
+        where: { nome: parsed.nome, setNome: parsed.setNome },
+        include: preconInclude,
+      });
+
+      if (existente) {
+        await this.prisma.precon.update({
+          where: { id: existente.id },
+          data: { ano: parsed.ano },
+        });
+        await this.syncComandantes(existente.id, existente.comandantes, parsed.comandantes);
+        atualizados++;
+      } else {
+        await this.prisma.precon.create({
+          data: {
+            nome: parsed.nome,
+            setNome: parsed.setNome,
+            ano: parsed.ano,
+            comandantes: {
+              create: this.normalizeComandantes(parsed.comandantes).map((comandante, index) => ({
+                comandante,
+                ordem: index + 1,
+              })),
+            },
+          },
+        });
+        criados++;
+      }
+    }
+
+    return { criados, atualizados, total };
+  }
+
+  private async listarArquivosRepo(): Promise<string[]> {
+    const url =
+      'https://api.github.com/repos/Westly/CommanderPrecons/git/trees/main?recursive=1';
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'diario-planinauta', Accept: 'application/vnd.github+json' },
+    });
+    if (!res.ok) {
+      throw new BadRequestException('Não foi possível acessar a lista oficial de precons.');
+    }
+    const data = (await res.json()) as { tree?: { path: string; type: string }[] };
+    return (data.tree ?? [])
+      .filter((t) => t.type === 'blob' && t.path.startsWith('precon_json/') && t.path.endsWith('.json'))
+      .map((t) => t.path);
+  }
+
+  private async baixarEParsear(
+    path: string,
+  ): Promise<{ nome: string; setNome: string; ano: number; comandantes: string[] } | null> {
+    const url = `https://raw.githubusercontent.com/Westly/CommanderPrecons/main/${encodeURI(path)}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'diario-planinauta' } });
+    if (!res.ok) return null;
+
+    const deck = (await res.json()) as {
+      name?: string;
+      commanders?: Record<string, { card?: { name?: string; set_name?: string; released_at?: string } }>;
+      main?: { name?: string; set_name?: string; released_at?: string };
+    };
+
+    const cmdEntries = Object.values(deck.commanders ?? {});
+    const comandantes = cmdEntries
+      .map((c) => c.card?.name?.trim())
+      .filter((n): n is string => !!n);
+
+    if (comandantes.length === 0 && deck.main?.name) {
+      comandantes.push(deck.main.name.trim());
+    }
+    if (comandantes.length === 0) return null;
+
+    const primeiraCard = cmdEntries[0]?.card ?? deck.main;
+    const setNome = primeiraCard?.set_name?.trim() || 'Desconhecido';
+    const ano = this.extrairAno(primeiraCard?.released_at);
+    const nome = this.limparNomePrecon(deck.name ?? '');
+
+    if (!nome) return null;
+
+    return { nome, setNome, ano, comandantes };
+  }
+
+  /** Remove o sufixo "(... Precon Decklist)" do nome do deck. */
+  private limparNomePrecon(raw: string): string {
+    return raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  }
+
+  private extrairAno(releasedAt?: string): number {
+    const ano = releasedAt ? parseInt(releasedAt.slice(0, 4), 10) : NaN;
+    return Number.isFinite(ano) && ano >= 1993 ? ano : new Date().getFullYear();
   }
 
   private normalizeComandantes(comandantes: string[]): string[] {

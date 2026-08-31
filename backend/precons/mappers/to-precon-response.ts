@@ -12,7 +12,6 @@ export function toPreconResponse(precon: PreconWithComandantes): PreconResponseD
     id: precon.id,
     nome: precon.nome,
     setNome: precon.setNome,
-    cores: precon.cores,
     ano: precon.ano,
     banido: precon.banido,
     comandantes: precon.comandantes
@@ -26,7 +25,6 @@ export function toPreconListItem(precon: Precon): PreconListItemDto {
     id: precon.id,
     nome: precon.nome,
     setNome: precon.setNome,
-    cores: precon.cores,
     ano: precon.ano,
   };
 }
