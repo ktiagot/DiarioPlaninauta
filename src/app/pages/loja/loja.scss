@@ -300,3 +300,39 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     grid-template-columns: 1fr;
   }
 }
+
+// ─── EM BREVE ───────────────────────────────────────────
+
+.em-breve {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 4rem 1.5rem;
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 1rem;
+
+  .em-breve-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    color: $primary;
+    opacity: 0.85;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    max-width: 24rem;
+  }
+}

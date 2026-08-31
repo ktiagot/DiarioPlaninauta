@@ -34,30 +34,10 @@
   }
 
   &__tabs {
+    // Contraste dos labels/ink bar das abas é tratado globalmente em styles.scss.
     ::ng-deep .mat-mdc-tab-header {
       background: rgba(255, 255, 255, 0.03);
       border-radius: 12px 12px 0 0;
-    }
-
-    // Labels das abas: garantir contraste no fundo escuro
-    ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: 600;
-    }
-
-    ::ng-deep .mat-mdc-tab:hover .mdc-tab__text-label {
-      color: #fff;
-    }
-
-    // Aba ativa em laranja
-    ::ng-deep .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label,
-    ::ng-deep .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
-      color: #f58220;
-    }
-
-    // Barra inferior (ink bar) em laranja
-    ::ng-deep .mat-mdc-tab .mdc-tab-indicator__content--underline {
-      border-color: #f58220;
     }
   }
 }

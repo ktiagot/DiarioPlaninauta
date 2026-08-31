@@ -25,6 +25,10 @@ export class LojaComponent implements OnInit {
   private readonly lojaService = inject(LojaService);
   private readonly session = inject(SessionService);
 
+  // Loja pausada: exibe aviso "em breve" e não carrega dados.
+  // Reative mudando para true quando a loja for lançada.
+  readonly lojaAtiva = false;
+
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly produtos = signal<Produto[]>([]);
@@ -34,6 +38,10 @@ export class LojaComponent implements OnInit {
   readonly isLoggedIn = computed(() => this.session.isAuthenticated());
 
   ngOnInit(): void {
+    if (!this.lojaAtiva) {
+      this.loading.set(false);
+      return;
+    }
     this.carregarDados();
   }
 

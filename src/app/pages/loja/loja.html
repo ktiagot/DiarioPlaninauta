@@ -6,13 +6,22 @@
       Loja de Pontos
     </h1>
 
-    @if (isLoggedIn()) {
+    @if (lojaAtiva && isLoggedIn()) {
       <div class="saldo-badge">
         <mat-icon>stars</mat-icon>
         <span>Você tem <strong>{{ saldo() }}</strong> pontos</span>
       </div>
     }
   </div>
+
+  @if (!lojaAtiva) {
+    <!-- Loja em breve -->
+    <div class="em-breve">
+      <mat-icon class="em-breve-icon">storefront</mat-icon>
+      <h2>Em breve</h2>
+      <p>A loja de pontos ainda está em preparação. Volte mais tarde!</p>
+    </div>
+  } @else {
 
   <!-- Loading -->
   @if (loading()) {
@@ -123,5 +132,6 @@
         </div>
       </div>
     </section>
+  }
   }
 </div>
