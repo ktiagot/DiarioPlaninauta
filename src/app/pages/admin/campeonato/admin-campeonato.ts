@@ -108,8 +108,10 @@ export class AdminCampeonatoComponent implements OnInit {
         this.snapshot.set(snap);
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err?.error?.message || 'Erro ao carregar dados admin.');
+      error: () => {
+        // Sem campeonato ativo (ex.: nenhum criado ainda) não é erro fatal:
+        // libera as abas para que o admin possa criar o primeiro campeonato.
+        this.snapshot.set(null);
         this.loading.set(false);
       },
     });
