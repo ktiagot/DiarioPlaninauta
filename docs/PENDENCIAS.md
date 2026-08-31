@@ -1,4 +1,67 @@
-# Pendências — Diário Planinauta (novo-site)
+# Pendências — Diário Planinauta
+
+> **Atualizado em 27/08/2026.** A stack atual é **Angular 19 + NestJS + Prisma/PostgreSQL**.
+> As seções 1 a 6 abaixo descrevem o site **legado** (MySQL, `server.js`, `membros`,
+> endpoints `/api/perfil/:email`) e estão **obsoletas** — mantidas apenas como referência
+> histórica. O status real e atual está na seção **0** logo abaixo.
+
+---
+
+## 0. Status Atual (stack Angular + NestJS + Prisma)
+
+### ✅ Implementado e enviado (`main`)
+
+**Mesas casuais (Mesões)**
+- Entrar em mesa aberta (máx. 4, dono conta), sair, dono remove participante e apaga a mesa.
+- Link da partida visível só para dono + participantes (oculto na API para não-membros).
+
+**Notificações** (sino do portal, polling)
+- `rodada_nova` — ao abrir rodada, notifica inscritos.
+- `mesa_entrou` — ao entrar em mesa casual, notifica dono + participantes (com o nick de quem entrou).
+- `campeonato_novo` — ao **publicar** o campeonato (RASCUNHO → Inscrições abertas), notifica todos os usuários.
+- `dia_do_evento` — cron diário 08:00 (America/Sao_Paulo): mesas casuais e rodadas de torneio marcadas para hoje.
+- `resultado_publicado` — ao finalizar a rodada, notifica os jogadores da rodada.
+- `favorito_mutuo` — ao virar favorito mútuo, notifica os dois (contato liberado).
+
+**Campeonato**
+- Status `RASCUNHO` (novo): permite cadastrar sem publicar. Rascunho não aparece na página pública.
+- Botão **Publicar** no admin (RASCUNHO → Inscrições abertas).
+
+**Perfil / Comunidade**
+- Campo **Discord** no perfil; liberado no contato mútuo (junto do WhatsApp).
+- **Visibilidade por campo** para nome real e telefone: `PUBLICO` / `FAVORITOS` / `PRIVADO`
+  (aplicado no perfil público e no contato mútuo).
+- Avatar via Scryfall (busca de criatura lendária → `art_crop`). *(já existia)*
+
+**Precompeonato**
+- **Aviso de próxima rodada** na página do precompeonato ("hoje / amanhã / em X dias"),
+  resiliente a não haver campeonato ou rodada agendada.
+- **Ranking com filtro por campeonato**: dropdown com **Atual**, **Geral (todos)** e cada
+  campeonato individual. O "Geral" agrega por jogador os pontos (e kills) de todas as
+  inscrições ativas em campeonatos publicados.
+
+### ⏳ Pendências operacionais de deploy (VPS)
+
+- **Migrations** rodam automaticamente no deploy (`prisma migrate deploy`):
+  - `20260827120000_add_status_rascunho` + `20260827120100_campeonato_default_rascunho` (status RASCUNHO).
+  - `20260827130000_add_discord_visibilidade` (Discord + visibilidade por campo).
+  - Requer PostgreSQL 12+ (uso de `ALTER TYPE ... ADD VALUE`). Confirmar que o pipeline rodou sem erro.
+- **Re-sincronizar os precons no admin** — precons sincronizados antes da feature de partners
+  não têm `colorIdentity` / `isPartner` / `isPrincipal` / `isPartnerDeck` até um novo sync.
+
+### ⏸️ Em HOLD (decisão de produto)
+
+- **Loja de pontos por atividade** (jogar +5, vencer +10, mesa casual +2, perfil completo +5).
+  Infra existe (models `Ponto`/`Produto`/`Resgate`), mas o crédito é só manual (admin). Não ativar sem definição.
+
+### 🔧 Dívida técnica menor
+
+- Helper `hojeRangeUtc` duplicado em `backend/mesas/mesas.service.ts` e
+  `backend/precompeonato/sorteio/sorteio.service.ts` (UTC-3 fixo). Extrair para util compartilhado quando conveniente.
+
+---
+
+## Referência histórica (site legado — OBSOLETO)
 
 ## 1. Mapeamento de Dados: Real vs Pendente
 
