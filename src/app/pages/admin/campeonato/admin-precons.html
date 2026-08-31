@@ -60,11 +60,22 @@
     <button mat-flat-button color="primary" [disabled]="syncing()" (click)="sincronizar()">
       @if (syncing()) {
         <mat-spinner diameter="18" />
+        <span>Sincronizando...</span>
       } @else {
         <mat-icon>sync</mat-icon>
+        Sincronizar precons oficiais
       }
-      Sincronizar precons oficiais
     </button>
+
+    @if (syncing()) {
+      <div class="sync-progress">
+        <mat-spinner diameter="20" />
+        <span>
+          Buscando e atualizando os precons oficiais. Isso pode levar até um minuto —
+          não feche a página.
+        </span>
+      </div>
+    }
   </div>
 
   <div class="admin-section">
