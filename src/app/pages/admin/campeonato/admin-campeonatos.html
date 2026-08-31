@@ -91,12 +91,8 @@
         <div class="campeonato-card" [class.campeonato-card--encerrado]="c.statusCode === 'ENCERRADO'">
           <div class="campeonato-card__header">
             <div>
-              @if (c.statusCode === 'ENCERRADO') {
-                <strong>{{ c.nome }}</strong>
-                <span class="campeonato-card__meta">{{ c.edicao }} · {{ formatDate(c.dataInicio) }}</span>
-              } @else {
-                <span class="campeonato-card__meta">Edição · início</span>
-              }
+              <strong>{{ c.nome }}</strong>
+              <span class="campeonato-card__meta">{{ c.edicao }} · {{ formatDate(c.dataInicio) }}</span>
             </div>
             <span [class]="statusBadgeClass(c.statusCode)">{{ c.status }}</span>
           </div>
