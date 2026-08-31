@@ -7,10 +7,10 @@ export class UpdateMesaDto {
   @IsNotEmpty()
   dataHora: string;
 
-  @ApiPropertyOptional({ example: 'https://spelltable.wizards.com/game/abc123' })
+  @ApiPropertyOptional({ example: 'spelltable.wizards.com/game/abc123' })
   @IsOptional()
   @IsString()
-  @IsUrl({ require_protocol: true })
+  @IsUrl({ require_protocol: false })
   linkPartida?: string;
 
   @ApiPropertyOptional({ example: 'Sexta 20h, cEDH, chamar no Discord.' })
