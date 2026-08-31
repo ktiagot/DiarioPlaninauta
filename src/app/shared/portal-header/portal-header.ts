@@ -66,6 +66,8 @@ export class PortalHeaderComponent {
 
   logout(): void {
     this.session.clear();
-    this.router.navigate(['/login']);
+    // Hard reload para descartar qualquer estado em memória (serviços singleton,
+    // signals, polling de notificações) — simétrico ao login.
+    window.location.href = '/login';
   }
 }
