@@ -381,3 +381,42 @@ textarea:not(.mat-mdc-input-element) {
 .mat-mdc-tab-link .mdc-tab-indicator__content--underline {
   border-color: #{$sys-color-primary} !important;
 }
+
+// ── Form fields (tema escuro) — labels e selects legíveis ────
+// Com a notched-outline escondida, o label flutuante e o texto do
+// mat-select ficavam invisíveis no fundo escuro até receber foco.
+.mat-mdc-form-field {
+  // Label flutuante (repousado e flutuante)
+  .mdc-floating-label,
+  .mat-mdc-floating-label {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  &.mat-focused .mdc-floating-label,
+  &.mat-focused .mat-mdc-floating-label {
+    color: #{$sys-color-primary} !important;
+  }
+
+  // Texto do valor selecionado e placeholder do mat-select
+  .mat-mdc-select-value-text {
+    color: #{$sys-color-white};
+  }
+
+  .mat-mdc-select-placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.6);
+  }
+
+  // Seta do select
+  .mat-mdc-select-arrow {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+// Placeholder de input/textarea sempre visível
+.mat-mdc-form-field input.mat-mdc-input-element::placeholder,
+.mat-mdc-form-field textarea.mat-mdc-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.55) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
+  opacity: 1 !important;
+}
