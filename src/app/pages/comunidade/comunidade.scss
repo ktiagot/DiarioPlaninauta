@@ -54,6 +54,24 @@
       --mdc-outlined-text-field-input-text-color: white;
       --mat-select-trigger-text-color: white;
     }
+
+    // Botões stroked (Meus favoritos, Ver contato): borda/label laranja em vez de branco.
+    .filter-favoritos.mat-mdc-outlined-button,
+    .contato-btn.mat-mdc-outlined-button {
+      --mdc-outlined-button-label-text-color: #f58220;
+      --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.45);
+      color: #f58220;
+    }
+
+    .filter-favoritos.mat-mdc-outlined-button .mdc-button__label {
+      color: #f58220;
+    }
+
+    // Estado ativo do filtro de favoritos.
+    .filter-favoritos--ativo.mat-mdc-outlined-button {
+      background: rgba(245, 130, 32, 0.18);
+      --mdc-outlined-button-outline-color: #f58220;
+    }
   }
 }
 
@@ -253,20 +271,20 @@
 }
 
 .filter-favoritos {
-  align-self: center;
-  --mdc-outlined-button-label-text-color: #f58220;
-  --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.4);
+  height: 56px; // casa com a altura do input outline dos selects
+  display: inline-flex;
+  align-items: center;
 
   mat-icon {
     margin-right: 0.25rem;
   }
 
-  &--ativo {
-    background: rgba(245, 130, 32, 0.18);
-    --mdc-outlined-button-outline-color: #f58220;
-  }
-
   @media (max-width: 767px) {
     width: 100%;
   }
+}
+
+// Alinha os selects e o botão pelo topo (o subscript dos selects some com dynamic sizing).
+.filter-selects {
+  align-items: flex-start;
 }
