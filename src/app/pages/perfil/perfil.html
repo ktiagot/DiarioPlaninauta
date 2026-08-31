@@ -168,9 +168,20 @@
                 />
               </button>
             } @else {
-              <div class="perfil-promo-banner flex items-center justify-center px-4 py-8 text-sm text-white/50">
-                {{ promo.title }}
-              </div>
+              <button
+                type="button"
+                class="perfil-promo-placeholder"
+                [class.perfil-promo-placeholder--clickable]="!!promo.link"
+                [disabled]="!promo.link"
+                [attr.aria-label]="promo.imageAlt ?? promo.title"
+                (click)="openPromoLink(promo.link)"
+              >
+                <mat-icon>local_offer</mat-icon>
+                <span class="perfil-promo-placeholder__title">{{ promo.imageAlt ?? promo.title }}</span>
+                @if (promo.link) {
+                  <span class="perfil-promo-placeholder__cta">Saiba mais</span>
+                }
+              </button>
             }
           }
         </div>
@@ -270,9 +281,20 @@
                 />
               </button>
             } @else {
-              <div class="perfil-promo-banner flex items-center justify-center px-4 py-8 text-sm text-white/50">
-                {{ promo.title }}
-              </div>
+              <button
+                type="button"
+                class="perfil-promo-placeholder"
+                [class.perfil-promo-placeholder--clickable]="!!promo.link"
+                [disabled]="!promo.link"
+                [attr.aria-label]="promo.imageAlt ?? promo.title"
+                (click)="openPromoLink(promo.link)"
+              >
+                <mat-icon>local_offer</mat-icon>
+                <span class="perfil-promo-placeholder__title">{{ promo.imageAlt ?? promo.title }}</span>
+                @if (promo.link) {
+                  <span class="perfil-promo-placeholder__cta">Saiba mais</span>
+                }
+              </button>
             }
           }
         </div>
