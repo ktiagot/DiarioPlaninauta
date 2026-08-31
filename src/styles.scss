@@ -358,25 +358,26 @@ textarea:not(.mat-mdc-input-element) {
 }
 
 // ── Tabs (tema escuro) — fallback global de contraste ────────
-// Garante labels legíveis no fundo escuro em todas as mat-tabs do app,
-// mesmo quando as CSS variables --mat-tab-header-* não são aplicadas.
+// Garante labels legíveis no fundo escuro em todas as mat-tabs do app.
+// Usa !important porque as CSS variables --mat-tab-header-* nem sempre são
+// respeitadas pelo tema MDC, deixando o label com cor apagada padrão.
 .mat-mdc-tab .mdc-tab__text-label,
 .mat-mdc-tab-link .mdc-tab__text-label {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7) !important;
   font-weight: 600;
 }
 
 .mat-mdc-tab:hover .mdc-tab__text-label,
 .mat-mdc-tab-link:hover .mdc-tab__text-label {
-  color: #{$sys-color-white};
+  color: #{$sys-color-white} !important;
 }
 
 .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label,
 .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
-  color: #{$sys-color-primary};
+  color: #{$sys-color-primary} !important;
 }
 
 .mat-mdc-tab .mdc-tab-indicator__content--underline,
 .mat-mdc-tab-link .mdc-tab-indicator__content--underline {
-  border-color: #{$sys-color-primary};
+  border-color: #{$sys-color-primary} !important;
 }
