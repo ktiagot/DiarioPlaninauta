@@ -28,7 +28,7 @@ export class SugestoesService {
 
     await transporter.sendMail({
       from: `"Portal Planinauta" <${process.env.SMTP_USER}>`,
-      to: 'sugestao@diarioplaninauta.com.br',
+      to: 'contato@diarioplaninauta.com.br',
       subject: `[Sugestão Portal] ${dto.nome}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;">
