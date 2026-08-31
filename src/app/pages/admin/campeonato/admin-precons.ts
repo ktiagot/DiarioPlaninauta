@@ -93,10 +93,11 @@ export class AdminPreconsComponent implements OnInit {
       .pipe(finalize(() => this.syncing.set(false)))
       .subscribe({
         next: (res) => {
+          const falhasMsg = res.falhas > 0 ? ` ${res.falhas} falha(s).` : '';
           this.snackBar.open(
-            `Sincronizado: ${res.criados} novo(s), ${res.atualizados} atualizado(s). Total: ${res.total}.`,
+            `Sincronizado: ${res.criados} novo(s), ${res.atualizados} atualizado(s), total ${res.total}.${falhasMsg}`,
             'OK',
-            { duration: 6000 },
+            { duration: 7000 },
           );
           this.carregar();
         },

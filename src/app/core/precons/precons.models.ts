@@ -35,4 +35,5 @@ export interface PreconSyncResult {
   criados: number;
   atualizados: number;
   total: number;
+  falhas: number;
 }

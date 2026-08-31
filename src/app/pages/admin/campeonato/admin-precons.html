@@ -5,7 +5,7 @@
 } @else {
   <div class="admin-section admin-section--card">
     <h4>Cadastrar precon</h4>
-    <div class="abrir-rodada-form precon-form">
+    <div class="precon-form">
       <label>
         Nome
         <input type="text" [ngModel]="formNome()" (ngModelChange)="formNome.set($event)" />
@@ -121,8 +121,13 @@
                       (ngModelChange)="updateDraftComandante(p, $index, $event)"
                     />
                   }
-                  <button mat-stroked-button type="button" (click)="addDraftComandante(p)">
-                    +
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="precon-cmds__add"
+                    (click)="addDraftComandante(p)"
+                  >
+                    + Comandante
                   </button>
                 </td>
                 <td>

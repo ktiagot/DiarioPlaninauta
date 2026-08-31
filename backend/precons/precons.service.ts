@@ -2,9 +2,17 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+
+interface ParsedPrecon {
+  nome: string;
+  setNome: string;
+  ano: number;
+  comandantes: string[];
+}
 import { CreatePreconDto, UpdatePreconDto } from './dto/create-precon.dto';
 import {
   PreconComandanteResponseDto,
@@ -23,6 +31,8 @@ const preconInclude = {
 
 @Injectable()
 export class PreconsService {
+  private readonly logger = new Logger(PreconsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async search(busca?: string): Promise<PreconListItemDto[]> {
@@ -184,17 +194,40 @@ export class PreconsService {
    * Westly/CommanderPrecons (precons oficiais extraídos do Moxfield).
    * Upsert por (nome + setNome). Não remove precons existentes.
    */
-  async sync(): Promise<{ criados: number; atualizados: number; total: number }> {
+  async sync(): Promise<{
+    criados: number;
+    atualizados: number;
+    total: number;
+    falhas: number;
+  }> {
     const arquivos = await this.listarArquivosRepo();
+
+    // Baixa e parseia em paralelo com concorrência limitada (evita rate limit e é rápido).
+    const parsedList: ParsedPrecon[] = [];
+    let falhas = 0;
+    const CONCORRENCIA = 8;
+
+    for (let i = 0; i < arquivos.length; i += CONCORRENCIA) {
+      const lote = arquivos.slice(i, i + CONCORRENCIA);
+      const resultados = await Promise.all(
+        lote.map((path) =>
+          this.baixarEParsear(path).catch(() => {
+            this.logger.warn(`Falha ao baixar/parsear precon: ${path}`);
+            return null;
+          }),
+        ),
+      );
+      for (const r of resultados) {
+        if (r) parsedList.push(r);
+        else falhas++;
+      }
+    }
+
+    // Upserts sequenciais (Prisma não gosta de writes concorrentes na mesma conexão).
     let criados = 0;
     let atualizados = 0;
-    let total = 0;
 
-    for (const path of arquivos) {
-      const parsed = await this.baixarEParsear(path);
-      if (!parsed) continue;
-      total++;
-
+    for (const parsed of parsedList) {
       const existente = await this.prisma.precon.findFirst({
         where: { nome: parsed.nome, setNome: parsed.setNome },
         include: preconInclude,
@@ -225,16 +258,54 @@ export class PreconsService {
       }
     }
 
-    return { criados, atualizados, total };
+    this.logger.log(
+      `Sync precons: ${criados} criados, ${atualizados} atualizados, ${falhas} falhas de ${arquivos.length} arquivos.`,
+    );
+
+    return { criados, atualizados, total: parsedList.length, falhas };
+  }
+
+  private githubHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'User-Agent': 'diario-planinauta',
+      Accept: 'application/vnd.github+json',
+    };
+    const token = process.env.GITHUB_TOKEN;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  }
+
+  private async fetchComRetry(url: string, tentativas = 3): Promise<Response> {
+    let ultimoErro: unknown;
+    for (let i = 0; i < tentativas; i++) {
+      try {
+        const res = await fetch(url, { headers: this.githubHeaders() });
+        if (res.ok) return res;
+        // 403/429 = rate limit; espera e tenta de novo.
+        if (res.status === 403 || res.status === 429) {
+          await this.delay(800 * (i + 1));
+          continue;
+        }
+        ultimoErro = new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        ultimoErro = err;
+        await this.delay(500 * (i + 1));
+      }
+    }
+    throw ultimoErro ?? new Error('Falha na requisição');
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async listarArquivosRepo(): Promise<string[]> {
     const url =
       'https://api.github.com/repos/Westly/CommanderPrecons/git/trees/main?recursive=1';
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'diario-planinauta', Accept: 'application/vnd.github+json' },
-    });
-    if (!res.ok) {
+    let res: Response;
+    try {
+      res = await this.fetchComRetry(url);
+    } catch {
       throw new BadRequestException('Não foi possível acessar a lista oficial de precons.');
     }
     const data = (await res.json()) as { tree?: { path: string; type: string }[] };
@@ -243,12 +314,9 @@ export class PreconsService {
       .map((t) => t.path);
   }
 
-  private async baixarEParsear(
-    path: string,
-  ): Promise<{ nome: string; setNome: string; ano: number; comandantes: string[] } | null> {
+  private async baixarEParsear(path: string): Promise<ParsedPrecon | null> {
     const url = `https://raw.githubusercontent.com/Westly/CommanderPrecons/main/${encodeURI(path)}`;
-    const res = await fetch(url, { headers: { 'User-Agent': 'diario-planinauta' } });
-    if (!res.ok) return null;
+    const res = await this.fetchComRetry(url);
 
     const deck = (await res.json()) as {
       name?: string;
