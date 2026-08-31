@@ -226,7 +226,6 @@ model MesaTorneio {
   id                    String    @id @default(uuid())
   rodadaId              String
   numeroMesa            Int
-  finalizada            Boolean   @default(false)
   linkPartida           String?
   empate                Boolean   @default(false)
   empatadosInscricaoIds String[]  @default([])
