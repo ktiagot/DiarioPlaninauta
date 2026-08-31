@@ -80,8 +80,6 @@ export class InscricaoFormComponent implements OnInit {
   protected readonly comandanteSearch = signal('');
 
   protected readonly form = this.fb.nonNullable.group({
-    discordNick: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
     preconId: ['', [Validators.required]],
     preconComandanteId: [{ value: '', disabled: true }, [Validators.required]],
     preconComandante2Id: [{ value: '', disabled: true }],
@@ -234,8 +232,6 @@ export class InscricaoFormComponent implements OnInit {
 
     this.inscricoesService
       .createInscricao({
-        discordNick: raw.discordNick.trim(),
-        email: raw.email.trim(),
         preconId: raw.preconId,
         preconComandanteId: raw.preconComandanteId,
         ...(raw.preconComandante2Id ? { preconComandante2Id: raw.preconComandante2Id } : {}),

@@ -125,12 +125,6 @@ export class CreateUserDto {
   @IsIn([...FORMATOS_DISPONIVEIS])
   formatoFavorito?: string;
 
-  @ApiPropertyOptional({ example: 'joaosilva#1234' })
-  @IsOptional()
-  @Transform(trim)
-  @IsString()
-  discord?: string;
-
   @ApiPropertyOptional({ example: ['sábado', 'domingo'], type: [String] })
   @IsOptional()
   @IsArray()

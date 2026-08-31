@@ -67,9 +67,6 @@ export class UserResponseDto {
   @ApiPropertyOptional({ example: 'Commander' })
   formatoFavorito: string | null;
 
-  @ApiPropertyOptional({ example: 'joaosilva#1234' })
-  discord: string | null;
-
   @ApiProperty({ example: 'PUBLICO', enum: ['PUBLICO', 'FAVORITOS', 'PRIVADO'] })
   visibilidadeNome: string;
 

@@ -34,8 +34,6 @@ export interface InscricaoApi {
 }
 
 export interface CreateInscricaoPayload {
-  discordNick: string;
-  email: string;
   preconId: string;
   preconComandanteId: string;
   preconComandante2Id?: string;

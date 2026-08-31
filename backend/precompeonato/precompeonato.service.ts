@@ -90,7 +90,10 @@ export class PrecompeonatoService {
     });
   }
 
-  async createInscricao(dto: CreateInscricaoDto): Promise<InscricaoResponseDto> {
+  async createInscricao(
+    userId: string,
+    dto: CreateInscricaoDto,
+  ): Promise<InscricaoResponseDto> {
     if (dto.aceiteTermos !== true) {
       throw new BadRequestException('É necessário aceitar as regras do precompeonato.');
     }
@@ -103,11 +106,7 @@ export class PrecompeonatoService {
       );
     }
 
-    const emailNormalized = dto.email.trim().toLowerCase();
-
-    const user = await this.prisma.user.findFirst({
-      where: { email: { equals: emailNormalized, mode: 'insensitive' } },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('Usuário não cadastrado no portal.');
@@ -153,7 +152,8 @@ export class PrecompeonatoService {
           campeonatoId: campeonato.id,
           userId: user.id,
           email: user.email,
-          discordNick: dto.discordNick.trim(),
+          // O nick do portal é o nick do Discord do usuário.
+          discordNick: user.nick,
           preconId: dto.preconId,
           preconComandanteId: dto.preconComandanteId,
           preconComandante2Id: dto.preconComandante2Id ?? null,

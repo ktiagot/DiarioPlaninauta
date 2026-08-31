@@ -129,12 +129,12 @@
         </div>
 
         <div class="field-group">
-          <label for="nick" class="text-white">Nick</label>
+          <label for="nick" class="text-white">Nick do Discord</label>
           <mat-form-field appearance="outline" class="w-full">
-            <input matInput id="nick" formControlName="nick" autocomplete="nickname" />
+            <input matInput id="nick" formControlName="nick" autocomplete="nickname" placeholder="Seu usuário no Discord" />
             @if (form.controls.nick.invalid && form.controls.nick.touched) {
               <mat-error>
-                @if (form.controls.nick.hasError('required')) { Informe seu nick }
+                @if (form.controls.nick.hasError('required')) { Informe seu nick do Discord }
                 @else if (form.controls.nick.hasError('nickTaken')) { Nick já em uso }
               </mat-error>
             }

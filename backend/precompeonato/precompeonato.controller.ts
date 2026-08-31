@@ -104,11 +104,13 @@ export class PrecompeonatoController {
   }
 
   @Post('inscricoes')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Inscrever-se no precompeonato atual',
     description:
-      'Cria inscrição quando o campeonato atual está com Inscrições abertas. O email deve pertencer a um usuário cadastrado.',
+      'Cria inscrição para o usuário autenticado quando o campeonato está com Inscrições abertas. E-mail e nick (Discord) vêm do perfil.',
   })
   @ApiCreatedResponse({ description: 'Inscrição criada.', type: InscricaoResponseDto })
   @ApiBadRequestResponse({
@@ -118,8 +120,11 @@ export class PrecompeonatoController {
   @ApiConflictResponse({
     description: 'Inscrições fechadas ou usuário já inscrito.',
   })
-  createInscricao(@Body() dto: CreateInscricaoDto): Promise<InscricaoResponseDto> {
-    return this.precompeonatoService.createInscricao(dto);
+  createInscricao(
+    @Req() req: { user: AuthUser },
+    @Body() dto: CreateInscricaoDto,
+  ): Promise<InscricaoResponseDto> {
+    return this.precompeonatoService.createInscricao(req.user.id, dto);
   }
 
   @Get('atual/jogadores')

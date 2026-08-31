@@ -1,29 +1,13 @@
 import {
   IsBoolean,
-  IsEmail,
-  IsNotEmpty,
   IsOptional,
-  IsString,
   IsUUID,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-const trim = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
-
+// email e discordNick não são mais enviados: vêm do usuário autenticado
+// (email = user.email; discordNick = user.nick, que é o nick do Discord).
 export class CreateInscricaoDto {
-  @ApiProperty({ example: 'usuario#1234' })
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  discordNick: string;
-
-  @ApiProperty({ example: 'usuario@email.com' })
-  @Transform(trim)
-  @IsEmail()
-  email: string;
-
   @ApiProperty({ example: 'p0000001-0000-4000-8000-000000000001' })
   @IsUUID()
   preconId: string;

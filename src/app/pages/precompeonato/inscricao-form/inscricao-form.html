@@ -28,45 +28,6 @@
       <form class="inscricao-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="inscricao-form__grid">
           <div class="field-group">
-            <label for="discordNick">Nick do Discord</label>
-            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-              <input
-                matInput
-                id="discordNick"
-                formControlName="discordNick"
-                placeholder="@usuario ou usuario#1234"
-                autocomplete="nickname"
-              />
-              @if (form.controls.discordNick.invalid && form.controls.discordNick.touched) {
-                <mat-error>Informe seu nick do Discord</mat-error>
-              }
-            </mat-form-field>
-          </div>
-
-          <div class="field-group">
-            <label for="email">Email Usado na Liga Magic</label>
-            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-              <input
-                matInput
-                id="email"
-                type="email"
-                formControlName="email"
-                placeholder="seu@email.com"
-                autocomplete="email"
-              />
-              @if (form.controls.email.invalid && form.controls.email.touched) {
-                <mat-error>
-                  @if (form.controls.email.hasError('required')) {
-                    Informe o e-mail
-                  } @else {
-                    Digite um e-mail válido
-                  }
-                </mat-error>
-              }
-            </mat-form-field>
-          </div>
-
-          <div class="field-group">
             <label for="preconId">Nome oficial do precon</label>
             <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
               <mat-select

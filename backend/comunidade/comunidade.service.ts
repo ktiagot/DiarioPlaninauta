@@ -80,7 +80,7 @@ export class ComunidadeService {
       select: {
         id: true,
         telefone: true,
-        discord: true,
+        nick: true,
         visibilidadeTelefone: true,
       },
     });
@@ -119,7 +119,8 @@ export class ComunidadeService {
       mutuo: true,
       // Telefone privado não é exposto nem para favoritos mútuos.
       telefone: alvo.visibilidadeTelefone === 'PRIVADO' ? null : alvo.telefone,
-      discord: alvo.discord ?? null,
+      // O nick do portal é o nick do Discord.
+      discord: alvo.nick,
     };
   }
 
