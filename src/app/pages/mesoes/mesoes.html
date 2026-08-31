@@ -63,32 +63,6 @@
           />
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Precon (opcional)</mat-label>
-          <mat-select
-            [ngModel]="novaMesaPreconId()"
-            (ngModelChange)="onPreconChange($event)"
-          >
-            <mat-option value="">Nenhum</mat-option>
-            @for (precon of precons(); track precon.id) {
-              <mat-option [value]="precon.id">{{ precon.nome }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        @if (novaMesaPreconId()) {
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Comandante</mat-label>
-            <mat-select
-              [ngModel]="novaMesaComandanteId()"
-              (ngModelChange)="novaMesaComandanteId.set($event)"
-            >
-              @for (cmd of comandantes(); track cmd.id) {
-                <mat-option [value]="cmd.id">{{ cmd.comandante }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        }
 
         <div class="flex gap-3 justify-end">
           <button mat-button class="text-gray-300" (click)="toggleFormCriar()">
