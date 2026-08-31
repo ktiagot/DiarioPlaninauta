@@ -41,6 +41,6 @@ export class BannerStorage {
     }
 
     await fs.writeFile(join(this.dir, campeonatoId + ext), file.buffer);
-    return `/uploads/campeonatos/${campeonatoId}${ext}`;
+    return `/api/uploads/campeonatos/${campeonatoId}${ext}`;
   }
 }

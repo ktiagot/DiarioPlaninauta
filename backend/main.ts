@@ -11,7 +11,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
+  // Servido sob /api/uploads para reaproveitar o proxy do Nginx (/api -> backend).
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/api/uploads/' });
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:4200',
