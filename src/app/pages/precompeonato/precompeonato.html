@@ -21,10 +21,12 @@
   <section class="precompeonato-hero" aria-label="Campeonato">
     @if (campeonato(); as camp) {
       @if (bannerSrc(camp.bannerUrl); as src) {
+        <!-- Com banner, o próprio banner já traz nome/edição. -->
         <img class="precompeonato-hero__banner" [src]="src" [alt]="camp.nome" />
+      } @else {
+        <h1 class="precompeonato-hero__title">{{ camp.nome }}</h1>
+        <p class="precompeonato-hero__subtitle">{{ camp.edicao }}</p>
       }
-      <h1 class="precompeonato-hero__title">{{ camp.nome }}</h1>
-      <p class="precompeonato-hero__subtitle">{{ camp.edicao }}</p>
       @if (camp.descricao) {
         <p class="precompeonato-hero__descricao">{{ camp.descricao }}</p>
       }
