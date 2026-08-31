@@ -14,6 +14,7 @@ export function toPreconResponse(precon: PreconWithComandantes): PreconResponseD
     setNome: precon.setNome,
     ano: precon.ano,
     banido: precon.banido,
+    isPartnerDeck: precon.isPartnerDeck,
     comandantes: precon.comandantes
       .sort((a, b) => a.ordem - b.ordem)
       .map(toComandanteResponse),
@@ -34,12 +35,16 @@ export function toComandanteResponse(cmd: PreconComandante): PreconComandanteRes
     id: cmd.id,
     comandante: cmd.comandante,
     ordem: cmd.ordem,
+    colorIdentity: cmd.colorIdentity,
+    isPartner: cmd.isPartner,
+    isPrincipal: cmd.isPrincipal,
   };
 }
 
 export const inscricaoPreconInclude = {
   precon: { select: { id: true, nome: true, setNome: true } },
   preconComandante: { select: { id: true, comandante: true } },
+  preconComandante2: { select: { id: true, comandante: true } },
 } as const;
 
 export const inscricaoWithPreconInclude = {
@@ -53,10 +58,14 @@ export function deckNomeFromInscricao(inscricao: {
   return inscricao.precon.nome;
 }
 
+/** Nome do comandante da inscrição. Para partner, retorna "A // B". */
 export function comandanteFromInscricao(inscricao: {
   preconComandante: { comandante: string };
+  preconComandante2?: { comandante: string } | null;
 }): string {
-  return inscricao.preconComandante.comandante;
+  const principal = inscricao.preconComandante.comandante;
+  const parceiro = inscricao.preconComandante2?.comandante;
+  return parceiro ? `${principal} // ${parceiro}` : principal;
 }
 
 export const mesaJogadorPreconInclude = {

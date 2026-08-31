@@ -7,11 +7,30 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface ParsedComandante {
+  nome: string;
+  colorIdentity: string;
+  isPartner: boolean;
+  isPrincipal: boolean;
+}
+
 interface ParsedPrecon {
   nome: string;
   setNome: string;
   ano: number;
-  comandantes: string[];
+  isPartnerDeck: boolean;
+  comandantes: ParsedComandante[];
+}
+
+const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G'];
+
+/** Ordena e junta uma color identity em string canônica WUBRG. Ex: ["G","U"] -> "UG". */
+function normalizeColorIdentity(ci: string[] | undefined): string {
+  if (!ci || ci.length === 0) return '';
+  return [...ci]
+    .filter((c) => WUBRG_ORDER.includes(c))
+    .sort((a, b) => WUBRG_ORDER.indexOf(a) - WUBRG_ORDER.indexOf(b))
+    .join('');
 }
 import { CreatePreconDto, UpdatePreconDto } from './dto/create-precon.dto';
 import {
@@ -151,7 +170,8 @@ export class PreconsService {
   async validateForInscricao(
     preconId: string,
     preconComandanteId: string,
-  ): Promise<{ preconId: string; preconComandanteId: string }> {
+    preconComandante2Id?: string | null,
+  ): Promise<{ preconId: string; preconComandanteId: string; preconComandante2Id: string | null }> {
     const precon = await this.prisma.precon.findUnique({
       where: { id: preconId },
       include: { comandantes: true },
@@ -170,7 +190,27 @@ export class PreconsService {
       throw new BadRequestException('Comandante inválido para o precon selecionado.');
     }
 
-    return { preconId, preconComandanteId };
+    if (!preconComandante2Id) {
+      return { preconId, preconComandanteId, preconComandante2Id: null };
+    }
+
+    // Segundo comandante (partner) — regras:
+    if (preconComandante2Id === preconComandanteId) {
+      throw new BadRequestException('Os dois comandantes devem ser diferentes.');
+    }
+
+    const comandante2 = precon.comandantes.find((c) => c.id === preconComandante2Id);
+    if (!comandante2) {
+      throw new BadRequestException('Segundo comandante inválido para o precon selecionado.');
+    }
+
+    if (!comandante.isPartner || !comandante2.isPartner) {
+      throw new BadRequestException(
+        'Só é possível usar dois comandantes se ambos tiverem a mecânica Partner.',
+      );
+    }
+
+    return { preconId, preconComandanteId, preconComandante2Id };
   }
 
   async validateOptionalForMesa(
@@ -236,9 +276,9 @@ export class PreconsService {
       if (existente) {
         await this.prisma.precon.update({
           where: { id: existente.id },
-          data: { ano: parsed.ano },
+          data: { ano: parsed.ano, isPartnerDeck: parsed.isPartnerDeck },
         });
-        await this.syncComandantes(existente.id, existente.comandantes, parsed.comandantes);
+        await this.syncComandantesDetalhado(existente.id, existente.comandantes, parsed.comandantes);
         atualizados++;
       } else {
         await this.prisma.precon.create({
@@ -246,10 +286,14 @@ export class PreconsService {
             nome: parsed.nome,
             setNome: parsed.setNome,
             ano: parsed.ano,
+            isPartnerDeck: parsed.isPartnerDeck,
             comandantes: {
-              create: this.normalizeComandantes(parsed.comandantes).map((comandante, index) => ({
-                comandante,
+              create: parsed.comandantes.map((c, index) => ({
+                comandante: c.nome,
                 ordem: index + 1,
+                colorIdentity: c.colorIdentity,
+                isPartner: c.isPartner,
+                isPrincipal: c.isPrincipal,
               })),
             },
           },
@@ -318,30 +362,77 @@ export class PreconsService {
     const url = `https://raw.githubusercontent.com/Westly/CommanderPrecons/main/${encodeURI(path)}`;
     const res = await this.fetchComRetry(url);
 
+    type MoxCard = {
+      name?: string;
+      set_name?: string;
+      released_at?: string;
+      type_line?: string;
+      oracle_text?: string;
+      color_identity?: string[];
+    };
     const deck = (await res.json()) as {
       name?: string;
-      commanders?: Record<string, { card?: { name?: string; set_name?: string; released_at?: string } }>;
-      main?: { name?: string; set_name?: string; released_at?: string };
+      commanders?: Record<string, { card?: MoxCard }>;
+      main?: MoxCard;
+      mainboard?: Record<string, { card?: MoxCard }>;
     };
 
-    const cmdEntries = Object.values(deck.commanders ?? {});
-    const comandantes = cmdEntries
-      .map((c) => c.card?.name?.trim())
-      .filter((n): n is string => !!n);
-
-    if (comandantes.length === 0 && deck.main?.name) {
-      comandantes.push(deck.main.name.trim());
-    }
-    if (comandantes.length === 0) return null;
-
-    const primeiraCard = cmdEntries[0]?.card ?? deck.main;
-    const setNome = primeiraCard?.set_name?.trim() || 'Desconhecido';
-    const ano = this.extrairAno(primeiraCard?.released_at);
     const nome = this.limparNomePrecon(deck.name ?? '');
-
     if (!nome) return null;
 
-    return { nome, setNome, ano, comandantes };
+    // Comandante(s) principal(is) — do bloco commanders (fallback: main).
+    const principaisCards = Object.values(deck.commanders ?? {})
+      .map((c) => c.card)
+      .filter((c): c is MoxCard => !!c?.name);
+    if (principaisCards.length === 0 && deck.main?.name) {
+      principaisCards.push(deck.main);
+    }
+    if (principaisCards.length === 0) return null;
+
+    const primeira = principaisCards[0];
+    const setNome = primeira.set_name?.trim() || 'Desconhecido';
+    const ano = this.extrairAno(primeira.released_at);
+
+    // Color identity do deck = a do comandante principal.
+    const ciDeck = normalizeColorIdentity(primeira.color_identity);
+
+    // Monta o mapa de comandantes elegíveis (dedup por nome).
+    const porNome = new Map<string, ParsedComandante>();
+
+    // 1) principais (marcados como principal, sempre elegíveis)
+    for (const card of principaisCards) {
+      const cardNome = card.name!.trim();
+      porNome.set(cardNome.toLowerCase(), {
+        nome: cardNome,
+        colorIdentity: normalizeColorIdentity(card.color_identity),
+        isPartner: /\bPartner\b/i.test(card.oracle_text ?? ''),
+        isPrincipal: true,
+      });
+    }
+
+    // 2) lendárias do mainboard com color identity EXATAMENTE igual à do deck
+    for (const entry of Object.values(deck.mainboard ?? {})) {
+      const card = entry.card;
+      if (!card?.name || !card.type_line) continue;
+      if (!/Legendary Creature/i.test(card.type_line)) continue;
+      const ci = normalizeColorIdentity(card.color_identity);
+      if (ci !== ciDeck) continue;
+
+      const key = card.name.trim().toLowerCase();
+      if (porNome.has(key)) continue;
+      porNome.set(key, {
+        nome: card.name.trim(),
+        colorIdentity: ci,
+        isPartner: /\bPartner\b/i.test(card.oracle_text ?? ''),
+        isPrincipal: false,
+      });
+    }
+
+    const comandantes = [...porNome.values()];
+    // Deck de partner = 2+ comandantes com a mecânica Partner.
+    const isPartnerDeck = comandantes.filter((c) => c.isPartner).length >= 2;
+
+    return { nome, setNome, ano, isPartnerDeck, comandantes };
   }
 
   /** Remove o sufixo "(... Precon Decklist)" do nome do deck. */
@@ -414,6 +505,50 @@ export class PreconsService {
         await this.prisma.preconComandante.create({
           data: { preconId, comandante, ordem },
         });
+      }
+      ordem++;
+    }
+  }
+
+  /**
+   * Igual ao syncComandantes, mas preservando os metadados (colorIdentity,
+   * isPartner, isPrincipal) vindos do sync. Não remove comandante em uso.
+   */
+  private async syncComandantesDetalhado(
+    preconId: string,
+    existing: { id: string; comandante: string }[],
+    incoming: ParsedComandante[],
+  ): Promise<void> {
+    const existingByName = new Map(existing.map((c) => [c.comandante.toLowerCase(), c]));
+    const incomingSet = new Set(incoming.map((c) => c.nome.toLowerCase()));
+
+    for (const cmd of existing) {
+      if (!incomingSet.has(cmd.comandante.toLowerCase())) {
+        const [inscricoes, inscricoes2, mesaJogadores] = await Promise.all([
+          this.prisma.inscricao.count({ where: { preconComandanteId: cmd.id } }),
+          this.prisma.inscricao.count({ where: { preconComandante2Id: cmd.id } }),
+          this.prisma.mesaJogador.count({ where: { preconComandanteId: cmd.id } }),
+        ]);
+        // Em uso: mantém (não remove para não quebrar histórico/inscrições).
+        if (inscricoes > 0 || inscricoes2 > 0 || mesaJogadores > 0) continue;
+        await this.prisma.preconComandante.delete({ where: { id: cmd.id } });
+      }
+    }
+
+    let ordem = 1;
+    for (const c of incoming) {
+      const found = existingByName.get(c.nome.toLowerCase());
+      const data = {
+        comandante: c.nome,
+        ordem,
+        colorIdentity: c.colorIdentity,
+        isPartner: c.isPartner,
+        isPrincipal: c.isPrincipal,
+      };
+      if (found) {
+        await this.prisma.preconComandante.update({ where: { id: found.id }, data });
+      } else {
+        await this.prisma.preconComandante.create({ data: { preconId, ...data } });
       }
       ordem++;
     }

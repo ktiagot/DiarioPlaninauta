@@ -112,30 +112,35 @@
                     (ngModelChange)="updateDraft(p, 'ano', +$event)"
                   />
                 </td>
-                <td class="precon-table__cmds">
-                  @for (cmd of draftFor(p).comandantes; track $index) {
-                    <input
-                      type="text"
-                      class="admin-table__input"
-                      [ngModel]="cmd"
-                      (ngModelChange)="updateDraftComandante(p, $index, $event)"
-                    />
-                  }
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    class="precon-cmds__add"
-                    (click)="addDraftComandante(p)"
-                  >
-                    + Comandante
-                  </button>
+                <td>
+                  <div class="cmd-chips">
+                    @for (cmd of p.comandantes; track cmd.id) {
+                      <span
+                        class="cmd-chip"
+                        [class.cmd-chip--principal]="cmd.isPrincipal"
+                        [class.cmd-chip--partner]="cmd.isPartner"
+                      >
+                        {{ cmd.comandante }}
+                        @if (cmd.isPartner) {
+                          <span class="cmd-chip__tag">Partner</span>
+                        }
+                      </span>
+                    } @empty {
+                      <span class="admin-empty">—</span>
+                    }
+                  </div>
                 </td>
                 <td>
-                  @if (p.banido) {
-                    <span class="badge badge--inativo">Banido</span>
-                  } @else {
-                    <span class="badge badge--done">Ativo</span>
-                  }
+                  <div class="precon-status">
+                    @if (p.banido) {
+                      <span class="badge badge--inativo">Banido</span>
+                    } @else {
+                      <span class="badge badge--done">Ativo</span>
+                    }
+                    @if (p.isPartnerDeck) {
+                      <span class="badge badge--partner">Partner</span>
+                    }
+                  </div>
                 </td>
                 <td class="precon-table__actions">
                   <button
@@ -148,18 +153,12 @@
                   </button>
                   <button
                     mat-stroked-button
+                    class="btn-banir"
+                    [class.btn-banir--ativo]="p.banido"
                     [disabled]="savingId() === p.id"
                     (click)="toggleBanido(p)"
                   >
                     {{ p.banido ? 'Desbanir' : 'Banir' }}
-                  </button>
-                  <button
-                    mat-stroked-button
-                    color="warn"
-                    [disabled]="deletingId() === p.id"
-                    (click)="excluir(p)"
-                  >
-                    Excluir
                   </button>
                 </td>
               </tr>

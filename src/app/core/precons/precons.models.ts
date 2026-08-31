@@ -9,10 +9,14 @@ export interface PreconComandante {
   id: string;
   comandante: string;
   ordem: number;
+  colorIdentity: string;
+  isPartner: boolean;
+  isPrincipal: boolean;
 }
 
 export interface PreconAdmin extends PreconListItem {
   banido: boolean;
+  isPartnerDeck: boolean;
   comandantes: PreconComandante[];
 }
 

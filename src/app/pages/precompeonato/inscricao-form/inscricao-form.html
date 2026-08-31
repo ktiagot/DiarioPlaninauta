@@ -135,6 +135,26 @@
                 <mat-error>Selecione o comandante</mat-error>
               }
             </mat-form-field>
+
+            @if (podePartner() && form.controls.preconComandante2Id.enabled) {
+              <label for="preconComandante2Id">
+                Segundo comandante (Partner) — opcional
+              </label>
+              <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                <mat-select
+                  id="preconComandante2Id"
+                  formControlName="preconComandante2Id"
+                  placeholder="Nenhum (jogar com 1 comandante)"
+                  panelClass="inscricao-select-panel"
+                >
+                  <mat-option [value]="''">Nenhum (jogar com 1 comandante)</mat-option>
+                  @for (cmd of comandantesParceiroDisponiveis(); track cmd.id) {
+                    <mat-option [value]="cmd.id">{{ cmd.comandante }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Este deck permite dois comandantes com a mecânica Partner.</mat-hint>
+              </mat-form-field>
+            }
           </div>
         </div>
 

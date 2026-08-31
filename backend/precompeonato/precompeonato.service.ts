@@ -131,7 +131,11 @@ export class PrecompeonatoService {
       throw new ConflictException('Você já está inscrito neste precompeonato.');
     }
 
-    await this.preconsService.validateForInscricao(dto.preconId, dto.preconComandanteId);
+    await this.preconsService.validateForInscricao(
+      dto.preconId,
+      dto.preconComandanteId,
+      dto.preconComandante2Id,
+    );
     const aceiteTermosEm = new Date();
 
     const inscricao = await this.prisma.$transaction(async (tx) => {
@@ -143,6 +147,7 @@ export class PrecompeonatoService {
           discordNick: dto.discordNick.trim(),
           preconId: dto.preconId,
           preconComandanteId: dto.preconComandanteId,
+          preconComandante2Id: dto.preconComandante2Id ?? null,
           aceiteTermos: true,
           aceiteTermosEm,
           aceitePrivacidade: true,

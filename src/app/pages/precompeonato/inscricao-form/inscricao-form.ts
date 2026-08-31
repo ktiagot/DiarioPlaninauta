@@ -84,10 +84,24 @@ export class InscricaoFormComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     preconId: ['', [Validators.required]],
     preconComandanteId: [{ value: '', disabled: true }, [Validators.required]],
+    preconComandante2Id: [{ value: '', disabled: true }],
     aceiteTermos: [false, [requiredTrue]],
     aceitePrivacidade: [false, [requiredTrue]],
     entrouDiscord: [false, [requiredTrue]],
   });
+
+  /** Deck de partner = 2+ comandantes elegíveis com a mecânica Partner. */
+  protected readonly podePartner = computed(
+    () => this.comandantes().filter((c) => c.isPartner).length >= 2,
+  );
+
+  /** Comandantes elegíveis como 2º (partner), exceto o já escolhido como 1º. */
+  protected readonly comandantesParceiroDisponiveis = computed(() => {
+    const primeiroId = this.comandantePrincipalId();
+    return this.comandantes().filter((c) => c.isPartner && c.id !== primeiroId);
+  });
+
+  protected readonly comandantePrincipalId = signal('');
 
   private readonly formValid = toSignal(
     this.form.statusChanges.pipe(
@@ -139,7 +153,11 @@ export class InscricaoFormComponent implements OnInit {
         this.preconSearch.set('');
         this.comandanteSearch.set('');
         const comandanteCtrl = this.form.controls.preconComandanteId;
+        const comandante2Ctrl = this.form.controls.preconComandante2Id;
         comandanteCtrl.reset('');
+        comandante2Ctrl.reset('');
+        comandante2Ctrl.disable({ emitEvent: false });
+        this.comandantePrincipalId.set('');
         this.comandantes.set([]);
 
         if (preconId) {
@@ -158,8 +176,19 @@ export class InscricaoFormComponent implements OnInit {
 
     this.form.controls.preconComandanteId.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
+      .subscribe((id) => {
         this.comandanteSearch.set('');
+        this.comandantePrincipalId.set(id);
+
+        // Habilita o 2º comandante só quando o deck é partner e há um 1º escolhido.
+        const c2 = this.form.controls.preconComandante2Id;
+        const primeiro = this.comandantes().find((c) => c.id === id);
+        if (id && this.podePartner() && primeiro?.isPartner) {
+          c2.enable({ emitEvent: false });
+        } else {
+          c2.reset('');
+          c2.disable({ emitEvent: false });
+        }
       });
   }
 
@@ -209,6 +238,7 @@ export class InscricaoFormComponent implements OnInit {
         email: raw.email.trim(),
         preconId: raw.preconId,
         preconComandanteId: raw.preconComandanteId,
+        ...(raw.preconComandante2Id ? { preconComandante2Id: raw.preconComandante2Id } : {}),
         aceiteTermos: raw.aceiteTermos,
         aceitePrivacidade: raw.aceitePrivacidade,
         entrouDiscord: raw.entrouDiscord,

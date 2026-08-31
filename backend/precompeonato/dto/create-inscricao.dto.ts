@@ -2,11 +2,12 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
@@ -30,6 +31,14 @@ export class CreateInscricaoDto {
   @ApiProperty({ example: 'c0000001-0000-4000-8000-000000000001' })
   @IsUUID()
   preconComandanteId: string;
+
+  @ApiPropertyOptional({
+    example: 'c0000001-0000-4000-8000-000000000002',
+    description: 'Segundo comandante (apenas para decks de partner)',
+  })
+  @IsOptional()
+  @IsUUID()
+  preconComandante2Id?: string;
 
   @ApiProperty({
     example: true,

@@ -36,7 +36,6 @@ export class AdminPreconsComponent implements OnInit {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly savingId = signal<string | null>(null);
-  readonly deletingId = signal<string | null>(null);
   readonly syncing = signal(false);
 
   readonly formNome = signal('');
@@ -127,33 +126,6 @@ export class AdminPreconsComponent implements OnInit {
     });
   }
 
-  updateDraftComandante(p: PreconAdmin, index: number, value: string): void {
-    this.editDrafts.update((drafts) => {
-      const current = { ...(drafts[p.id] ?? this.draftFor(p)) };
-      const cmds = [...current.comandantes];
-      cmds[index] = value;
-      return { ...drafts, [p.id]: { ...current, comandantes: cmds } };
-    });
-  }
-
-  addDraftComandante(p: PreconAdmin): void {
-    this.editDrafts.update((drafts) => {
-      const current = drafts[p.id] ?? this.draftFor(p);
-      return {
-        ...drafts,
-        [p.id]: { ...current, comandantes: [...current.comandantes, ''] },
-      };
-    });
-  }
-
-  removeDraftComandante(p: PreconAdmin, index: number): void {
-    this.editDrafts.update((drafts) => {
-      const current = drafts[p.id] ?? this.draftFor(p);
-      const cmds = current.comandantes.filter((_, i) => i !== index);
-      return { ...drafts, [p.id]: { ...current, comandantes: cmds.length ? cmds : [''] } };
-    });
-  }
-
   addFormComandante(): void {
     this.formComandantes.update((list) => [...list, '']);
   }
@@ -208,19 +180,12 @@ export class AdminPreconsComponent implements OnInit {
     if (this.savingId() === p.id) return;
 
     const draft = this.draftFor(p);
-    const comandantes = draft.comandantes.map((c) => c.trim()).filter(Boolean);
-    if (!comandantes.length) {
-      this.snackBar.open('Informe ao menos um comandante.', 'Fechar', { duration: 4000 });
-      return;
-    }
-
     this.savingId.set(p.id);
     this.preconsService
       .update(p.id, {
         nome: draft.nome.trim(),
         setNome: draft.setNome.trim(),
         ano: draft.ano,
-        comandantes,
       })
       .pipe(finalize(() => this.savingId.set(null)))
       .subscribe({
@@ -249,30 +214,6 @@ export class AdminPreconsComponent implements OnInit {
         },
         error: (err) => {
           this.snackBar.open(err?.error?.message || 'Erro.', 'Fechar', { duration: 5000 });
-        },
-      });
-  }
-
-  excluir(p: PreconAdmin): void {
-    if (
-      !window.confirm(
-        `Excluir "${p.nome}"? Só é possível se não houver inscrições ou mesas vinculadas.`,
-      )
-    ) {
-      return;
-    }
-
-    this.deletingId.set(p.id);
-    this.preconsService
-      .remove(p.id)
-      .pipe(finalize(() => this.deletingId.set(null)))
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Precon excluído.', 'Fechar', { duration: 3000 });
-          this.carregar();
-        },
-        error: (err) => {
-          this.snackBar.open(err?.error?.message || 'Erro ao excluir.', 'Fechar', { duration: 5000 });
         },
       });
   }

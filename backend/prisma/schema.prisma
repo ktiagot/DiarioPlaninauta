@@ -97,11 +97,12 @@ enum CampeonatoStatus {
 }
 
 model Precon {
-  id        String   @id @default(uuid())
-  nome      String
-  setNome   String
-  ano       Int
-  banido    Boolean  @default(false)
+  id            String  @id @default(uuid())
+  nome          String
+  setNome       String
+  ano           Int
+  banido        Boolean @default(false)
+  isPartnerDeck Boolean @default(false)
 
   comandantes   PreconComandante[]
   inscricoes    Inscricao[]
@@ -114,14 +115,18 @@ model Precon {
 }
 
 model PreconComandante {
-  id         String @id @default(uuid())
-  preconId   String
-  comandante String
-  ordem      Int    @default(1)
+  id            String  @id @default(uuid())
+  preconId      String
+  comandante    String
+  ordem         Int     @default(1)
+  colorIdentity String  @default("") // ex: "WUBRG" (ordenado); "" = incolor
+  isPartner     Boolean @default(false)
+  isPrincipal   Boolean @default(false)
 
-  precon        Precon        @relation(fields: [preconId], references: [id], onDelete: Cascade)
-  inscricoes    Inscricao[]
-  mesaJogadores MesaJogador[]
+  precon             Precon        @relation(fields: [preconId], references: [id], onDelete: Cascade)
+  inscricoes         Inscricao[]   @relation("InscricaoComandante")
+  inscricoesParceiro Inscricao[]   @relation("InscricaoComandante2")
+  mesaJogadores      MesaJogador[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -159,6 +164,7 @@ model Inscricao {
   deckUrl             String?
   preconId            String
   preconComandanteId  String
+  preconComandante2Id String?
   aceiteTermos        Boolean
   aceiteTermosEm    DateTime
   aceitePrivacidade Boolean
@@ -169,10 +175,11 @@ model Inscricao {
 
   campeonato       Campeonato       @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
-  precon           Precon           @relation(fields: [preconId], references: [id], onDelete: Restrict)
-  preconComandante PreconComandante @relation(fields: [preconComandanteId], references: [id], onDelete: Restrict)
-  mesas            MesaTorneioJogador[]
-  checkIns         CheckInRodada[]
+  precon            Precon            @relation(fields: [preconId], references: [id], onDelete: Restrict)
+  preconComandante  PreconComandante  @relation("InscricaoComandante", fields: [preconComandanteId], references: [id], onDelete: Restrict)
+  preconComandante2 PreconComandante? @relation("InscricaoComandante2", fields: [preconComandante2Id], references: [id], onDelete: Restrict)
+  mesas             MesaTorneioJogador[]
+  checkIns          CheckInRodada[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +190,7 @@ model Inscricao {
   @@index([email])
   @@index([preconId])
   @@index([preconComandanteId])
+  @@index([preconComandante2Id])
   @@map("inscricoes")
 }
 

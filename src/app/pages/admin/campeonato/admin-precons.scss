@@ -120,3 +120,71 @@
   gap: 0.4rem;
   min-width: 6rem;
 }
+
+// --- Comandantes como chips (somente leitura, vindos do sync) ---
+.cmd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 14rem;
+  max-width: 22rem;
+}
+
+.cmd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  &--principal {
+    border-color: rgba(245, 130, 32, 0.6);
+    color: #f58220;
+  }
+
+  &--partner {
+    background: rgba(120, 144, 255, 0.14);
+    border-color: rgba(120, 144, 255, 0.4);
+  }
+
+  &__tag {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.05rem 0.35rem;
+    border-radius: 6px;
+    background: rgba(120, 144, 255, 0.3);
+    color: #cdd6ff;
+  }
+}
+
+.precon-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+}
+
+.badge--partner {
+  background: rgba(120, 144, 255, 0.18);
+  color: #aab6ff;
+}
+
+// Botão banir — vermelho pastel
+.btn-banir {
+  --mdc-outlined-button-label-text-color: #e88;
+  background: rgba(229, 115, 115, 0.14) !important;
+  color: #ef9a9a !important;
+  border-color: rgba(229, 115, 115, 0.4) !important;
+
+  &--ativo {
+    // quando já está banido, o botão vira "Desbanir" (tom neutro/verde)
+    background: rgba(102, 187, 106, 0.14) !important;
+    color: #a5d6a7 !important;
+    border-color: rgba(102, 187, 106, 0.4) !important;
+  }
+}

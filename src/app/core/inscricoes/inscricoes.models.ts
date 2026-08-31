@@ -38,6 +38,7 @@ export interface CreateInscricaoPayload {
   email: string;
   preconId: string;
   preconComandanteId: string;
+  preconComandante2Id?: string;
   aceiteTermos: boolean;
   aceitePrivacidade: boolean;
   entrouDiscord: boolean;
