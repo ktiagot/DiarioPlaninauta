@@ -211,6 +211,11 @@
   gap: 0.25rem;
 }
 
+.descricao-textarea {
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
 .mesa-edit-actions {
   display: flex;
   justify-content: flex-end;

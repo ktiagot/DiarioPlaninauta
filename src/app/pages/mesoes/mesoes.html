@@ -46,7 +46,8 @@
         <mat-form-field appearance="outline" class="w-full">
           <textarea
             matInput
-            rows="3"
+            rows="5"
+            class="descricao-textarea"
             [ngModel]="novaMesaDescricao()"
             (ngModelChange)="novaMesaDescricao.set($event)"
             placeholder="Descreva data/hora da mesa e qualquer outra informação relevante..."
@@ -182,7 +183,8 @@
                   <mat-form-field appearance="outline" class="w-full">
                     <textarea
                       matInput
-                      rows="3"
+                      rows="5"
+                      class="descricao-textarea"
                       [ngModel]="novaDescricao()"
                       (ngModelChange)="novaDescricao.set($event)"
                       placeholder="Descreva data/hora da mesa e qualquer outra informação relevante..."
