@@ -13,6 +13,7 @@ export interface Mesa {
   id: string;
   nome: string;
   descricao: string | null;
+  dataHora: string;
   linkPartida: string | null;
   finalizada: boolean;
   criadorUserId: string | null;
@@ -22,8 +23,7 @@ export interface Mesa {
 
 export interface CreateMesaPayload {
   nome: string;
+  dataHora: string;
   descricao?: string;
   linkPartida?: string;
-  preconId?: string;
-  preconComandanteId?: string;
 }

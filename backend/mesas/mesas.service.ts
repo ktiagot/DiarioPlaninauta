@@ -58,6 +58,7 @@ export class MesasService {
       data: {
         nome: dto.nome,
         descricao: dto.descricao ?? null,
+        dataHora: new Date(dto.dataHora),
         linkPartida: dto.linkPartida ?? null,
         criadorUserId: userId,
         jogadores: {
@@ -78,7 +79,19 @@ export class MesasService {
     userId: string,
     dto: UpdateMesaLinkDto,
   ): Promise<MesaResponseDto> {
-    return this.update(mesaId, userId, { linkPartida: dto.linkPartida });
+    const mesa = await this.findMesaDoDono(mesaId, userId);
+
+    if (mesa.finalizada) {
+      throw new ConflictException('Esta mesa já foi finalizada.');
+    }
+
+    const atualizada = await this.prisma.mesa.update({
+      where: { id: mesaId },
+      data: { linkPartida: dto.linkPartida },
+      include: mesaInclude,
+    });
+
+    return toMesaResponse(atualizada);
   }
 
   async update(
@@ -95,6 +108,7 @@ export class MesasService {
     const atualizada = await this.prisma.mesa.update({
       where: { id: mesaId },
       data: {
+        dataHora: new Date(dto.dataHora),
         ...(dto.linkPartida !== undefined ? { linkPartida: dto.linkPartida } : {}),
         ...(dto.descricao !== undefined ? { descricao: dto.descricao } : {}),
       },
@@ -113,11 +127,34 @@ export class MesasService {
 
     const atualizada = await this.prisma.mesa.update({
       where: { id: mesaId },
-      data: { finalizada: true },
+      data: { finalizada: true, finalizadaEm: new Date() },
       include: mesaInclude,
     });
 
     return toMesaResponse(atualizada);
+  }
+
+  /**
+   * Rotina de limpeza. Deleta:
+   * - mesas finalizadas há mais de 1h (finalizadaEm < agora - 1h)
+   * - mesas cuja data/hora marcada já passou de 24h (dataHora < agora - 24h)
+   * Comparações em instante absoluto (UTC), o que respeita o fuso do horário salvo.
+   */
+  async limparMesasExpiradas(): Promise<number> {
+    const agora = Date.now();
+    const umaHoraAtras = new Date(agora - 60 * 60 * 1000);
+    const vinteQuatroHorasAtras = new Date(agora - 24 * 60 * 60 * 1000);
+
+    const { count } = await this.prisma.mesa.deleteMany({
+      where: {
+        OR: [
+          { finalizada: true, finalizadaEm: { lt: umaHoraAtras } },
+          { dataHora: { lt: vinteQuatroHorasAtras } },
+        ],
+      },
+    });
+
+    return count;
   }
 
   private async findMesaDoDono(mesaId: string, userId: string) {
@@ -166,6 +203,7 @@ export class MesasService {
         data: {
           linkPartida: dto.linkPartida ?? mesa.linkPartida,
           finalizada: true,
+          finalizadaEm: new Date(),
         },
       });
 

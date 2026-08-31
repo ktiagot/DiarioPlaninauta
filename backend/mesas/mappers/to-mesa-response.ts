@@ -21,6 +21,7 @@ export function toMesaResponse(mesa: MesaComRelacoes): MesaResponseDto {
     id: mesa.id,
     nome: mesa.nome,
     descricao: mesa.descricao,
+    dataHora: mesa.dataHora.toISOString(),
     quantidadeJogadores: mesa.jogadores.length,
     linkPartida: mesa.linkPartida,
     finalizada: mesa.finalizada,

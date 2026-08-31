@@ -22,7 +22,7 @@ export class MesasService {
 
   editar(
     mesaId: string,
-    dados: { linkPartida?: string; descricao?: string },
+    dados: { dataHora: string; linkPartida?: string; descricao?: string },
   ): Observable<Mesa> {
     return this.http.put<Mesa>(`${API_URL}/mesas/${mesaId}`, dados);
   }

@@ -44,6 +44,9 @@ export class MesaResponseDto {
   @ApiPropertyOptional({ example: 'Sexta 20h, cEDH', nullable: true })
   descricao: string | null;
 
+  @ApiProperty({ example: '2026-08-29T20:00:00.000Z' })
+  dataHora: string;
+
   @ApiProperty({ example: 4 })
   quantidadeJogadores: number;
 

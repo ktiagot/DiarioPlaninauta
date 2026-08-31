@@ -264,11 +264,13 @@ model MesaTorneioJogador {
 }
 
 model Mesa {
-  id            String  @id @default(uuid())
+  id            String   @id @default(uuid())
   nome          String
   descricao     String?
+  dataHora      DateTime
   linkPartida   String?
-  finalizada    Boolean @default(false)
+  finalizada    Boolean  @default(false)
+  finalizadaEm  DateTime?
   criadorUserId String?
 
   jogadores    MesaJogador[]

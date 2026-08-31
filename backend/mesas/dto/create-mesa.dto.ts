@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUUID, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMesaDto {
@@ -6,6 +6,11 @@ export class CreateMesaDto {
   @IsString()
   @IsNotEmpty()
   nome: string;
+
+  @ApiProperty({ example: '2026-08-29T20:00:00.000Z' })
+  @IsDateString()
+  @IsNotEmpty()
+  dataHora: string;
 
   @ApiPropertyOptional({ example: 'Sexta 20h, formato cEDH, chamar no Discord.' })
   @IsOptional()
