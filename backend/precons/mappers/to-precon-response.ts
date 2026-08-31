@@ -15,6 +15,7 @@ export function toPreconResponse(precon: PreconWithComandantes): PreconResponseD
     ano: precon.ano,
     banido: precon.banido,
     isPartnerDeck: precon.isPartnerDeck,
+    deckUrl: precon.deckUrl,
     comandantes: precon.comandantes
       .sort((a, b) => a.ordem - b.ordem)
       .map(toComandanteResponse),

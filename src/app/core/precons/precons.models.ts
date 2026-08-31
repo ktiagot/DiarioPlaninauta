@@ -17,6 +17,7 @@ export interface PreconComandante {
 export interface PreconAdmin extends PreconListItem {
   banido: boolean;
   isPartnerDeck: boolean;
+  deckUrl: string | null;
   comandantes: PreconComandante[];
 }
 

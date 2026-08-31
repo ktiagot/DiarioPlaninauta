@@ -19,6 +19,7 @@ interface ParsedPrecon {
   setNome: string;
   ano: number;
   isPartnerDeck: boolean;
+  deckUrl: string | null;
   comandantes: ParsedComandante[];
 }
 
@@ -276,7 +277,7 @@ export class PreconsService {
       if (existente) {
         await this.prisma.precon.update({
           where: { id: existente.id },
-          data: { ano: parsed.ano, isPartnerDeck: parsed.isPartnerDeck },
+          data: { ano: parsed.ano, isPartnerDeck: parsed.isPartnerDeck, deckUrl: parsed.deckUrl },
         });
         await this.syncComandantesDetalhado(existente.id, existente.comandantes, parsed.comandantes);
         atualizados++;
@@ -287,6 +288,7 @@ export class PreconsService {
             setNome: parsed.setNome,
             ano: parsed.ano,
             isPartnerDeck: parsed.isPartnerDeck,
+            deckUrl: parsed.deckUrl,
             comandantes: {
               create: parsed.comandantes.map((c, index) => ({
                 comandante: c.nome,
@@ -372,6 +374,7 @@ export class PreconsService {
     };
     const deck = (await res.json()) as {
       name?: string;
+      publicUrl?: string;
       commanders?: Record<string, { card?: MoxCard }>;
       main?: MoxCard;
       mainboard?: Record<string, { card?: MoxCard }>;
@@ -379,6 +382,8 @@ export class PreconsService {
 
     const nome = this.limparNomePrecon(deck.name ?? '');
     if (!nome) return null;
+
+    const deckUrl = deck.publicUrl?.trim() || null;
 
     // Comandante(s) principal(is) — do bloco commanders (fallback: main).
     const principaisCards = Object.values(deck.commanders ?? {})
@@ -432,7 +437,7 @@ export class PreconsService {
     // Deck de partner = 2+ comandantes com a mecânica Partner.
     const isPartnerDeck = comandantes.filter((c) => c.isPartner).length >= 2;
 
-    return { nome, setNome, ano, isPartnerDeck, comandantes };
+    return { nome, setNome, ano, isPartnerDeck, deckUrl, comandantes };
   }
 
   /** Remove o sufixo "(... Precon Decklist)" do nome do deck. */

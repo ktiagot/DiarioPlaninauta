@@ -103,6 +103,7 @@ model Precon {
   ano           Int
   banido        Boolean @default(false)
   isPartnerDeck Boolean @default(false)
+  deckUrl       String?
 
   comandantes   PreconComandante[]
   inscricoes    Inscricao[]

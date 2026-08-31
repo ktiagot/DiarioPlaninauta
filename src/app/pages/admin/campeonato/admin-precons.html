@@ -105,6 +105,17 @@
                     [ngModel]="draftFor(p).nome"
                     (ngModelChange)="updateDraft(p, 'nome', $event)"
                   />
+                  @if (p.deckUrl) {
+                    <a
+                      class="deck-link"
+                      [href]="p.deckUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <mat-icon>open_in_new</mat-icon>
+                      Ver lista do deck
+                    </a>
+                  }
                 </td>
                 <td>
                   <input

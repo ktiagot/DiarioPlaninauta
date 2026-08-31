@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PreconComandanteResponseDto {
   @ApiProperty()
@@ -38,6 +38,9 @@ export class PreconResponseDto {
 
   @ApiProperty({ example: false, description: 'Deck de partners (permite 2 comandantes)' })
   isPartnerDeck: boolean;
+
+  @ApiPropertyOptional({ example: 'https://moxfield.com/decks/...', nullable: true })
+  deckUrl: string | null;
 
   @ApiProperty({ type: [PreconComandanteResponseDto] })
   comandantes: PreconComandanteResponseDto[];
