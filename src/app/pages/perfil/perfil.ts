@@ -30,6 +30,7 @@ interface MinhaMesaView {
   titulo: string;
   finalizada: boolean;
   minhaPosicaoFinal: number | null;
+  linkPartida: string | null;
   jogadores: { nick: string; deckNome: string; posicaoFinal: number | null }[];
 }
 import { PROFILE_PROMOS } from './perfil.constants';
@@ -83,27 +84,33 @@ export class PerfilComponent implements OnInit {
 
   /** Lista unificada: mesas de torneio + casuais (mesma seção, com tipo). */
   protected readonly mesasView = computed<MinhaMesaView[]>(() => {
-    const torneio: MinhaMesaView[] = this.minhasMesas().map((m) => ({
-      id: m.id,
-      tipo: 'torneio',
-      titulo: `Rodada ${m.rodadaNumero} — Mesa ${m.numeroMesa}`,
-      finalizada: m.finalizada,
-      minhaPosicaoFinal: m.minhaPosicaoFinal,
-      jogadores: m.jogadores,
-    }));
+    const torneio: MinhaMesaView[] = this.minhasMesas()
+      .filter((m) => !m.finalizada)
+      .map((m) => ({
+        id: m.id,
+        tipo: 'torneio',
+        titulo: `Rodada ${m.rodadaNumero} — Mesa ${m.numeroMesa}`,
+        finalizada: m.finalizada,
+        minhaPosicaoFinal: m.minhaPosicaoFinal,
+        linkPartida: null,
+        jogadores: m.jogadores,
+      }));
 
-    const casuais: MinhaMesaView[] = this.minhasMesasCasuais().map((m) => ({
-      id: m.id,
-      tipo: 'casual',
-      titulo: `${m.nome} — ${this.formatarDataHora(m.dataHora)}`,
-      finalizada: m.finalizada,
-      minhaPosicaoFinal: null,
-      jogadores: m.jogadores.map((j) => ({
-        nick: j.nick,
-        deckNome: j.deckNome ?? '',
-        posicaoFinal: j.posicaoFinal,
-      })),
-    }));
+    const casuais: MinhaMesaView[] = this.minhasMesasCasuais()
+      .filter((m) => !m.finalizada)
+      .map((m) => ({
+        id: m.id,
+        tipo: 'casual',
+        titulo: `${m.nome} — ${this.formatarDataHora(m.dataHora)}`,
+        finalizada: m.finalizada,
+        minhaPosicaoFinal: null,
+        linkPartida: m.linkPartida,
+        jogadores: m.jogadores.map((j) => ({
+          nick: j.nick,
+          deckNome: j.deckNome ?? '',
+          posicaoFinal: j.posicaoFinal,
+        })),
+      }));
 
     return [...torneio, ...casuais];
   });

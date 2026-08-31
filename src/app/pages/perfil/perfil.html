@@ -202,13 +202,6 @@
                     {{ mesa.tipo === 'casual' ? 'Casual' : 'Torneio' }}
                   </span>
                 </div>
-                <div class="mb-2 flex items-center justify-end">
-                  @if (mesa.finalizada) {
-                    <span class="perfil-mesa-badge perfil-mesa-badge--finalizada">Finalizada</span>
-                  } @else {
-                    <span class="perfil-mesa-badge perfil-mesa-badge--andamento">Em andamento</span>
-                  }
-                </div>
                 <ul class="perfil-mesa-jogadores">
                   @for (jogador of mesa.jogadores; track jogador.nick) {
                     <li [class.perfil-mesa-jogador--destaque]="jogador.posicaoFinal === 1">
@@ -226,6 +219,17 @@
                   <p class="mt-2 text-xs font-semibold" [class.text-[var(--sys-color-primary)]]="mesa.minhaPosicaoFinal === 1">
                     Minha posição: {{ mesa.minhaPosicaoFinal }}º lugar
                   </p>
+                }
+                @if (mesa.linkPartida) {
+                  <a
+                    [href]="mesa.linkPartida"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="perfil-mesa-link"
+                  >
+                    <mat-icon>open_in_new</mat-icon>
+                    Abrir Partida
+                  </a>
                 }
               </mat-card-content>
             </mat-card>

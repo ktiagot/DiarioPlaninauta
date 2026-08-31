@@ -56,21 +56,36 @@
     }
 
     // Botões stroked (Meus favoritos, Ver contato): borda/label laranja em vez de branco.
-    .filter-favoritos.mat-mdc-outlined-button,
-    .contato-btn.mat-mdc-outlined-button {
+    // Cobre tanto a var do MDC quanto o outline desenhado no ripple, com border no host.
+    .filter-favoritos,
+    .contato-btn {
       --mdc-outlined-button-label-text-color: #f58220;
       --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.45);
-      color: #f58220;
-    }
+      color: #f58220 !important;
+      border-color: rgba(245, 130, 32, 0.45) !important;
+      padding: 0 1rem !important;
 
-    .filter-favoritos.mat-mdc-outlined-button .mdc-button__label {
-      color: #f58220;
+      .mdc-button__ripple {
+        border-color: rgba(245, 130, 32, 0.45) !important;
+      }
+
+      .mdc-button__label {
+        color: #f58220;
+      }
+
+      .mat-icon {
+        color: #f58220;
+      }
     }
 
     // Estado ativo do filtro de favoritos.
-    .filter-favoritos--ativo.mat-mdc-outlined-button {
+    .filter-favoritos--ativo {
       background: rgba(245, 130, 32, 0.18);
-      --mdc-outlined-button-outline-color: #f58220;
+      border-color: #f58220 !important;
+
+      .mdc-button__ripple {
+        border-color: #f58220 !important;
+      }
     }
   }
 }
@@ -259,14 +274,12 @@
 .contato-btn {
   margin-top: 0.5rem;
   font-size: 0.8rem;
-  --mdc-outlined-button-label-text-color: #f58220;
-  --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.4);
+  gap: 0.4rem;
 
   mat-icon {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    margin-right: 0.3rem;
   }
 }
 
@@ -274,10 +287,7 @@
   height: 56px; // casa com a altura do input outline dos selects
   display: inline-flex;
   align-items: center;
-
-  mat-icon {
-    margin-right: 0.25rem;
-  }
+  gap: 0.4rem;
 
   @media (max-width: 767px) {
     width: 100%;

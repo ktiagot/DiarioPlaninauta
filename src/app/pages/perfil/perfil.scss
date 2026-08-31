@@ -325,3 +325,28 @@
   background: rgba(245, 130, 32, 0.15);
   border: 1px solid rgba(245, 130, 32, 0.35);
 }
+
+.perfil-mesa-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #f58220;
+  background: rgba(245, 130, 32, 0.15);
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(245, 130, 32, 0.25);
+  }
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
