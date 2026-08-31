@@ -6,6 +6,7 @@ import {
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { MesasService } from './mesas.service';
 
 /* ------------------------------------------------------------------ */
@@ -47,11 +48,14 @@ describe('MesasService', () => {
       deleteMany: jest.Mock;
       findUniqueOrThrow: jest.Mock;
     };
-    mesaJogador: { update: jest.Mock };
+    mesaJogador: { update: jest.Mock; create: jest.Mock; delete: jest.Mock };
     eliminacao: { createMany: jest.Mock };
+    user: { findUnique: jest.Mock };
+    notificacao: { createMany: jest.Mock };
     $transaction: jest.Mock;
   };
   let precons: { validateOptionalForMesa: jest.Mock };
+  const notificacoes = { criar: jest.fn() };
 
   beforeEach(async () => {
     prisma = {
@@ -63,8 +67,10 @@ describe('MesasService', () => {
         deleteMany: jest.fn(),
         findUniqueOrThrow: jest.fn(),
       },
-      mesaJogador: { update: jest.fn() },
+      mesaJogador: { update: jest.fn(), create: jest.fn(), delete: jest.fn() },
       eliminacao: { createMany: jest.fn() },
+      user: { findUnique: jest.fn().mockResolvedValue({ nick: 'fulano' }) },
+      notificacao: { createMany: jest.fn() },
       $transaction: jest.fn(),
     };
 
@@ -80,6 +86,7 @@ describe('MesasService', () => {
         MesasService,
         { provide: PrismaService, useValue: prisma },
         { provide: PreconsService, useValue: precons },
+        { provide: NotificacoesService, useValue: notificacoes },
       ],
     }).compile();
 
@@ -234,6 +241,90 @@ describe('MesasService', () => {
       await expect(service.fechar(MESA_ID, OTHER_USER)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+  });
+
+  /* ============================================================== */
+  /*  entrar                                                        */
+  /* ============================================================== */
+  describe('entrar', () => {
+    it('cria jogador e notifica dono + participantes (menos quem entrou)', async () => {
+      const mesa = fakeMesa({
+        criadorUserId: USER_ID,
+        jogadores: [{ userId: USER_ID }],
+      });
+      prisma.mesa.findUnique.mockResolvedValue(mesa);
+      prisma.user.findUnique.mockResolvedValue({ nick: 'novato' });
+      prisma.mesa.findUniqueOrThrow.mockResolvedValue(
+        fakeMesa({ jogadores: [{ userId: USER_ID, user: { id: USER_ID, nome: 'A', sobrenome: 'B', nick: 'a' } }, { userId: OTHER_USER, user: { id: OTHER_USER, nome: 'N', sobrenome: 'O', nick: 'novato' } }] }),
+      );
+
+      await service.entrar(MESA_ID, OTHER_USER);
+
+      expect(prisma.mesaJogador.create).toHaveBeenCalledWith({
+        data: { mesaId: MESA_ID, userId: OTHER_USER },
+      });
+      expect(prisma.notificacao.createMany).toHaveBeenCalledTimes(1);
+      const arg = prisma.notificacao.createMany.mock.calls[0][0];
+      expect(arg.data).toEqual([
+        expect.objectContaining({ userId: USER_ID, tipo: 'mesa_entrou' }),
+      ]);
+      expect(arg.data[0].mensagem).toContain('novato');
+    });
+
+    it('rejeita entrar em mesa cheia', async () => {
+      const cheia = fakeMesa({
+        jogadores: [
+          { userId: 'a' },
+          { userId: 'b' },
+          { userId: 'c' },
+          { userId: 'd' },
+        ],
+      });
+      prisma.mesa.findUnique.mockResolvedValue(cheia);
+
+      await expect(service.entrar(MESA_ID, OTHER_USER)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    });
+
+    it('rejeita entrar se já participa', async () => {
+      prisma.mesa.findUnique.mockResolvedValue(
+        fakeMesa({ jogadores: [{ userId: OTHER_USER }] }),
+      );
+
+      await expect(service.entrar(MESA_ID, OTHER_USER)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    });
+  });
+
+  /* ============================================================== */
+  /*  notificarMesasDeHoje                                          */
+  /* ============================================================== */
+  describe('notificarMesasDeHoje', () => {
+    it('notifica jogadores de mesas de hoje', async () => {
+      const hoje = new Date();
+      prisma.mesa.findMany.mockResolvedValue([
+        {
+          ...fakeMesa({ dataHora: hoje }),
+          jogadores: [{ userId: USER_ID }, { userId: OTHER_USER }],
+        },
+      ]);
+      prisma.notificacao.createMany.mockResolvedValue({ count: 2 });
+
+      const count = await service.notificarMesasDeHoje();
+
+      expect(count).toBe(2);
+      const arg = prisma.notificacao.createMany.mock.calls[0][0];
+      expect(arg.data).toHaveLength(2);
+      expect(arg.data[0]).toMatchObject({ tipo: 'dia_do_evento' });
+    });
+
+    it('retorna 0 quando não há mesas hoje', async () => {
+      prisma.mesa.findMany.mockResolvedValue([]);
+      const count = await service.notificarMesasDeHoje();
+      expect(count).toBe(0);
     });
   });
 

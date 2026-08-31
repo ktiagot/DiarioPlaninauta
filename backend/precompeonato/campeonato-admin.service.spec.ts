@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { BannerStorage } from './banner-storage';
 import { CampeonatoAdminService } from './campeonato-admin.service';
 
@@ -21,6 +22,7 @@ function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
 }
 
 const bannerStorageMock = { save: jest.fn() };
+const notificacoesMock = { criar: jest.fn() };
 
 function createTestingModule(prisma: object) {
   return Test.createTestingModule({
@@ -28,6 +30,7 @@ function createTestingModule(prisma: object) {
       CampeonatoAdminService,
       { provide: PrismaService, useValue: prisma },
       { provide: BannerStorage, useValue: bannerStorageMock },
+      { provide: NotificacoesService, useValue: notificacoesMock },
     ],
   }).compile();
 }
@@ -42,6 +45,8 @@ describe('CampeonatoAdminService create/list', () => {
       findUnique: jest.Mock;
       update: jest.Mock;
     };
+    user: { findMany: jest.Mock };
+    notificacao: { createMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -53,15 +58,18 @@ describe('CampeonatoAdminService create/list', () => {
         findUnique: jest.fn(),
         update: jest.fn(),
       },
+      user: { findMany: jest.fn().mockResolvedValue([]) },
+      notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
+    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
 
-  it('create persiste edicao/dataInicio e nasce INSCRICOES_ABERTAS', async () => {
+  it('create persiste edicao/dataInicio e nasce RASCUNHO', async () => {
     prisma.campeonato.findFirst.mockResolvedValue(null);
-    prisma.campeonato.create.mockResolvedValue(camp());
+    prisma.campeonato.create.mockResolvedValue(camp({ status: CampeonatoStatus.RASCUNHO }));
 
     const result = await service.create({
       nome: 'Precompeonato #1',
@@ -75,10 +83,10 @@ describe('CampeonatoAdminService create/list', () => {
         edicao: '#1',
         dataInicio: new Date('2026-09-01T00:00:00.000Z'),
         descricao: null,
-        status: CampeonatoStatus.INSCRICOES_ABERTAS,
+        status: CampeonatoStatus.RASCUNHO,
       },
     });
-    expect(result.statusCode).toBe(CampeonatoStatus.INSCRICOES_ABERTAS);
+    expect(result.statusCode).toBe(CampeonatoStatus.RASCUNHO);
     expect(result.dataInicio).toBe('2026-09-01');
   });
 
@@ -125,6 +133,8 @@ describe('CampeonatoAdminService update/updateStatus', () => {
       findUnique: jest.Mock;
       update: jest.Mock;
     };
+    user: { findMany: jest.Mock };
+    notificacao: { createMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -136,8 +146,11 @@ describe('CampeonatoAdminService update/updateStatus', () => {
         findUnique: jest.fn(),
         update: jest.fn(),
       },
+      user: { findMany: jest.fn().mockResolvedValue([]) },
+      notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
+    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
@@ -159,6 +172,27 @@ describe('CampeonatoAdminService update/updateStatus', () => {
     prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
     const result = await service.updateStatus('c1', CampeonatoStatus.EM_ANDAMENTO);
     expect(result.statusCode).toBe(CampeonatoStatus.EM_ANDAMENTO);
+  });
+
+  it('RASCUNHO → INSCRICOES_ABERTAS publica e notifica todos os usuários', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.RASCUNHO }));
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.INSCRICOES_ABERTAS }));
+    prisma.user.findMany.mockResolvedValue([{ id: 'u1' }, { id: 'u2' }]);
+
+    const result = await service.updateStatus('c1', CampeonatoStatus.INSCRICOES_ABERTAS);
+
+    expect(result.statusCode).toBe(CampeonatoStatus.INSCRICOES_ABERTAS);
+    expect(prisma.notificacao.createMany).toHaveBeenCalledTimes(1);
+    const arg = prisma.notificacao.createMany.mock.calls[0][0];
+    expect(arg.data).toHaveLength(2);
+    expect(arg.data[0]).toMatchObject({ userId: 'u1', tipo: 'campeonato_novo' });
+  });
+
+  it('RASCUNHO → ENCERRADO não notifica', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.RASCUNHO }));
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    await service.updateStatus('c1', CampeonatoStatus.ENCERRADO);
+    expect(prisma.notificacao.createMany).not.toHaveBeenCalled();
   });
 
   it('EM_ANDAMENTO → INSCRICOES_ABERTAS (reabrir) mesmo sem checar rodadas', async () => {
@@ -205,6 +239,8 @@ describe('CampeonatoAdminService updateBanner', () => {
       findUnique: jest.Mock;
       update: jest.Mock;
     };
+    user: { findMany: jest.Mock };
+    notificacao: { createMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -216,8 +252,11 @@ describe('CampeonatoAdminService updateBanner', () => {
         findUnique: jest.fn(),
         update: jest.fn(),
       },
+      user: { findMany: jest.fn().mockResolvedValue([]) },
+      notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
+    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });

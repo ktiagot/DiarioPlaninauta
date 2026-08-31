@@ -59,7 +59,15 @@ export class PrecompeonatoService {
   ) {}
 
   async getAtual(email?: string): Promise<CampeonatoAtualResponseDto> {
-    const campeonato = await this.findCampeonatoAtualOrThrow();
+    // Público: rascunhos não aparecem até serem publicados.
+    const campeonato = await this.prisma.campeonato.findFirst({
+      where: { status: { not: CampeonatoStatus.RASCUNHO } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!campeonato) {
+      throw new NotFoundException('Nenhum precompeonato encontrado.');
+    }
 
     if (!email) {
       return toCampeonatoAtualResponse(campeonato);

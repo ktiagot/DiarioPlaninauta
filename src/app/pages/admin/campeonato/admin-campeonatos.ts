@@ -189,6 +189,10 @@ export class AdminCampeonatosComponent implements OnInit {
       });
   }
 
+  publicar(c: CampeonatoAdmin): void {
+    this.alterarStatus(c, 'INSCRICOES_ABERTAS');
+  }
+
   iniciar(c: CampeonatoAdmin): void {
     this.alterarStatus(c, 'EM_ANDAMENTO');
   }
@@ -208,6 +212,7 @@ export class AdminCampeonatosComponent implements OnInit {
   statusBadgeClass(statusCode: CampeonatoAdmin['statusCode']): string {
     if (statusCode === 'ENCERRADO') return 'badge badge--done';
     if (statusCode === 'EM_ANDAMENTO') return 'badge badge--active';
+    if (statusCode === 'RASCUNHO') return 'badge badge--draft';
     return 'badge';
   }
 

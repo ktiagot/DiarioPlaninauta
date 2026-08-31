@@ -13,5 +13,6 @@ import { SorteioService } from './sorteio/sorteio.service';
   imports: [PrismaModule, AuthModule, NotificacoesModule, PreconsModule],
   controllers: [PrecompeonatoController],
   providers: [PrecompeonatoService, SorteioService, CampeonatoAdminService, BannerStorage],
+  exports: [SorteioService],
 })
 export class PrecompeonatoModule {}

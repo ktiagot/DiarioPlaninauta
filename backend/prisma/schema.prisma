@@ -91,6 +91,7 @@ model User {
 }
 
 enum CampeonatoStatus {
+  RASCUNHO
   INSCRICOES_ABERTAS
   EM_ANDAMENTO
   ENCERRADO
@@ -144,7 +145,7 @@ model Campeonato {
   dataInicio           DateTime         @db.Date
   descricao            String?
   bannerUrl            String?
-  status               CampeonatoStatus @default(INSCRICOES_ABERTAS)
+  status               CampeonatoStatus @default(RASCUNHO)
   inscricoesAbertasAte DateTime?
 
   inscricoes Inscricao[]

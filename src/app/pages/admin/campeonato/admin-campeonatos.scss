@@ -144,3 +144,29 @@
   font-size: 0.875rem;
   margin: 0.5rem 0;
 }
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+
+  &--done {
+    background: rgba(76, 175, 80, 0.15);
+    color: #66bb6a;
+  }
+
+  &--active {
+    background: rgba(245, 130, 32, 0.15);
+    color: #f58220;
+  }
+
+  &--draft {
+    background: rgba(255, 255, 255, 0.08);
+    color: #9ca3af;
+  }
+}

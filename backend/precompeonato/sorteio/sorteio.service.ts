@@ -56,6 +56,22 @@ function formatDataRodada(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+// Fuso fixo do projeto: UTC-3 (America/Sao_Paulo, sem horário de verão).
+const TZ_OFFSET_MIN = -180;
+
+/** Intervalo [início, fim] do dia de hoje em UTC-3, em instantes UTC. */
+function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
+  const local = new Date(now.getTime() + TZ_OFFSET_MIN * 60 * 1000);
+  const inicioLocalUtcMs = Date.UTC(
+    local.getUTCFullYear(),
+    local.getUTCMonth(),
+    local.getUTCDate(),
+  );
+  const inicio = new Date(inicioLocalUtcMs - TZ_OFFSET_MIN * 60 * 1000);
+  const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000 - 1);
+  return { inicio, fim };
+}
+
 @Injectable()
 export class SorteioService {
   constructor(private readonly prisma: PrismaService) {}
@@ -910,6 +926,62 @@ export class SorteioService {
         mensagem: `Check-in disponível para a rodada ${rodada.numero} (${dataFmt}).`,
       })),
     });
+  }
+
+  /**
+   * Notifica os jogadores das rodadas de torneio marcadas para hoje (UTC-3).
+   * Se a rodada já tem mesas sorteadas, notifica os jogadores das mesas;
+   * caso contrário, notifica os inscritos ativos do campeonato.
+   * Chamado por cron diário. Retorna quantas notificações foram criadas.
+   */
+  async notificarRodadasDeHoje(): Promise<number> {
+    const { inicio, fim } = hojeRangeUtc();
+
+    const rodadas = await this.prisma.rodada.findMany({
+      where: {
+        finalizada: false,
+        dataRodada: { gte: inicio, lte: fim },
+      },
+      include: {
+        mesas: { include: { jogadores: { include: { inscricao: { select: { userId: true } } } } } },
+      },
+    });
+
+    const dados: {
+      userId: string;
+      tipo: string;
+      titulo: string;
+      mensagem: string;
+    }[] = [];
+
+    for (const rodada of rodadas) {
+      const userIds = new Set<string>();
+
+      const jogadoresSorteados = rodada.mesas.flatMap((m) => m.jogadores);
+      if (jogadoresSorteados.length > 0) {
+        for (const j of jogadoresSorteados) userIds.add(j.inscricao.userId);
+      } else {
+        const inscritos = await this.prisma.inscricao.findMany({
+          where: { campeonatoId: rodada.campeonatoId, ativo: true },
+          select: { userId: true },
+        });
+        for (const i of inscritos) userIds.add(i.userId);
+      }
+
+      for (const uid of userIds) {
+        dados.push({
+          userId: uid,
+          tipo: 'dia_do_evento',
+          titulo: `Rodada ${rodada.numero} é hoje!`,
+          mensagem: `A rodada ${rodada.numero} do campeonato acontece hoje. Não esqueça o check-in!`,
+        });
+      }
+    }
+
+    if (dados.length === 0) return 0;
+
+    const { count } = await this.prisma.notificacao.createMany({ data: dados });
+    return count;
   }
 
   private assertCampeonatoNotEncerrado(campeonato: Campeonato): void {

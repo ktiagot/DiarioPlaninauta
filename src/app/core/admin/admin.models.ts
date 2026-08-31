@@ -48,7 +48,11 @@ export interface SubmitResultadoPayload {
   linkPartida?: string;
 }
 
-export type CampeonatoStatusCode = 'INSCRICOES_ABERTAS' | 'EM_ANDAMENTO' | 'ENCERRADO';
+export type CampeonatoStatusCode =
+  | 'RASCUNHO'
+  | 'INSCRICOES_ABERTAS'
+  | 'EM_ANDAMENTO'
+  | 'ENCERRADO';
 
 export interface CampeonatoAdmin {
   id: string;

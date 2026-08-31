@@ -128,6 +128,11 @@
     color: #f58220;
   }
 
+  &--draft {
+    background: rgba(255, 255, 255, 0.08);
+    color: #9ca3af;
+  }
+
   &--inativo {
     background: rgba(255, 255, 255, 0.08);
     color: #888;

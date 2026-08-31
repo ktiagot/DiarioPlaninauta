@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { BannerStorage } from './banner-storage';
 import { CAMPEONATO_STATUS_LABEL } from './constants/status-labels';
 import { parseDateOnly, toDateOnly } from './date-only';
@@ -9,6 +10,7 @@ import { CreateCampeonatoDto } from './dto/create-campeonato.dto';
 import { UpdateCampeonatoDto } from './dto/update-campeonato.dto';
 
 const TRANSICOES: Record<CampeonatoStatus, CampeonatoStatus[]> = {
+  RASCUNHO: [CampeonatoStatus.INSCRICOES_ABERTAS, CampeonatoStatus.ENCERRADO],
   INSCRICOES_ABERTAS: [CampeonatoStatus.EM_ANDAMENTO, CampeonatoStatus.ENCERRADO],
   EM_ANDAMENTO: [CampeonatoStatus.INSCRICOES_ABERTAS, CampeonatoStatus.ENCERRADO],
   ENCERRADO: [],
@@ -33,6 +35,7 @@ export class CampeonatoAdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bannerStorage: BannerStorage,
+    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async list(): Promise<CampeonatoAdminResponseDto[]> {
@@ -59,7 +62,7 @@ export class CampeonatoAdminService {
         edicao: dto.edicao,
         dataInicio: parseDateOnly(dto.dataInicio),
         descricao: dto.descricao ?? null,
-        status: CampeonatoStatus.INSCRICOES_ABERTAS,
+        status: CampeonatoStatus.RASCUNHO,
       },
     });
 
@@ -105,7 +108,30 @@ export class CampeonatoAdminService {
       where: { id },
       data: { status },
     });
+
+    // Publicação: rascunho -> inscrições abertas notifica todos os usuários.
+    if (
+      campeonato.status === CampeonatoStatus.RASCUNHO &&
+      status === CampeonatoStatus.INSCRICOES_ABERTAS
+    ) {
+      await this.notificarCampeonatoPublicado(updated);
+    }
+
     return toAdminResponse(updated);
+  }
+
+  private async notificarCampeonatoPublicado(campeonato: Campeonato): Promise<void> {
+    const users = await this.prisma.user.findMany({ select: { id: true } });
+    if (users.length === 0) return;
+
+    await this.prisma.notificacao.createMany({
+      data: users.map((u) => ({
+        userId: u.id,
+        tipo: 'campeonato_novo',
+        titulo: 'Novo campeonato aberto',
+        mensagem: `As inscrições para "${campeonato.nome} — ${campeonato.edicao}" estão abertas!`,
+      })),
+    });
   }
 
   async updateBanner(

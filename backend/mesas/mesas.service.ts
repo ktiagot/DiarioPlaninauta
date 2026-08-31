@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { mesaJogadorPreconInclude } from '../precons/mappers/to-precon-response';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { MesaResponseDto } from './dto/mesa-response.dto';
@@ -35,11 +36,31 @@ const mesaInclude = {
 /** Capacidade máxima de uma mesa casual (contando o dono). */
 const MAX_JOGADORES = 4;
 
+// Fuso fixo do projeto: UTC-3 (America/Sao_Paulo, sem horário de verão).
+const TZ_OFFSET_MIN = -180;
+
+/**
+ * Intervalo [início, fim] do dia de hoje em UTC-3, expresso em instantes UTC.
+ * Ex.: hoje 00:00:00 (UTC-3) e hoje 23:59:59.999 (UTC-3).
+ */
+export function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
+  const localMs = now.getTime() + TZ_OFFSET_MIN * 60 * 1000;
+  const local = new Date(localMs);
+  const y = local.getUTCFullYear();
+  const m = local.getUTCMonth();
+  const d = local.getUTCDate();
+  const inicioLocalUtcMs = Date.UTC(y, m, d, 0, 0, 0, 0);
+  const inicio = new Date(inicioLocalUtcMs - TZ_OFFSET_MIN * 60 * 1000);
+  const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000 - 1);
+  return { inicio, fim };
+}
+
 @Injectable()
 export class MesasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly preconsService: PreconsService,
+    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async findAll(viewerUserId?: string): Promise<MesaResponseDto[]> {
@@ -74,7 +95,42 @@ export class MesasService {
       data: { mesaId, userId },
     });
 
+    await this.notificarEntradaNaMesa(mesa, userId);
+
     return this.retornarMesa(mesaId, userId);
+  }
+
+  /**
+   * Notifica o dono e os demais participantes (exceto quem acabou de entrar)
+   * que um novo jogador entrou na mesa.
+   * `mesa` é o estado ANTES da entrada (não contém o novo jogador).
+   */
+  private async notificarEntradaNaMesa(
+    mesa: { id: string; nome: string; criadorUserId: string | null; jogadores: { userId: string }[] },
+    novoUserId: string,
+  ): Promise<void> {
+    const novoUser = await this.prisma.user.findUnique({
+      where: { id: novoUserId },
+      select: { nick: true },
+    });
+    const nick = novoUser?.nick ?? 'Alguém';
+
+    // Destinatários: dono + participantes já presentes, sem duplicatas e sem quem entrou.
+    const destinatarios = new Set<string>();
+    if (mesa.criadorUserId) destinatarios.add(mesa.criadorUserId);
+    for (const j of mesa.jogadores) destinatarios.add(j.userId);
+    destinatarios.delete(novoUserId);
+
+    if (destinatarios.size === 0) return;
+
+    await this.prisma.notificacao.createMany({
+      data: [...destinatarios].map((uid) => ({
+        userId: uid,
+        tipo: 'mesa_entrou',
+        titulo: 'Novo jogador na mesa',
+        mensagem: `${nick} entrou na mesa "${mesa.nome}".`,
+      })),
+    });
   }
 
   async sair(mesaId: string, userId: string): Promise<MesaResponseDto> {
@@ -244,6 +300,41 @@ export class MesasService {
       },
     });
 
+    return count;
+  }
+
+  /**
+   * Notifica os jogadores de mesas casuais (não finalizadas) cujo dia (em UTC-3)
+   * é hoje. Chamado por um cron diário. Retorna quantas notificações foram criadas.
+   */
+  async notificarMesasDeHoje(): Promise<number> {
+    const { inicio, fim } = hojeRangeUtc();
+
+    const mesas = await this.prisma.mesa.findMany({
+      where: {
+        finalizada: false,
+        dataHora: { gte: inicio, lte: fim },
+      },
+      include: { jogadores: { select: { userId: true } } },
+    });
+
+    const dados = mesas.flatMap((mesa) => {
+      const hora = mesa.dataHora.toLocaleTimeString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      return mesa.jogadores.map((j) => ({
+        userId: j.userId,
+        tipo: 'dia_do_evento',
+        titulo: 'Sua mesa é hoje!',
+        mensagem: `A mesa "${mesa.nome}" acontece hoje às ${hora}.`,
+      }));
+    });
+
+    if (dados.length === 0) return 0;
+
+    const { count } = await this.prisma.notificacao.createMany({ data: dados });
     return count;
   }
 

@@ -177,6 +177,17 @@
                 Salvar
               </button>
 
+              @if (c.statusCode === 'RASCUNHO') {
+                <button
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="updatingStatusId() === c.id"
+                  (click)="publicar(c)"
+                >
+                  Publicar
+                </button>
+              }
+
               @if (c.statusCode === 'INSCRICOES_ABERTAS') {
                 <button
                   mat-stroked-button
