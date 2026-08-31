@@ -6,7 +6,6 @@
   <div class="filters-bar mb-6">
     <div class="search-wrapper">
       <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Buscar jogador...</mat-label>
         <input matInput (input)="onBuscaInput($event)" placeholder="Nick, nome ou cidade" />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
@@ -14,8 +13,7 @@
 
     <div class="filter-selects">
       <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Cidade</mat-label>
-        <mat-select (selectionChange)="filtroCidade.set($event.value)">
+        <mat-select placeholder="Cidade" (selectionChange)="filtroCidade.set($event.value)">
           <mat-option [value]="''">Todas</mat-option>
           @for (cidade of cidadesDisponiveis(); track cidade) {
             <mat-option [value]="cidade">{{ cidade }}</mat-option>
@@ -24,8 +22,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Formato</mat-label>
-        <mat-select (selectionChange)="filtroFormato.set($event.value)">
+        <mat-select placeholder="Formato" (selectionChange)="filtroFormato.set($event.value)">
           <mat-option [value]="''">Todos</mat-option>
           @for (formato of formatosDisponiveis(); track formato) {
             <mat-option [value]="formato">{{ formato }}</mat-option>
@@ -34,8 +31,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Disponibilidade</mat-label>
-        <mat-select (selectionChange)="filtroDisponibilidade.set($event.value)">
+        <mat-select placeholder="Disponibilidade" (selectionChange)="filtroDisponibilidade.set($event.value)">
           <mat-option [value]="''">Todos os dias</mat-option>
           @for (dia of diasDisponiveis(); track dia) {
             <mat-option [value]="dia">{{ dia }}</mat-option>
