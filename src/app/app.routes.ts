@@ -29,6 +29,13 @@ export const routes: Routes = [
         data: { title: 'Editar perfil' },
       },
       {
+        path: 'perfil/senha',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./pages/perfil-senha/perfil-senha').then((m) => m.PerfilSenhaComponent),
+        data: { title: 'Alterar senha' },
+      },
+      {
         path: 'login',
         loadComponent: () => import('./pages/login/login').then((m) => m.LoginComponent),
       },

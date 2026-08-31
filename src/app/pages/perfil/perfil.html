@@ -69,13 +69,14 @@
             @if (displayPronome()) {
               <span class="text-sm text-white/45">({{ displayPronome() }})</span>
             }
-            <a
-              routerLink="/perfil/editar"
-              mat-stroked-button
-              class="ml-auto text-xs"
-            >
-              Editar perfil
-            </a>
+            <div class="ml-auto flex gap-2">
+              <a routerLink="/perfil/editar" mat-stroked-button class="text-xs">
+                Editar perfil
+              </a>
+              <a routerLink="/perfil/senha" mat-stroked-button class="text-xs">
+                Alterar senha
+              </a>
+            </div>
           </div>
 
           <div class="mb-5 flex flex-wrap gap-x-6 gap-y-1 text-sm">

@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
@@ -54,6 +59,34 @@ export class AuthService {
         nick: user.nick,
       },
     };
+  }
+
+  async changePassword(
+    userId: string,
+    senhaAtual: string,
+    novaSenha: string,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.passwordHash) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const atualValida = await argon2.verify(user.passwordHash, senhaAtual);
+    if (!atualValida) {
+      throw new UnauthorizedException('A senha atual está incorreta.');
+    }
+
+    const igual = await argon2.verify(user.passwordHash, novaSenha);
+    if (igual) {
+      throw new BadRequestException('A nova senha deve ser diferente da atual.');
+    }
+
+    const novoHash = await argon2.hash(novaSenha);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: novoHash },
+    });
   }
 
   async requestLogin(email: string) {

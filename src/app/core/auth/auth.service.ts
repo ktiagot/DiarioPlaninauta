@@ -19,4 +19,11 @@ export class AuthService {
   verifyBacker(email: string) {
     return this.http.post<BackerVerifyResponse>(`${API_URL}/auth/verify-backer`, { email });
   }
+
+  changePassword(senhaAtual: string, novaSenha: string) {
+    return this.http.post<{ success: boolean }>(`${API_URL}/auth/change-password`, {
+      senhaAtual,
+      novaSenha,
+    });
+  }
 }

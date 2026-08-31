@@ -1,0 +1,79 @@
+<main class="perfil-senha-page mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <mat-card class="senha-card">
+    <mat-card-header>
+      <mat-card-title>Alterar senha</mat-card-title>
+      <mat-card-subtitle>Confirme a senha atual para definir uma nova</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="pt-4">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4" novalidate>
+
+        <div class="field-group">
+          <label for="senhaAtual" class="text-white">Senha atual</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              id="senhaAtual"
+              type="password"
+              formControlName="senhaAtual"
+              autocomplete="current-password"
+            />
+            @if (form.controls.senhaAtual.invalid && form.controls.senhaAtual.touched) {
+              <mat-error>Informe sua senha atual</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <label for="novaSenha" class="text-white">Nova senha</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              id="novaSenha"
+              type="password"
+              formControlName="novaSenha"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+            />
+            @if (form.controls.novaSenha.invalid && form.controls.novaSenha.touched) {
+              <mat-error>A nova senha deve ter no mínimo 8 caracteres</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="field-group">
+          <label for="confirmarSenha" class="text-white">Confirmar nova senha</label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              matInput
+              id="confirmarSenha"
+              type="password"
+              formControlName="confirmarSenha"
+              placeholder="Repita a nova senha"
+              autocomplete="new-password"
+            />
+            @if (form.controls.confirmarSenha.hasError('senhasDivergentes') && form.controls.confirmarSenha.touched) {
+              <mat-error>As senhas não conferem</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="saving()"
+            class="flex-1"
+          >
+            @if (saving()) { Salvando… } @else { Alterar senha }
+          </button>
+          <a mat-stroked-button routerLink="/" class="flex-1 text-center">Cancelar</a>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+</main>

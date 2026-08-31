@@ -1,8 +1,24 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RequestLoginDto } from './dto/request-login.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthUser } from './strategies/jwt.strategy';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -62,5 +78,23 @@ export class AuthController {
   })
   verifyBacker(@Body() dto: RequestLoginDto) {
     return this.authService.verifyBacker(dto.email);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Alterar a própria senha',
+    description: 'Valida a senha atual e grava a nova senha para o usuário autenticado.',
+  })
+  @ApiOkResponse({ description: 'Senha alterada com sucesso.' })
+  @ApiUnauthorizedResponse({ description: 'Senha atual incorreta.' })
+  async changePassword(
+    @Request() req: { user: AuthUser },
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ success: boolean }> {
+    await this.authService.changePassword(req.user.id, dto.senhaAtual, dto.novaSenha);
+    return { success: true };
   }
 }

@@ -1,0 +1,15 @@
+.senha-card {
+  --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
+  background-color: rgba(217, 217, 217, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1.5rem;
+  box-shadow: none;
+  color: var(--sys-color-white);
+  overflow: hidden;
+}
+
+.field-group {
+  position: relative;
+}
