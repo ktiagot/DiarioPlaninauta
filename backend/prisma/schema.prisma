@@ -12,6 +12,12 @@ enum UserRole {
   VIP
 }
 
+enum Visibilidade {
+  PUBLICO
+  FAVORITOS
+  PRIVADO
+}
+
 // Hub relacional do portal.
 // Outras tabelas devem referenciar User via:
 //   userId String
@@ -47,6 +53,10 @@ model User {
   tier               String?
   badge              String?
   formatoFavorito    String?
+  discord            String?
+  // Visibilidade de dados sensíveis do perfil.
+  visibilidadeNome     Visibilidade @default(PUBLICO)
+  visibilidadeTelefone Visibilidade @default(FAVORITOS)
   diasDisponiveis    String[]  @default([])
   horarios           String[]  @default([])
   partidas           Int?

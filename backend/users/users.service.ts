@@ -86,6 +86,7 @@ export class UsersService {
           tier: dto.tier,
           badge: dto.badge,
           formatoFavorito: dto.formatoFavorito,
+          discord: dto.discord,
           diasDisponiveis: dto.diasDisponiveis ?? [],
           horarios: dto.horarios ?? [],
           decksMaisUsados: dto.decksMaisUsados ?? [],
@@ -132,6 +133,8 @@ export class UsersService {
         id: true,
         nick: true,
         nome: true,
+        sobrenome: true,
+        telefone: true,
         cidade: true,
         estado: true,
         formatos: true,
@@ -145,6 +148,8 @@ export class UsersService {
         decksMaisUsados: true,
         preCampeonatos: true,
         melhoresResultados: true,
+        visibilidadeNome: true,
+        visibilidadeTelefone: true,
       },
     });
 
@@ -152,7 +157,22 @@ export class UsersService {
       throw new NotFoundException(`Usuário com id "${id}" não encontrado.`);
     }
 
-    return user as UserPublicResponseDto;
+    const {
+      sobrenome,
+      telefone,
+      visibilidadeNome,
+      visibilidadeTelefone,
+      ...rest
+    } = user;
+
+    return {
+      ...rest,
+      // Nome real completo só quando o dono deixa público; senão só o primeiro nome.
+      nome: visibilidadeNome === 'PRIVADO' ? '' : rest.nome,
+      sobrenome: visibilidadeNome === 'PUBLICO' ? sobrenome : null,
+      // Telefone no perfil público apenas quando marcado como público.
+      telefone: visibilidadeTelefone === 'PUBLICO' ? telefone : null,
+    } as UserPublicResponseDto;
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
@@ -172,6 +192,9 @@ export class UsersService {
         tier: dto.tier,
         badge: dto.badge,
         formatoFavorito: dto.formatoFavorito,
+        discord: dto.discord,
+        visibilidadeNome: dto.visibilidadeNome,
+        visibilidadeTelefone: dto.visibilidadeTelefone,
         diasDisponiveis: dto.diasDisponiveis,
         horarios: dto.horarios,
         partidas: dto.partidas,

@@ -241,3 +241,9 @@ export interface MesaJogadorApi {
 }
 
 
+
+export interface ProximaRodada {
+  numero: number;
+  dataRodada: string;
+  diasRestantes: number;
+}

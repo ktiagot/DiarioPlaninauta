@@ -10,6 +10,12 @@ export class UserPublicResponseDto {
   @ApiProperty({ example: 'João' })
   nome: string;
 
+  @ApiPropertyOptional({ example: 'Silva', nullable: true, description: 'Só quando visibilidade do nome é pública.' })
+  sobrenome?: string | null;
+
+  @ApiPropertyOptional({ example: '11999999999', nullable: true, description: 'Só quando visibilidade do telefone é pública.' })
+  telefone?: string | null;
+
   @ApiProperty({ example: 'São Paulo' })
   cidade: string;
 

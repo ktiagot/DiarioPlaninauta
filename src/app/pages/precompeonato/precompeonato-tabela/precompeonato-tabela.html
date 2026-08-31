@@ -10,21 +10,37 @@
     </p>
   </header>
 
-  <mat-form-field appearance="outline" class="precompeonato-tabela__search w-full">
-    <fa-icon matPrefix [icon]="faMagnifyingGlass" class="precompeonato-tabela__search-icon" />
-    <input
-      matInput
-      type="search"
-      placeholder="Buscar por posição, nome, nick, comandante, pontos ou eliminações..."
-      [ngModel]="searchQuery()"
-      (ngModelChange)="onSearchChange($event)"
-      aria-label="Filtrar tabela de classificação"
-    />
-  </mat-form-field>
+  <div class="precompeonato-tabela__filtros">
+    <mat-form-field appearance="outline" class="precompeonato-tabela__campeonato">
+      <mat-label>Campeonato</mat-label>
+      <mat-select
+        [ngModel]="filtroCampeonato()"
+        (ngModelChange)="onFiltroChange($event)"
+      >
+        <mat-option [value]="FILTRO_ATUAL">Atual</mat-option>
+        <mat-option [value]="FILTRO_GERAL">Geral (todos)</mat-option>
+        @for (c of campeonatos(); track c.id) {
+          <mat-option [value]="c.id">{{ c.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
-  @if (jogadores().length === 0) {
+    <mat-form-field appearance="outline" class="precompeonato-tabela__search">
+      <fa-icon matPrefix [icon]="faMagnifyingGlass" class="precompeonato-tabela__search-icon" />
+      <input
+        matInput
+        type="search"
+        placeholder="Buscar por posição, nome, nick, comandante ou pontos..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        aria-label="Filtrar tabela de classificação"
+      />
+    </mat-form-field>
+  </div>
+
+  @if (carregandoRanking()) {
     <div class="precompeonato-tabela__empty">
-      <p class="precompeonato-tabela__empty-message">Nenhum jogador cadastrado no precompeonato.</p>
+      <p class="precompeonato-tabela__empty-message">Carregando ranking...</p>
     </div>
   } @else if (dataSource().length === 0) {
     <div class="precompeonato-tabela__empty">

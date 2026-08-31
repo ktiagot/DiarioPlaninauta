@@ -18,6 +18,8 @@ import {
 
   ConfirmarPosicoesPayload,
 
+  ProximaRodada,
+
   Rodada,
 
   RodadaAtualApi,
@@ -51,6 +53,18 @@ export class RodadasService {
       ),
 
     );
+
+  }
+
+
+
+  getProximaRodada(): Observable<ProximaRodada | null> {
+
+    return this.http
+
+      .get<ProximaRodada | null>(`${API_URL}/precompeonato/atual/proxima-rodada`)
+
+      .pipe(catchError(() => throwError(() => new Error('Não foi possível carregar a próxima rodada.'))));
 
   }
 

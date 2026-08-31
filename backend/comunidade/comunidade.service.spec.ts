@@ -5,6 +5,7 @@ import {
 import { Test } from '@nestjs/testing';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { ComunidadeService } from './comunidade.service';
 
 function user(over: Partial<{
@@ -37,6 +38,7 @@ function createTestingModule(prisma: object, apoiase: object) {
       ComunidadeService,
       { provide: PrismaService, useValue: prisma },
       { provide: ApoiaSeService, useValue: apoiase },
+      { provide: NotificacoesService, useValue: { criar: jest.fn() } },
     ],
   }).compile();
 }

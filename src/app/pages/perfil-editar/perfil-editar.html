@@ -166,6 +166,38 @@
             </mat-form-field>
           </div>
 
+          <!-- Discord -->
+          <div class="field-group">
+            <label for="discord" class="text-white">Discord</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput id="discord" formControlName="discord" placeholder="seunick" />
+              <mat-hint>Compartilhado apenas com favoritos mútuos</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Privacidade -->
+          <div class="field-group">
+            <label class="text-white">Quem pode ver meu nome completo</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select formControlName="visibilidadeNome">
+                @for (op of opcoesVisibilidade; track op.valor) {
+                  <mat-option [value]="op.valor">{{ op.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label class="text-white">Quem pode ver meu telefone</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select formControlName="visibilidadeTelefone">
+                @for (op of opcoesVisibilidade; track op.valor) {
+                  <mat-option [value]="op.valor">{{ op.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
           <!-- Botões -->
           <div class="flex gap-3 pt-2">
             <button

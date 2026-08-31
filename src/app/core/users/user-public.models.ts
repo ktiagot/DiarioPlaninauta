@@ -2,6 +2,8 @@ export interface UserPublic {
   id: string;
   nick: string;
   nome: string;
+  sobrenome?: string | null;
+  telefone?: string | null;
   cidade: string;
   estado: string | null;
   formatos: string[];

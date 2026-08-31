@@ -162,3 +162,19 @@
   font-weight: 700;
   color: var(--sys-color-primary, #f58220);
 }
+
+.precompeonato-tabela__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.precompeonato-tabela__campeonato {
+  min-width: 200px;
+}
+
+.precompeonato-tabela__filtros .precompeonato-tabela__search {
+  flex: 1;
+  min-width: 240px;
+}

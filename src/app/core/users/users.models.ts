@@ -28,6 +28,9 @@ export interface User {
   tier: string | null;
   badge: string | null;
   formatoFavorito: string | null;
+  discord: string | null;
+  visibilidadeNome: 'PUBLICO' | 'FAVORITOS' | 'PRIVADO';
+  visibilidadeTelefone: 'PUBLICO' | 'FAVORITOS' | 'PRIVADO';
   diasDisponiveis: string[];
   horarios: string[];
   partidas: number | null;

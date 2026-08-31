@@ -1,6 +1,9 @@
 import { PartialType, OmitType, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsArray, IsInt, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsString, IsArray, IsInt, IsNumber, Min, IsIn } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
+
+const VISIBILIDADES = ['PUBLICO', 'FAVORITOS', 'PRIVADO'] as const;
+export type VisibilidadeValor = (typeof VISIBILIDADES)[number];
 
 class UpdateUserStatsDto {
   @ApiPropertyOptional({ example: 42 })
@@ -89,4 +92,14 @@ export class UpdateUserDto extends PartialType(
   @IsArray()
   @IsInt({ each: true })
   melhoresResultados?: number[];
+
+  @ApiPropertyOptional({ enum: VISIBILIDADES, example: 'PUBLICO' })
+  @IsOptional()
+  @IsIn([...VISIBILIDADES])
+  visibilidadeNome?: VisibilidadeValor;
+
+  @ApiPropertyOptional({ enum: VISIBILIDADES, example: 'FAVORITOS' })
+  @IsOptional()
+  @IsIn([...VISIBILIDADES])
+  visibilidadeTelefone?: VisibilidadeValor;
 }

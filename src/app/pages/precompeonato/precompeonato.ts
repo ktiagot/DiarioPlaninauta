@@ -25,7 +25,7 @@ import { API_URL, bannerSrc } from '../../core/config/api.config';
 import { SessionService } from '../../core/auth/session.service';
 import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
-import { Rodada } from '../../core/rodadas/rodadas.models';
+import { ProximaRodada, Rodada } from '../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../core/rodadas/rodadas.service';
 import { CheckInStatus } from '../../core/sorteio/sorteio.models';
 import { SorteioService } from '../../core/sorteio/sorteio.service';
@@ -113,6 +113,17 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
   // Rodada ativa notification
   protected readonly rodadaAtiva = signal<Rodada | null>(null);
 
+  // Aviso de próxima rodada agendada (pode não existir)
+  protected readonly proximaRodada = signal<ProximaRodada | null>(null);
+
+  protected readonly avisoProximaRodada = computed(() => {
+    const p = this.proximaRodada();
+    if (!p) return null;
+    if (p.diasRestantes === 0) return `A rodada ${p.numero} é hoje!`;
+    if (p.diasRestantes === 1) return `A rodada ${p.numero} é amanhã.`;
+    return `A rodada ${p.numero} começa em ${p.diasRestantes} dias.`;
+  });
+
   protected readonly isAdmin = computed(() => {
     this.session.authRevision();
     return this.session.isAdmin();
@@ -196,7 +207,15 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
     this.carregarJogadores();
     this.carregarCheckIn();
     this.carregarRodadaAtiva();
+    this.carregarProximaRodada();
     this.iniciarTimerInscricoes();
+  }
+
+  private carregarProximaRodada(): void {
+    this.rodadasService.getProximaRodada().subscribe({
+      next: (proxima) => this.proximaRodada.set(proxima),
+      error: () => this.proximaRodada.set(null),
+    });
   }
 
   ngOnDestroy(): void {

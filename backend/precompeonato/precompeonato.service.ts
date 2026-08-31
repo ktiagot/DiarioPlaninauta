@@ -16,6 +16,7 @@ import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
+import { CampeonatoPublicoDto } from './dto/campeonato-publico.dto';
 import { InscritoAdminResponseDto } from './dto/inscrito-admin-response.dto';
 import {
   EstatisticasFullResponseDto,
@@ -181,8 +182,14 @@ export class PrecompeonatoService {
     return toInscricaoResponse(inscricao);
   }
 
-  async listJogadores(): Promise<JogadorPrecompeonatoResponseDto[]> {
-    const campeonato = await this.findCampeonatoAtualOrThrow();
+  async listJogadores(campeonatoId?: string): Promise<JogadorPrecompeonatoResponseDto[]> {
+    const campeonato = campeonatoId
+      ? await this.prisma.campeonato.findUnique({ where: { id: campeonatoId } })
+      : await this.findCampeonatoAtualOrThrow();
+
+    if (!campeonato) {
+      throw new NotFoundException('Campeonato não encontrado.');
+    }
 
     const inscricoes = await this.prisma.inscricao.findMany({
       where: {
@@ -215,6 +222,71 @@ export class PrecompeonatoService {
       if (a.posicao !== b.posicao) return a.posicao - b.posicao;
       return b.pontos - a.pontos;
     });
+  }
+
+  /** Campeonatos publicados (não rascunho), para filtros públicos de ranking. */
+  async listCampeonatosPublicos(): Promise<CampeonatoPublicoDto[]> {
+    const campeonatos = await this.prisma.campeonato.findMany({
+      where: { status: { not: CampeonatoStatus.RASCUNHO } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, nome: true, edicao: true },
+    });
+    return campeonatos;
+  }
+
+  /**
+   * Ranking geral agregado por jogador, somando os pontos de todas as
+   * inscrições ativas em todos os campeonatos publicados.
+   */
+  async getRankingGeral(): Promise<JogadorPrecompeonatoResponseDto[]> {
+    const inscricoes = await this.prisma.inscricao.findMany({
+      where: {
+        ativo: true,
+        campeonato: { status: { not: CampeonatoStatus.RASCUNHO } },
+      },
+      select: {
+        userId: true,
+        pontos: true,
+        user: { select: { nome: true, nick: true } },
+        mesas: { select: { kills: true } },
+      },
+    });
+
+    // Agrega por usuário.
+    const porUser = new Map<
+      string,
+      { nome: string; nick: string; pontos: number; kills: number }
+    >();
+
+    for (const i of inscricoes) {
+      const atual = porUser.get(i.userId) ?? {
+        nome: i.user.nome,
+        nick: i.user.nick,
+        pontos: 0,
+        kills: 0,
+      };
+      atual.pontos += i.pontos;
+      atual.kills += i.mesas.reduce((acc, m) => acc + m.kills, 0);
+      porUser.set(i.userId, atual);
+    }
+
+    const linhas = [...porUser.entries()]
+      .map(([userId, v]) => ({ userId, ...v }))
+      .sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome));
+
+    return linhas.map((l, idx) => ({
+      id: l.userId,
+      deckUrl: null,
+      deckNome: '',
+      comandante: '',
+      nomeJogador: l.nome,
+      nick: l.nick,
+      discordNick: '',
+      posicao: idx + 1,
+      rodadaAtual: null,
+      mesaAtual: null,
+      pontos: l.pontos,
+    }));
   }
 
   async listInscritosAdmin(): Promise<InscritoAdminResponseDto[]> {

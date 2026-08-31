@@ -8,6 +8,14 @@
         <p class="text-sm text-white/60">Confira suas mesas e registre os resultados.</p>
       </div>
     </div>
+  } @else if (avisoProximaRodada()) {
+    <div class="notif-rodada glass-card">
+      <mat-icon class="notif-icon">event_upcoming</mat-icon>
+      <div>
+        <strong class="text-orange-400">{{ avisoProximaRodada() }}</strong>
+        <p class="text-sm text-white/60">Fique de olho para o check-in quando a rodada abrir.</p>
+      </div>
+    </div>
   }
 
   <section class="precompeonato-hero" aria-label="Campeonato">

@@ -82,6 +82,9 @@
 
           <div class="mb-5 flex flex-wrap gap-x-6 gap-y-1 text-sm">
             <span class="text-white/75">{{ displayNome() }}</span>
+            @if (displayTelefone()) {
+              <span class="text-white/75">{{ displayTelefone() }}</span>
+            }
           </div>
 
           <div class="mb-6 flex flex-col">

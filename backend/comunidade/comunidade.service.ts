@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { JogadorAdminResponseDto } from './dto/jogador-admin-response.dto';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
 import { ContatoResponseDto } from './dto/contato-response.dto';
@@ -15,6 +16,7 @@ export class ComunidadeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly apoiaseService: ApoiaSeService,
+    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async listarJogadores(filtros: {
@@ -75,7 +77,12 @@ export class ComunidadeService {
     // Verifica se o alvo existe
     const alvo = await this.prisma.user.findUnique({
       where: { id: alvoUserId },
-      select: { id: true, telefone: true },
+      select: {
+        id: true,
+        telefone: true,
+        discord: true,
+        visibilidadeTelefone: true,
+      },
     });
 
     if (!alvo) {
@@ -110,7 +117,9 @@ export class ComunidadeService {
 
     return {
       mutuo: true,
-      telefone: alvo.telefone,
+      // Telefone privado não é exposto nem para favoritos mútuos.
+      telefone: alvo.visibilidadeTelefone === 'PRIVADO' ? null : alvo.telefone,
+      discord: alvo.discord ?? null,
     };
   }
 
@@ -132,22 +141,62 @@ export class ComunidadeService {
     // Verifica se o usuário alvo existe
     const alvo = await this.prisma.user.findUnique({
       where: { id: paraUserId },
-      select: { id: true },
+      select: { id: true, nick: true },
     });
 
     if (!alvo) {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    await this.prisma.favorito.upsert({
+    // Se já era favorito, não refaz nada (evita notificar de novo).
+    const jaFavoritava = await this.prisma.favorito.findUnique({
+      where: { deUserId_paraUserId: { deUserId, paraUserId } },
+    });
+    if (jaFavoritava) return;
+
+    await this.prisma.favorito.create({
+      data: { deUserId, paraUserId },
+    });
+
+    // Detecta reciprocidade: o alvo já favoritava o solicitante?
+    const alvoFavoritou = await this.prisma.favorito.findUnique({
       where: {
-        deUserId_paraUserId: {
-          deUserId,
-          paraUserId,
-        },
+        deUserId_paraUserId: { deUserId: paraUserId, paraUserId: deUserId },
       },
-      create: { deUserId, paraUserId },
-      update: {},
+    });
+
+    if (alvoFavoritou) {
+      await this.notificarFavoritoMutuo(deUserId, alvo.nick, paraUserId);
+    }
+  }
+
+  /** Notifica ambos os usuários que o favorito virou mútuo (contato liberado). */
+  private async notificarFavoritoMutuo(
+    solicitanteId: string,
+    alvoNick: string,
+    alvoId: string,
+  ): Promise<void> {
+    const solicitante = await this.prisma.user.findUnique({
+      where: { id: solicitanteId },
+      select: { nick: true },
+    });
+    const solicitanteNick = solicitante?.nick ?? 'Alguém';
+
+    await this.prisma.notificacao.createMany({
+      data: [
+        {
+          userId: solicitanteId,
+          tipo: 'favorito_mutuo',
+          titulo: 'Novo contato liberado',
+          mensagem: `Você e ${alvoNick} se favoritaram. O contato foi liberado!`,
+        },
+        {
+          userId: alvoId,
+          tipo: 'favorito_mutuo',
+          titulo: 'Novo contato liberado',
+          mensagem: `Você e ${solicitanteNick} se favoritaram. O contato foi liberado!`,
+        },
+      ],
     });
   }
 

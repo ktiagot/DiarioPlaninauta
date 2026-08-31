@@ -59,7 +59,13 @@ export class PerfilPublicoComponent implements OnInit {
   protected readonly loadingContato = signal(false);
 
   protected readonly displayNick = computed(() => this.profile()?.nick ?? '—');
-  protected readonly displayNome = computed(() => this.profile()?.nome ?? '—');
+  protected readonly displayNome = computed(() => {
+    const p = this.profile();
+    if (!p) return '—';
+    const completo = [p.nome, p.sobrenome].filter(Boolean).join(' ').trim();
+    return completo || '—';
+  });
+  protected readonly displayTelefone = computed(() => this.profile()?.telefone ?? null);
   protected readonly displayGenero = computed(() => this.profile()?.genero ?? '');
   protected readonly displayFormatos = computed(() => this.profile()?.formatos ?? []);
   protected readonly displayCidade = computed(() => {

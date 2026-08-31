@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { SorteioService } from './sorteio.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificacoesService } from '../../notificacoes/notificacoes.service';
 
 const RESULTADO_DTO = {
   jogadores: [
@@ -51,7 +52,7 @@ describe('SorteioService', () => {
       deleteMany: jest.Mock;
       update: jest.Mock;
     };
-    mesaTorneioJogador: { updateMany: jest.Mock };
+    mesaTorneioJogador: { updateMany: jest.Mock; findMany: jest.Mock };
     inscricao: { findMany: jest.Mock; findUnique: jest.Mock; findFirst: jest.Mock };
     notificacao: { createMany: jest.Mock };
     $transaction: jest.Mock;
@@ -74,7 +75,10 @@ describe('SorteioService', () => {
         deleteMany: jest.fn(),
         update: jest.fn(),
       },
-      mesaTorneioJogador: { updateMany: jest.fn() },
+      mesaTorneioJogador: {
+        updateMany: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       inscricao: { findMany: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
       notificacao: { createMany: jest.fn() },
       $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
@@ -84,6 +88,7 @@ describe('SorteioService', () => {
       providers: [
         SorteioService,
         { provide: PrismaService, useValue: prisma },
+        { provide: NotificacoesService, useValue: { criar: jest.fn() } },
       ],
     }).compile();
 

@@ -88,8 +88,17 @@ export class PerfilEditarComponent implements OnInit {
     diasDisponiveis: [[] as string[]],
     horariosText: [''],
     genero: [''],
+    discord: [''],
+    visibilidadeNome: ['PUBLICO'],
+    visibilidadeTelefone: ['FAVORITOS'],
     foto: [''],
   });
+
+  protected readonly opcoesVisibilidade = [
+    { valor: 'PUBLICO', label: 'Público (todos os membros)' },
+    { valor: 'FAVORITOS', label: 'Apenas favoritos mútuos' },
+    { valor: 'PRIVADO', label: 'Somente eu' },
+  ];
 
   ngOnInit(): void {
     this.userId = localStorage.getItem('user_id') ?? '';
@@ -123,6 +132,9 @@ export class PerfilEditarComponent implements OnInit {
       diasDisponiveis: user.diasDisponiveis ?? [],
       horariosText: (user.horarios ?? []).join(', '),
       genero: user.genero ?? '',
+      discord: user.discord ?? '',
+      visibilidadeNome: user.visibilidadeNome ?? 'PUBLICO',
+      visibilidadeTelefone: user.visibilidadeTelefone ?? 'FAVORITOS',
       foto: user.foto ?? '',
     });
   }
@@ -203,6 +215,9 @@ export class PerfilEditarComponent implements OnInit {
       diasDisponiveis: raw.diasDisponiveis.length ? raw.diasDisponiveis : undefined,
       horarios: horarios.length ? horarios : undefined,
       genero: raw.genero || undefined,
+      discord: raw.discord || undefined,
+      visibilidadeNome: raw.visibilidadeNome || undefined,
+      visibilidadeTelefone: raw.visibilidadeTelefone || undefined,
       foto: raw.foto || undefined,
     };
 

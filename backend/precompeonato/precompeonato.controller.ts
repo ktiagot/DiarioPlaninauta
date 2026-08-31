@@ -39,6 +39,8 @@ import { CreateCampeonatoDto } from './dto/create-campeonato.dto';
 import { UpdateCampeonatoDto } from './dto/update-campeonato.dto';
 import { UpdateCampeonatoStatusDto } from './dto/update-campeonato-status.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
+import { ProximaRodadaDto } from './dto/proxima-rodada.dto';
+import { CampeonatoPublicoDto } from './dto/campeonato-publico.dto';
 import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
@@ -131,8 +133,31 @@ export class PrecompeonatoController {
     type: [JogadorPrecompeonatoResponseDto],
   })
   @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
-  listJogadores(): Promise<JogadorPrecompeonatoResponseDto[]> {
-    return this.precompeonatoService.listJogadores();
+  @ApiQuery({ name: 'campeonatoId', required: false, description: 'Ranking de um campeonato específico.' })
+  listJogadores(
+    @Query('campeonatoId') campeonatoId?: string,
+  ): Promise<JogadorPrecompeonatoResponseDto[]> {
+    return this.precompeonatoService.listJogadores(campeonatoId || undefined);
+  }
+
+  @Get('campeonatos')
+  @ApiOperation({
+    summary: 'Listar campeonatos publicados',
+    description: 'Campeonatos não-rascunho, para o filtro de ranking.',
+  })
+  @ApiOkResponse({ description: 'Lista de campeonatos.', type: [CampeonatoPublicoDto] })
+  listCampeonatosPublicos(): Promise<CampeonatoPublicoDto[]> {
+    return this.precompeonatoService.listCampeonatosPublicos();
+  }
+
+  @Get('ranking-geral')
+  @ApiOperation({
+    summary: 'Ranking geral (todos os campeonatos)',
+    description: 'Agrega por jogador os pontos de todas as inscrições ativas em campeonatos publicados.',
+  })
+  @ApiOkResponse({ description: 'Ranking geral.', type: [JogadorPrecompeonatoResponseDto] })
+  getRankingGeral(): Promise<JogadorPrecompeonatoResponseDto[]> {
+    return this.precompeonatoService.getRankingGeral();
   }
 
   @Get('atual/inscritos/admin')
@@ -208,6 +233,17 @@ export class PrecompeonatoController {
   @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
   getRodadaAtual(): Promise<RodadaAtualDto | null> {
     return this.sorteioService.getRodadaAtual();
+  }
+
+  @Get('atual/proxima-rodada')
+  @ApiOperation({
+    summary: 'Próxima rodada agendada',
+    description:
+      'Retorna a próxima rodada não finalizada (dataRodada >= hoje) do campeonato público, ou null. Público e resiliente a ausência de campeonato.',
+  })
+  @ApiOkResponse({ description: 'Próxima rodada ou null.', type: ProximaRodadaDto })
+  getProximaRodada(): Promise<ProximaRodadaDto | null> {
+    return this.sorteioService.getProximaRodada();
   }
 
   @Post('mesas/:mesaId/resultado')

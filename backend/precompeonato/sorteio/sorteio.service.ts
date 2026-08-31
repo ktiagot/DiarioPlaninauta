@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma, Rodada } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificacoesService } from '../../notificacoes/notificacoes.service';
 import { CreateRodadaDto } from '../dto/create-rodada.dto';
 import {
   AbrirRodadaContextDto,
@@ -19,6 +20,7 @@ import {
   SorteioSnapshotDto,
 } from '../dto/sorteio.dto';
 import { RodadaAtualDto } from '../dto/rodada-atual.dto';
+import { ProximaRodadaDto } from '../dto/proxima-rodada.dto';
 import { SubmitTorneioMesaResultadoDto } from '../dto/submit-torneio-mesa-resultado.dto';
 import {
   opponentKey,
@@ -74,7 +76,10 @@ function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
 
 @Injectable()
 export class SorteioService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificacoes: NotificacoesService,
+  ) {}
 
   async getSnapshot(): Promise<SorteioSnapshotDto> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
@@ -364,6 +369,39 @@ export class SorteioService {
     return this.getSnapshot();
   }
 
+  /**
+   * Próxima rodada agendada (não finalizada, dataRodada >= hoje) do campeonato
+   * público mais recente. Resiliente: retorna null se não houver campeonato
+   * publicado ou rodada futura. Usado para o aviso na página do precompeonato.
+   */
+  async getProximaRodada(): Promise<ProximaRodadaDto | null> {
+    const campeonato = await this.prisma.campeonato.findFirst({
+      where: { status: { not: CampeonatoStatus.RASCUNHO } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!campeonato) return null;
+
+    const { inicio } = hojeRangeUtc();
+    const rodada = await this.prisma.rodada.findFirst({
+      where: {
+        campeonatoId: campeonato.id,
+        finalizada: false,
+        dataRodada: { gte: inicio },
+      },
+      orderBy: { dataRodada: 'asc' },
+    });
+    if (!rodada) return null;
+
+    const diffMs = rodada.dataRodada.getTime() - inicio.getTime();
+    const diasRestantes = Math.max(0, Math.round(diffMs / (24 * 60 * 60 * 1000)));
+
+    return {
+      numero: rodada.numero,
+      dataRodada: formatDataRodada(rodada.dataRodada),
+      diasRestantes,
+    };
+  }
+
   async getRodadaAtual(): Promise<RodadaAtualDto | null> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
 
@@ -616,11 +654,36 @@ export class SorteioService {
       });
     });
 
+    await this.notifyResultadoPublicado(rodada.id, rodada.numero);
+
     const rodadaAtual = await this.getRodadaAtual();
     if (!rodadaAtual) {
       throw new NotFoundException('Rodada não encontrada após finalizar.');
     }
     return rodadaAtual;
+  }
+
+  /** Notifica os jogadores de uma rodada que os resultados foram publicados. */
+  private async notifyResultadoPublicado(
+    rodadaId: string,
+    numero: number,
+  ): Promise<void> {
+    const jogadores = await this.prisma.mesaTorneioJogador.findMany({
+      where: { mesa: { rodadaId } },
+      select: { inscricao: { select: { userId: true } } },
+    });
+
+    const userIds = [...new Set(jogadores.map((j) => j.inscricao.userId))];
+    if (userIds.length === 0) return;
+
+    await this.prisma.notificacao.createMany({
+      data: userIds.map((userId) => ({
+        userId,
+        tipo: 'resultado_publicado',
+        titulo: `Resultados da rodada ${numero}`,
+        mensagem: `Os resultados da rodada ${numero} foram publicados. Confira a classificação!`,
+      })),
+    });
   }
 
   async getCheckInStatus(userId: string): Promise<CheckInStatusDto> {
