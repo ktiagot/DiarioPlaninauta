@@ -33,7 +33,7 @@ export class RankingService {
 
   listarCampeonatos(): Observable<CampeonatoOpcao[]> {
     return this.http
-      .get<CampeonatoPublicoApi[]>(`${API_URL}/precompeonato/campeonatos`)
+      .get<CampeonatoPublicoApi[]>(`${API_URL}/precompeonato/ranking/campeonatos`)
       .pipe(
         map((lista) =>
           lista.map((c) => ({ id: c.id, label: `${c.nome} ${c.edicao}`.trim() })),

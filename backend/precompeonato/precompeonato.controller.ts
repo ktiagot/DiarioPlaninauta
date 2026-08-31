@@ -140,10 +140,10 @@ export class PrecompeonatoController {
     return this.precompeonatoService.listJogadores(campeonatoId || undefined);
   }
 
-  @Get('campeonatos')
+  @Get('ranking/campeonatos')
   @ApiOperation({
-    summary: 'Listar campeonatos publicados',
-    description: 'Campeonatos não-rascunho, para o filtro de ranking.',
+    summary: 'Listar campeonatos publicados (para filtro de ranking)',
+    description: 'Campeonatos não-rascunho, usados no dropdown de ranking.',
   })
   @ApiOkResponse({ description: 'Lista de campeonatos.', type: [CampeonatoPublicoDto] })
   listCampeonatosPublicos(): Promise<CampeonatoPublicoDto[]> {
