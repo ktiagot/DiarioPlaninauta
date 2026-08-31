@@ -43,20 +43,35 @@
           />
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Data e hora da mesa</mat-label>
-          <input
-            matInput
-            type="datetime-local"
-            [ngModel]="novaMesaDataHora()"
-            (ngModelChange)="novaMesaDataHora.set($event)"
-          />
-        </mat-form-field>
+        <div class="datahora-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Data da mesa</mat-label>
+            <input
+              matInput
+              [matDatepicker]="pickerCriar"
+              [ngModel]="novaMesaData()"
+              (ngModelChange)="novaMesaData.set($event)"
+              placeholder="dd/mm/aaaa"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerCriar"></mat-datepicker-toggle>
+            <mat-datepicker #pickerCriar></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="hora-field">
+            <mat-label>Hora</mat-label>
+            <input
+              matInput
+              type="time"
+              [ngModel]="novaMesaHora()"
+              (ngModelChange)="novaMesaHora.set($event)"
+            />
+          </mat-form-field>
+        </div>
 
         <mat-form-field appearance="outline" class="w-full">
           <textarea
             matInput
-            rows="5"
+            rows="2"
             class="descricao-textarea"
             [ngModel]="novaMesaDescricao()"
             (ngModelChange)="novaMesaDescricao.set($event)"
@@ -81,7 +96,7 @@
           <button
             mat-flat-button
             class="criar-btn"
-            [disabled]="!novaMesaNome().trim() || !novaMesaDataHora() || criando()"
+            [disabled]="!novaMesaNome().trim() || !novaMesaData() || !novaMesaHora() || criando()"
             (click)="criarMesa()"
           >
             @if (criando()) {
@@ -161,15 +176,30 @@
             <div class="mesa-link-section">
               @if (linkEditandoId() === mesa.id) {
                 <div class="mesa-edit-form">
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Data e hora da mesa</mat-label>
-                    <input
-                      matInput
-                      type="datetime-local"
-                      [ngModel]="novaData()"
-                      (ngModelChange)="novaData.set($event)"
-                    />
-                  </mat-form-field>
+                  <div class="datahora-row">
+                    <mat-form-field appearance="outline" class="flex-1">
+                      <mat-label>Data da mesa</mat-label>
+                      <input
+                        matInput
+                        [matDatepicker]="pickerEdit"
+                        [ngModel]="novaDataEdit()"
+                        (ngModelChange)="novaDataEdit.set($event)"
+                        placeholder="dd/mm/aaaa"
+                      />
+                      <mat-datepicker-toggle matIconSuffix [for]="pickerEdit"></mat-datepicker-toggle>
+                      <mat-datepicker #pickerEdit></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="hora-field">
+                      <mat-label>Hora</mat-label>
+                      <input
+                        matInput
+                        type="time"
+                        [ngModel]="novaHoraEdit()"
+                        (ngModelChange)="novaHoraEdit.set($event)"
+                      />
+                    </mat-form-field>
+                  </div>
                   <mat-form-field appearance="outline" class="w-full">
                     <input
                       matInput
@@ -181,7 +211,7 @@
                   <mat-form-field appearance="outline" class="w-full">
                     <textarea
                       matInput
-                      rows="5"
+                      rows="2"
                       class="descricao-textarea"
                       [ngModel]="novaDescricao()"
                       (ngModelChange)="novaDescricao.set($event)"
@@ -195,7 +225,7 @@
                     <button
                       mat-flat-button
                       class="criar-btn"
-                      [disabled]="!novaData()"
+                      [disabled]="!novaDataEdit() || !novaHoraEdit()"
                       (click)="salvarEdicao(mesa.id)"
                     >
                       Salvar

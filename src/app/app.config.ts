@@ -2,6 +2,7 @@ import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalE
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 
 import { registerFontAwesomeIcons } from './core/fontawesome';
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
+    provideNativeDateAdapter(),
     provideRouter(routes),
     provideAppInitializer(() => {
       registerFontAwesomeIcons(inject(FaIconLibrary));

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import { MesasService } from '../../core/mesas/mesas.service';
 import { SessionService } from '../../core/auth/session.service';
@@ -23,6 +24,7 @@ type Filtro = 'todas' | 'abertas';
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
+    MatDatepickerModule,
   ],
   templateUrl: './mesoes.html',
   styleUrl: './mesoes.scss',
@@ -43,10 +45,12 @@ export class MesoesComponent implements OnInit {
   readonly novaMesaNome = signal('');
   readonly novaMesaDescricao = signal('');
   readonly novaMesaLink = signal('');
-  readonly novaMesaDataHora = signal(''); // valor do input datetime-local
+  readonly novaMesaData = signal<Date | null>(null); // datepicker (criação)
+  readonly novaMesaHora = signal(''); // "HH:mm" (criação)
   readonly novoLink = signal('');
   readonly novaDescricao = signal('');
-  readonly novaData = signal(''); // valor do input datetime-local (edição)
+  readonly novaDataEdit = signal<Date | null>(null); // datepicker (edição)
+  readonly novaHoraEdit = signal(''); // "HH:mm" (edição)
 
   readonly mesasFiltradas = computed(() => {
     const todas = this.mesas();
@@ -89,13 +93,14 @@ export class MesoesComponent implements OnInit {
 
   criarMesa(): void {
     const nome = this.novaMesaNome().trim();
-    const dataHoraLocal = this.novaMesaDataHora();
-    if (!nome || !dataHoraLocal) return;
+    const data = this.novaMesaData();
+    const hora = this.novaMesaHora();
+    if (!nome || !data || !hora) return;
 
     this.criando.set(true);
     const payload = {
       nome,
-      dataHora: this.localParaIso(dataHoraLocal),
+      dataHora: this.dataHoraParaIso(data, hora),
       ...(this.novaMesaDescricao().trim() ? { descricao: this.novaMesaDescricao().trim() } : {}),
       ...(this.novaMesaLink().trim() ? { linkPartida: this.novaMesaLink().trim() } : {}),
     };
@@ -121,25 +126,28 @@ export class MesoesComponent implements OnInit {
     this.linkEditandoId.set(mesa.id);
     this.novoLink.set(mesa.linkPartida ?? '');
     this.novaDescricao.set(mesa.descricao ?? '');
-    this.novaData.set(this.isoParaLocal(mesa.dataHora));
+    this.novaDataEdit.set(this.isoParaData(mesa.dataHora));
+    this.novaHoraEdit.set(this.isoParaHora(mesa.dataHora));
   }
 
   cancelarEdicaoLink(): void {
     this.linkEditandoId.set(null);
     this.novoLink.set('');
     this.novaDescricao.set('');
-    this.novaData.set('');
+    this.novaDataEdit.set(null);
+    this.novaHoraEdit.set('');
   }
 
   salvarEdicao(mesaId: string): void {
     const link = this.novoLink().trim();
     const descricao = this.novaDescricao().trim();
-    const dataHoraLocal = this.novaData();
-    if (!dataHoraLocal) return;
+    const data = this.novaDataEdit();
+    const hora = this.novaHoraEdit();
+    if (!data || !hora) return;
 
     this.mesasService
       .editar(mesaId, {
-        dataHora: this.localParaIso(dataHoraLocal),
+        dataHora: this.dataHoraParaIso(data, hora),
         linkPartida: link || undefined,
         descricao,
       })
@@ -172,35 +180,38 @@ export class MesoesComponent implements OnInit {
     this.novaMesaNome.set('');
     this.novaMesaDescricao.set('');
     this.novaMesaLink.set('');
-    this.novaMesaDataHora.set('');
+    this.novaMesaData.set(null);
+    this.novaMesaHora.set('');
   }
 
   // Fuso fixo do projeto: UTC-3 (America/Sao_Paulo, sem horário de verão).
   private static readonly TZ_OFFSET_MIN = -180;
 
   /**
-   * Converte o valor do input datetime-local ("YYYY-MM-DDTHH:mm"), interpretado
-   * como horário UTC-3, para uma string ISO em UTC para enviar ao backend.
+   * Combina a data do datepicker (ano/mês/dia local do objeto Date) com a hora
+   * "HH:mm", interpretados como UTC-3, e devolve string ISO em UTC.
    */
-  private localParaIso(local: string): string {
-    const [dataParte, horaParte] = local.split('T');
-    const [ano, mes, dia] = dataParte.split('-').map(Number);
-    const [hora, minuto] = horaParte.split(':').map(Number);
-    // Instante UTC = horário local - offset (offset é negativo, então subtrai um valor negativo = soma).
-    const utcMs = Date.UTC(ano, mes - 1, dia, hora, minuto) - MesoesComponent.TZ_OFFSET_MIN * 60 * 1000;
+  private dataHoraParaIso(data: Date, hora: string): string {
+    const [h, min] = hora.split(':').map(Number);
+    const utcMs =
+      Date.UTC(data.getFullYear(), data.getMonth(), data.getDate(), h, min) -
+      MesoesComponent.TZ_OFFSET_MIN * 60 * 1000;
     return new Date(utcMs).toISOString();
   }
 
-  /**
-   * Converte uma string ISO (UTC) para o formato do input datetime-local
-   * ("YYYY-MM-DDTHH:mm") no fuso UTC-3.
-   */
-  private isoParaLocal(iso: string): string {
-    const utc = new Date(iso);
-    const localMs = utc.getTime() + MesoesComponent.TZ_OFFSET_MIN * 60 * 1000;
+  /** ISO (UTC) -> objeto Date representando o dia em UTC-3 (para o datepicker). */
+  private isoParaData(iso: string): Date {
+    const localMs = new Date(iso).getTime() + MesoesComponent.TZ_OFFSET_MIN * 60 * 1000;
+    const d = new Date(localMs);
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+
+  /** ISO (UTC) -> "HH:mm" em UTC-3 (para o input de hora). */
+  private isoParaHora(iso: string): string {
+    const localMs = new Date(iso).getTime() + MesoesComponent.TZ_OFFSET_MIN * 60 * 1000;
     const d = new Date(localMs);
     const p = (n: number) => String(n).padStart(2, '0');
-    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}T${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+    return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
   }
 
   /** Exibição amigável no card, sempre em UTC-3. */
