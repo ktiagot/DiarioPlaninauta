@@ -111,7 +111,7 @@
           <div class="field-group">
             <label for="formatos" class="text-white">Formatos</label>
             <mat-form-field appearance="outline" class="w-full">
-              <mat-select id="formatos" formControlName="formatos" multiple>
+              <mat-select id="formatos" formControlName="formatos" multiple placeholder="Selecione">
                 @for (formato of formatosDisponiveis; track formato) {
                   <mat-option [value]="formato">{{ formato }}</mat-option>
                 }
@@ -123,7 +123,7 @@
           <div class="field-group">
             <label for="formatoFavorito" class="text-white">Formato favorito</label>
             <mat-form-field appearance="outline" class="w-full">
-              <mat-select id="formatoFavorito" formControlName="formatoFavorito">
+              <mat-select id="formatoFavorito" formControlName="formatoFavorito" placeholder="Selecione">
                 <mat-option value="">Nenhum</mat-option>
                 @for (formato of formatosDisponiveis; track formato) {
                   <mat-option [value]="formato">{{ formato }}</mat-option>
@@ -136,7 +136,7 @@
           <div class="field-group">
             <label for="diasDisponiveis" class="text-white">Dias disponíveis</label>
             <mat-form-field appearance="outline" class="w-full">
-              <mat-select id="diasDisponiveis" formControlName="diasDisponiveis" multiple>
+              <mat-select id="diasDisponiveis" formControlName="diasDisponiveis" multiple placeholder="Selecione">
                 @for (dia of diasSemana; track dia) {
                   <mat-option [value]="dia">{{ dia }}</mat-option>
                 }

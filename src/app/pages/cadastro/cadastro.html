@@ -161,7 +161,7 @@
         <div class="field-group">
           <label for="formatos" class="text-white">Formatos</label>
           <mat-form-field appearance="outline" class="w-full">
-            <mat-select id="formatos" formControlName="formatos" multiple>
+            <mat-select id="formatos" formControlName="formatos" multiple placeholder="Selecione">
               @for (formato of formatosDisponiveis; track formato) {
                 <mat-option [value]="formato">{{ formato }}</mat-option>
               }

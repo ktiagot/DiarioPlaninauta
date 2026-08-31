@@ -173,8 +173,8 @@
       @if (!somenteLeitura()) {
         <div class="mesa-card__kills-form">
           <mat-form-field appearance="outline" class="mesa-card__kill-field">
-            <mat-label>Eliminador</mat-label>
             <mat-select
+              placeholder="Eliminador"
               [ngModel]="novoEliminadorId()"
               (ngModelChange)="onEliminadorChange($event)"
               [disabled]="limiteEliminacoesAtingido()"
@@ -188,8 +188,8 @@
           <mat-icon class="mesa-card__kills-arrow" aria-hidden="true">arrow_forward</mat-icon>
 
           <mat-form-field appearance="outline" class="mesa-card__kill-field">
-            <mat-label>Eliminado</mat-label>
             <mat-select
+              placeholder="Eliminado"
               [ngModel]="novoEliminadoId()"
               (ngModelChange)="novoEliminadoId.set($event)"
               [disabled]="novoEliminadorId() == null || limiteEliminacoesAtingido()"
