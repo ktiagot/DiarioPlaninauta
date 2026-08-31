@@ -22,5 +22,6 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
 export const PORTAL_GUEST_NAV_ITEMS: PortalNavItem[] = [
   { label: 'Login', path: '/login', exact: true },
   { label: 'Cadastro', path: '/cadastro', exact: true },
+  { label: 'Sugestões', path: '/sugestoes' },
   { label: 'Apoia-se', href: APOIA_SE_URL, external: true },
 ];
