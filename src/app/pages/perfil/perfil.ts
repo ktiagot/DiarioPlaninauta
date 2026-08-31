@@ -21,6 +21,17 @@ import { User } from '../../core/users/users.models';
 import { UsersService } from '../../core/users/users.service';
 import { MinhasMesa } from '../../core/precompeonato/minhas-mesas.models';
 import { MinhasMesasService } from '../../core/precompeonato/minhas-mesas.service';
+import { MesasService } from '../../core/mesas/mesas.service';
+import { Mesa } from '../../core/mesas/mesas.models';
+
+interface MinhaMesaView {
+  id: string;
+  tipo: 'torneio' | 'casual';
+  titulo: string;
+  finalizada: boolean;
+  minhaPosicaoFinal: number | null;
+  jogadores: { nick: string; deckNome: string; posicaoFinal: number | null }[];
+}
 import { PROFILE_PROMOS } from './perfil.constants';
 
 @Component({
@@ -41,6 +52,7 @@ import { PROFILE_PROMOS } from './perfil.constants';
 export class PerfilComponent implements OnInit {
   private readonly usersService = inject(UsersService);
   private readonly minhasMesasService = inject(MinhasMesasService);
+  private readonly mesasService = inject(MesasService);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly faLocationDot = faLocationDot;
@@ -54,6 +66,47 @@ export class PerfilComponent implements OnInit {
   protected readonly isAuthenticated = signal(!!localStorage.getItem('access_token'));
   protected readonly promos = PROFILE_PROMOS;
   protected readonly minhasMesas = signal<MinhasMesa[]>([]);
+  protected readonly minhasMesasCasuais = signal<Mesa[]>([]);
+
+  private readonly userId = localStorage.getItem('user_id');
+
+  /** Formata data/hora da mesa casual em UTC-3. */
+  private formatarDataHora(iso: string): string {
+    return new Date(iso).toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  /** Lista unificada: mesas de torneio + casuais (mesma seção, com tipo). */
+  protected readonly mesasView = computed<MinhaMesaView[]>(() => {
+    const torneio: MinhaMesaView[] = this.minhasMesas().map((m) => ({
+      id: m.id,
+      tipo: 'torneio',
+      titulo: `Rodada ${m.rodadaNumero} — Mesa ${m.numeroMesa}`,
+      finalizada: m.finalizada,
+      minhaPosicaoFinal: m.minhaPosicaoFinal,
+      jogadores: m.jogadores,
+    }));
+
+    const casuais: MinhaMesaView[] = this.minhasMesasCasuais().map((m) => ({
+      id: m.id,
+      tipo: 'casual',
+      titulo: `${m.nome} — ${this.formatarDataHora(m.dataHora)}`,
+      finalizada: m.finalizada,
+      minhaPosicaoFinal: null,
+      jogadores: m.jogadores.map((j) => ({
+        nick: j.nick,
+        deckNome: j.deckNome ?? '',
+        posicaoFinal: j.posicaoFinal,
+      })),
+    }));
+
+    return [...torneio, ...casuais];
+  });
 
   protected readonly displayNick = computed(() => this.profile()?.nick ?? '—');
   protected readonly displayPronome = computed(() => this.profile()?.genero ?? '');
@@ -121,6 +174,13 @@ export class PerfilComponent implements OnInit {
       next: (response) => this.minhasMesas.set(response.mesas),
       error: () => {
         // Silently fail — minhas mesas is not critical
+      },
+    });
+
+    this.mesasService.minhas().subscribe({
+      next: (mesas) => this.minhasMesasCasuais.set(mesas),
+      error: () => {
+        // Silently fail — mesas casuais is not critical
       },
     });
   }

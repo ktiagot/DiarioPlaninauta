@@ -36,6 +36,18 @@ export class MesasController {
     return this.mesasService.findAll(req.user.id);
   }
 
+  @Get('minhas')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Minhas mesas casuais',
+    description: 'Mesas casuais em que o usuário logado é o dono ou participa.',
+  })
+  @ApiOkResponse({ description: 'Minhas mesas casuais.', type: [MesaResponseDto] })
+  minhasMesas(@Request() req: { user: AuthUser }): Promise<MesaResponseDto[]> {
+    return this.mesasService.minhasMesas(req.user.id);
+  }
+
   @Post(':id/entrar')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

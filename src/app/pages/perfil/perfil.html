@@ -191,15 +191,18 @@
     <!-- Minhas Mesas -->
     <section class="mt-2">
       <h2 class="perfil-section-label mb-4 text-base">Minhas Mesas</h2>
-      @if (minhasMesas().length) {
+      @if (mesasView().length) {
         <div class="grid gap-4 sm:grid-cols-2">
-          @for (mesa of minhasMesas(); track mesa.id) {
+          @for (mesa of mesasView(); track mesa.id) {
             <mat-card class="perfil-mesa-card">
               <mat-card-content class="!p-4">
-                <div class="mb-2 flex items-center justify-between">
-                  <span class="text-sm font-bold text-white">
-                    Rodada {{ mesa.rodadaNumero }} — Mesa {{ mesa.numeroMesa }}
+                <div class="mb-2 flex items-center justify-between gap-2">
+                  <span class="text-sm font-bold text-white">{{ mesa.titulo }}</span>
+                  <span class="perfil-mesa-tipo">
+                    {{ mesa.tipo === 'casual' ? 'Casual' : 'Torneio' }}
                   </span>
+                </div>
+                <div class="mb-2 flex items-center justify-end">
                   @if (mesa.finalizada) {
                     <span class="perfil-mesa-badge perfil-mesa-badge--finalizada">Finalizada</span>
                   } @else {

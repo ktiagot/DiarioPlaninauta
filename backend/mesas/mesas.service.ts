@@ -72,6 +72,22 @@ export class MesasService {
     return mesas.map((m) => toMesaResponse(m, viewerUserId));
   }
 
+  /** Mesas casuais em que o usuário é o dono OU participa. */
+  async minhasMesas(userId: string): Promise<MesaResponseDto[]> {
+    const mesas = await this.prisma.mesa.findMany({
+      where: {
+        OR: [
+          { criadorUserId: userId },
+          { jogadores: { some: { userId } } },
+        ],
+      },
+      include: mesaInclude,
+      orderBy: { dataHora: 'asc' },
+    });
+
+    return mesas.map((m) => toMesaResponse(m, userId));
+  }
+
   async entrar(mesaId: string, userId: string): Promise<MesaResponseDto> {
     const mesa = await this.prisma.mesa.findUnique({
       where: { id: mesaId },

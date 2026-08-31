@@ -12,6 +12,10 @@ export class MesasService {
     return this.http.get<Mesa[]>(`${API_URL}/mesas`);
   }
 
+  minhas(): Observable<Mesa[]> {
+    return this.http.get<Mesa[]>(`${API_URL}/mesas/minhas`);
+  }
+
   criar(payload: CreateMesaPayload): Observable<Mesa> {
     return this.http.post<Mesa>(`${API_URL}/mesas`, payload);
   }

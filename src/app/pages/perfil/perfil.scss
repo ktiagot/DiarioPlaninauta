@@ -312,3 +312,16 @@
     color: var(--sys-color-primary);
   }
 }
+
+.perfil-mesa-tipo {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  color: #f58220;
+  background: rgba(245, 130, 32, 0.15);
+  border: 1px solid rgba(245, 130, 32, 0.35);
+}
