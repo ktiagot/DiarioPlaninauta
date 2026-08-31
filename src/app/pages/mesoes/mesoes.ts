@@ -41,6 +41,9 @@ export class MesoesComponent implements OnInit {
   readonly criando = signal(false);
   readonly linkEditandoId = signal<string | null>(null);
   readonly fechandoId = signal<string | null>(null);
+  readonly acaoId = signal<string | null>(null); // mesa em ação (entrar/sair/apagar)
+
+  readonly MAX_JOGADORES = 4;
 
   readonly novaMesaNome = signal('');
   readonly novaMesaDescricao = signal('');
@@ -173,6 +176,72 @@ export class MesoesComponent implements OnInit {
       error: () => {
         this.fechandoId.set(null);
       },
+    });
+  }
+
+  /** Participante (não dono) da mesa. */
+  souParticipante(mesa: Mesa): boolean {
+    return mesa.souMembro && !this.isDono(mesa);
+  }
+
+  mesaCheia(mesa: Mesa): boolean {
+    return mesa.quantidadeJogadores >= this.MAX_JOGADORES;
+  }
+
+  podeEntrar(mesa: Mesa): boolean {
+    return !mesa.souMembro && !mesa.finalizada && !this.mesaCheia(mesa);
+  }
+
+  entrarMesa(mesaId: string): void {
+    this.acaoId.set(mesaId);
+    this.mesasService.entrar(mesaId).subscribe({
+      next: (mesaAtualizada) => {
+        this.mesas.update((list) =>
+          list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
+        );
+        this.acaoId.set(null);
+      },
+      error: () => this.acaoId.set(null),
+    });
+  }
+
+  sairMesa(mesaId: string): void {
+    this.acaoId.set(mesaId);
+    this.mesasService.sair(mesaId).subscribe({
+      next: (mesaAtualizada) => {
+        this.mesas.update((list) =>
+          list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
+        );
+        this.acaoId.set(null);
+      },
+      error: () => this.acaoId.set(null),
+    });
+  }
+
+  removerJogador(mesaId: string, userId: string): void {
+    this.acaoId.set(mesaId);
+    this.mesasService.removerJogador(mesaId, userId).subscribe({
+      next: (mesaAtualizada) => {
+        this.mesas.update((list) =>
+          list.map((m) => (m.id === mesaId ? mesaAtualizada : m)),
+        );
+        this.acaoId.set(null);
+      },
+      error: () => this.acaoId.set(null),
+    });
+  }
+
+  apagarMesa(mesaId: string): void {
+    if (!confirm('Apagar esta mesa? Todos os jogadores serão removidos e a mesa deixará de existir.')) {
+      return;
+    }
+    this.acaoId.set(mesaId);
+    this.mesasService.apagar(mesaId).subscribe({
+      next: () => {
+        this.mesas.update((list) => list.filter((m) => m.id !== mesaId));
+        this.acaoId.set(null);
+      },
+      error: () => this.acaoId.set(null),
     });
   }
 

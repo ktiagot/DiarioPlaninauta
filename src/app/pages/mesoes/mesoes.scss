@@ -117,7 +117,7 @@
 }
 
 // --- Jogadores ---
-.mesa-jogadores {
+.mesa-jogadores-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -133,10 +133,32 @@
   flex-shrink: 0;
 }
 
-.jogadores-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.jogadores-count-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.jogadores-vazio {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0.25rem 0 0 1.6rem;
+}
+
+.jogadores-lista {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.jogador-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
 }
 
 .jogador-nick {
@@ -144,10 +166,35 @@
   font-weight: 500;
 }
 
-.jogadores-count {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.75rem;
-  flex-shrink: 0;
+.jogador-dono-tag {
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #f58220;
+  background: rgba(245, 130, 32, 0.15);
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.35rem;
+  vertical-align: middle;
+}
+
+.jogador-deck {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  margin-left: 0.25rem;
+}
+
+.remover-jogador-btn {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  color: #f87171 !important;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 // --- Link section ---
@@ -206,6 +253,50 @@
     width: 1rem;
     height: 1rem;
   }
+}
+
+.entrar-btn {
+  background: #f58220 !important;
+  color: #1a1a1a !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.sair-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.8rem !important;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.apagar-btn {
+  color: #f87171 !important;
+  font-size: 0.8rem !important;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.mesa-cheia-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
 }
 
 // Placeholder padronizado em todos os campos (input + textarea)

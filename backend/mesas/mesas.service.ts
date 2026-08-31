@@ -32,6 +32,9 @@ const mesaInclude = {
   eliminacoes: true,
 } as const;
 
+/** Capacidade máxima de uma mesa casual (contando o dono). */
+const MAX_JOGADORES = 4;
+
 @Injectable()
 export class MesasService {
   constructor(
@@ -39,13 +42,100 @@ export class MesasService {
     private readonly preconsService: PreconsService,
   ) {}
 
-  async findAll(): Promise<MesaResponseDto[]> {
+  async findAll(viewerUserId?: string): Promise<MesaResponseDto[]> {
     const mesas = await this.prisma.mesa.findMany({
       include: mesaInclude,
       orderBy: { createdAt: 'asc' },
     });
 
-    return mesas.map(toMesaResponse);
+    return mesas.map((m) => toMesaResponse(m, viewerUserId));
+  }
+
+  async entrar(mesaId: string, userId: string): Promise<MesaResponseDto> {
+    const mesa = await this.prisma.mesa.findUnique({
+      where: { id: mesaId },
+      include: mesaInclude,
+    });
+
+    if (!mesa) {
+      throw new NotFoundException(`Mesa com id "${mesaId}" não encontrada.`);
+    }
+    if (mesa.finalizada) {
+      throw new ConflictException('Esta mesa já foi finalizada.');
+    }
+    if (mesa.jogadores.some((j) => j.userId === userId)) {
+      throw new ConflictException('Você já está nesta mesa.');
+    }
+    if (mesa.jogadores.length >= MAX_JOGADORES) {
+      throw new ConflictException(`A mesa já está cheia (máximo ${MAX_JOGADORES} jogadores).`);
+    }
+
+    await this.prisma.mesaJogador.create({
+      data: { mesaId, userId },
+    });
+
+    return this.retornarMesa(mesaId, userId);
+  }
+
+  async sair(mesaId: string, userId: string): Promise<MesaResponseDto> {
+    const mesa = await this.prisma.mesa.findUnique({
+      where: { id: mesaId },
+      include: mesaInclude,
+    });
+
+    if (!mesa) {
+      throw new NotFoundException(`Mesa com id "${mesaId}" não encontrada.`);
+    }
+    if (mesa.criadorUserId === userId) {
+      throw new ConflictException(
+        'O dono não pode sair da mesa. Apague a mesa se quiser encerrá-la.',
+      );
+    }
+    const participa = mesa.jogadores.some((j) => j.userId === userId);
+    if (!participa) {
+      throw new ConflictException('Você não está nesta mesa.');
+    }
+
+    await this.prisma.mesaJogador.delete({
+      where: { mesaId_userId: { mesaId, userId } },
+    });
+
+    return this.retornarMesa(mesaId, userId);
+  }
+
+  async removerJogador(
+    mesaId: string,
+    donoUserId: string,
+    alvoUserId: string,
+  ): Promise<MesaResponseDto> {
+    const mesa = await this.findMesaDoDono(mesaId, donoUserId);
+
+    if (alvoUserId === mesa.criadorUserId) {
+      throw new ConflictException('O dono não pode ser removido da própria mesa.');
+    }
+    if (!mesa.jogadores.some((j) => j.userId === alvoUserId)) {
+      throw new NotFoundException('Este jogador não está na mesa.');
+    }
+
+    await this.prisma.mesaJogador.delete({
+      where: { mesaId_userId: { mesaId, userId: alvoUserId } },
+    });
+
+    return this.retornarMesa(mesaId, donoUserId);
+  }
+
+  async apagar(mesaId: string, userId: string): Promise<void> {
+    await this.findMesaDoDono(mesaId, userId);
+    // Cascade remove jogadores e eliminações.
+    await this.prisma.mesa.delete({ where: { id: mesaId } });
+  }
+
+  private async retornarMesa(mesaId: string, viewerUserId: string): Promise<MesaResponseDto> {
+    const mesa = await this.prisma.mesa.findUniqueOrThrow({
+      where: { id: mesaId },
+      include: mesaInclude,
+    });
+    return toMesaResponse(mesa, viewerUserId);
   }
 
   async create(userId: string, dto: CreateMesaDto): Promise<MesaResponseDto> {
@@ -71,7 +161,7 @@ export class MesasService {
       },
       include: mesaInclude,
     });
-    return toMesaResponse(mesa);
+    return toMesaResponse(mesa, userId);
   }
 
   async updateLink(
@@ -91,7 +181,7 @@ export class MesasService {
       include: mesaInclude,
     });
 
-    return toMesaResponse(atualizada);
+    return toMesaResponse(atualizada, userId);
   }
 
   async update(
@@ -115,7 +205,7 @@ export class MesasService {
       include: mesaInclude,
     });
 
-    return toMesaResponse(atualizada);
+    return toMesaResponse(atualizada, userId);
   }
 
   async fechar(mesaId: string, userId: string): Promise<MesaResponseDto> {
@@ -131,7 +221,7 @@ export class MesasService {
       include: mesaInclude,
     });
 
-    return toMesaResponse(atualizada);
+    return toMesaResponse(atualizada, userId);
   }
 
   /**

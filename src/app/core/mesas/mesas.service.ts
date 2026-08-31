@@ -30,4 +30,20 @@ export class MesasService {
   fechar(mesaId: string): Observable<Mesa> {
     return this.http.patch<Mesa>(`${API_URL}/mesas/${mesaId}/fechar`, {});
   }
+
+  entrar(mesaId: string): Observable<Mesa> {
+    return this.http.post<Mesa>(`${API_URL}/mesas/${mesaId}/entrar`, {});
+  }
+
+  sair(mesaId: string): Observable<Mesa> {
+    return this.http.delete<Mesa>(`${API_URL}/mesas/${mesaId}/sair`);
+  }
+
+  removerJogador(mesaId: string, userId: string): Observable<Mesa> {
+    return this.http.delete<Mesa>(`${API_URL}/mesas/${mesaId}/jogadores/${userId}`);
+  }
+
+  apagar(mesaId: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/mesas/${mesaId}`);
+  }
 }

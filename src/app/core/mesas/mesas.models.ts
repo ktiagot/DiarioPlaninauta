@@ -15,6 +15,7 @@ export interface Mesa {
   descricao: string | null;
   dataHora: string;
   linkPartida: string | null;
+  souMembro: boolean;
   finalizada: boolean;
   criadorUserId: string | null;
   quantidadeJogadores: number;

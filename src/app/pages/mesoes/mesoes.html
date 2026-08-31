@@ -153,24 +153,42 @@
             }
 
             <!-- Jogadores -->
-            <div class="mesa-jogadores">
+            <div class="mesa-jogadores-header">
               <mat-icon class="jogadores-icon">group</mat-icon>
-              <span class="jogadores-text">
-                @if (mesa.jogadores.length === 0) {
-                  Sem jogadores
-                } @else {
-                  @for (j of mesa.jogadores; track j.userId; let last = $last) {
+              <span class="jogadores-count-label">
+                Jogadores ({{ mesa.quantidadeJogadores }}/{{ MAX_JOGADORES }})
+              </span>
+            </div>
+            @if (mesa.jogadores.length === 0) {
+              <p class="jogadores-vazio">Sem jogadores ainda.</p>
+            } @else {
+              <ul class="jogadores-lista">
+                @for (j of mesa.jogadores; track j.userId) {
+                  <li class="jogador-item">
                     <span class="jogador-nick">
                       {{ j.nick }}
+                      @if (mesa.criadorUserId === j.userId) {
+                        <span class="jogador-dono-tag">dono</span>
+                      }
                       @if (j.deckNome) {
                         <span class="jogador-deck">({{ j.deckNome }})</span>
                       }
-                    </span>{{ last ? '' : ', ' }}
-                  }
+                    </span>
+                    @if (!mesa.finalizada && isDono(mesa) && mesa.criadorUserId !== j.userId) {
+                      <button
+                        mat-icon-button
+                        class="remover-jogador-btn"
+                        title="Remover jogador"
+                        [disabled]="acaoId() === mesa.id"
+                        (click)="removerJogador(mesa.id, j.userId)"
+                      >
+                        <mat-icon>person_remove</mat-icon>
+                      </button>
+                    }
+                  </li>
                 }
-              </span>
-              <span class="jogadores-count">({{ mesa.quantidadeJogadores }})</span>
-            </div>
+              </ul>
+            }
 
             <!-- Link da partida -->
             <div class="mesa-link-section">
@@ -234,7 +252,7 @@
                 </div>
               } @else {
                 <div class="mesa-link-actions">
-                  @if (mesa.linkPartida) {
+                  @if (mesa.souMembro && mesa.linkPartida) {
                     <a
                       [href]="mesa.linkPartida"
                       target="_blank"
@@ -244,6 +262,46 @@
                       <mat-icon>open_in_new</mat-icon>
                       Abrir Partida
                     </a>
+                  }
+
+                  @if (podeEntrar(mesa)) {
+                    <button
+                      mat-flat-button
+                      class="entrar-btn"
+                      [disabled]="acaoId() === mesa.id"
+                      (click)="entrarMesa(mesa.id)"
+                    >
+                      @if (acaoId() === mesa.id) {
+                        <mat-spinner diameter="16"></mat-spinner>
+                      } @else {
+                        <ng-container>
+                          <mat-icon>login</mat-icon>
+                          Entrar
+                        </ng-container>
+                      }
+                    </button>
+                  }
+
+                  @if (!mesa.finalizada && mesaCheia(mesa) && !mesa.souMembro) {
+                    <span class="mesa-cheia-tag">Mesa cheia</span>
+                  }
+
+                  @if (souParticipante(mesa) && !mesa.finalizada) {
+                    <button
+                      mat-button
+                      class="sair-btn"
+                      [disabled]="acaoId() === mesa.id"
+                      (click)="sairMesa(mesa.id)"
+                    >
+                      @if (acaoId() === mesa.id) {
+                        <mat-spinner diameter="16"></mat-spinner>
+                      } @else {
+                        <ng-container>
+                          <mat-icon>logout</mat-icon>
+                          Sair
+                        </ng-container>
+                      }
+                    </button>
                   }
 
                   @if (!mesa.finalizada && isDono(mesa)) {
@@ -268,6 +326,22 @@
                         <ng-container>
                           <mat-icon>lock</mat-icon>
                           Fechar Mesa
+                        </ng-container>
+                      }
+                    </button>
+
+                    <button
+                      mat-button
+                      class="apagar-btn"
+                      [disabled]="acaoId() === mesa.id"
+                      (click)="apagarMesa(mesa.id)"
+                    >
+                      @if (acaoId() === mesa.id) {
+                        <mat-spinner diameter="16"></mat-spinner>
+                      } @else {
+                        <ng-container>
+                          <mat-icon>delete</mat-icon>
+                          Apagar Mesa
                         </ng-container>
                       }
                     </button>

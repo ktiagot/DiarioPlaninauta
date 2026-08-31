@@ -50,8 +50,15 @@ export class MesaResponseDto {
   @ApiProperty({ example: 4 })
   quantidadeJogadores: number;
 
-  @ApiPropertyOptional({ example: 'https://twitch.tv/exemplo', nullable: true })
+  @ApiPropertyOptional({
+    example: 'https://twitch.tv/exemplo',
+    nullable: true,
+    description: 'Visível apenas para o dono e participantes da mesa.',
+  })
   linkPartida: string | null;
+
+  @ApiProperty({ example: false, description: 'Se o usuário atual está na mesa (dono ou participante)' })
+  souMembro: boolean;
 
   @ApiProperty({ example: false })
   finalizada: boolean;

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Body, Param, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -24,13 +24,75 @@ export class MesasController {
   constructor(private readonly mesasService: MesasService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Listar mesas',
-    description: 'Retorna todas as mesas com jogadores (dados de users) e eliminações.',
+    description:
+      'Retorna todas as mesas. O link da partida só é incluído para o dono e participantes.',
   })
   @ApiOkResponse({ description: 'Lista de mesas.', type: [MesaResponseDto] })
-  findAll(): Promise<MesaResponseDto[]> {
-    return this.mesasService.findAll();
+  findAll(@Request() req: { user: AuthUser }): Promise<MesaResponseDto[]> {
+    return this.mesasService.findAll(req.user.id);
+  }
+
+  @Post(':id/entrar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Entrar em uma mesa casual aberta' })
+  @ApiOkResponse({ description: 'Entrou na mesa.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
+  @ApiConflictResponse({ description: 'Mesa cheia, finalizada, ou já participa.' })
+  entrar(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.entrar(id, req.user.id);
+  }
+
+  @Delete(':id/sair')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sair de uma mesa casual' })
+  @ApiOkResponse({ description: 'Saiu da mesa.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
+  @ApiConflictResponse({ description: 'Você não está na mesa ou é o dono.' })
+  sair(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.sair(id, req.user.id);
+  }
+
+  @Delete(':id/jogadores/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remover um jogador da mesa (apenas o dono)' })
+  @ApiOkResponse({ description: 'Jogador removido.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Mesa ou jogador não encontrado.' })
+  @ApiConflictResponse({ description: 'Não é possível remover o dono.' })
+  removerJogador(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+    @Param('userId') alvoUserId: string,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.removerJogador(id, req.user.id, alvoUserId);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Apagar mesa casual (apenas o dono)' })
+  @ApiNotFoundResponse({ description: 'Mesa não encontrada.' })
+  async apagar(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+  ): Promise<void> {
+    await this.mesasService.apagar(id, req.user.id);
   }
 
   @Post()

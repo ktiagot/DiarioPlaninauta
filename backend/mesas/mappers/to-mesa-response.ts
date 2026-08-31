@@ -16,14 +16,24 @@ type MesaComRelacoes = Mesa & {
   eliminacoes: Eliminacao[];
 };
 
-export function toMesaResponse(mesa: MesaComRelacoes): MesaResponseDto {
+export function toMesaResponse(
+  mesa: MesaComRelacoes,
+  viewerUserId?: string,
+): MesaResponseDto {
+  const souMembro =
+    !!viewerUserId &&
+    (mesa.criadorUserId === viewerUserId ||
+      mesa.jogadores.some((j) => j.userId === viewerUserId));
+
   return {
     id: mesa.id,
     nome: mesa.nome,
     descricao: mesa.descricao,
     dataHora: mesa.dataHora.toISOString(),
     quantidadeJogadores: mesa.jogadores.length,
-    linkPartida: mesa.linkPartida,
+    // Link visível apenas para o dono e participantes da mesa.
+    linkPartida: souMembro ? mesa.linkPartida : null,
+    souMembro,
     finalizada: mesa.finalizada,
     criadorUserId: mesa.criadorUserId,
     jogadores: mesa.jogadores.map((jogador) => ({
