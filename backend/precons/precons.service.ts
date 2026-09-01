@@ -23,6 +23,15 @@ interface ParsedPrecon {
   comandantes: ParsedComandante[];
 }
 
+/** Entrada do índice DeckList.json do MTGJSON. */
+interface DeckListItem {
+  code: string;
+  fileName: string;
+  name: string;
+  releaseDate: string;
+  type: string;
+}
+
 const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G'];
 
 /** Ordena e junta uma color identity em string canônica WUBRG. Ex: ["G","U"] -> "UG". */
@@ -48,6 +57,8 @@ import {
 const preconInclude = {
   comandantes: { orderBy: { ordem: 'asc' as const } },
 };
+
+const MTGJSON_BASE = 'https://mtgjson.com/api/v5';
 
 @Injectable()
 export class PreconsService {
@@ -231,8 +242,9 @@ export class PreconsService {
   }
 
   /**
-   * Sincroniza o catálogo de precons a partir do repositório público
-   * Westly/CommanderPrecons (precons oficiais extraídos do Moxfield).
+   * Sincroniza o catálogo de precons a partir do MTGJSON.
+   * Fonte: DeckList.json (índice) + decks/<fileName>.json (deck individual).
+   * Considera apenas decks do tipo "Commander Deck".
    * Upsert por (nome + setNome). Não remove precons existentes.
    */
   async sync(): Promise<{
@@ -241,19 +253,19 @@ export class PreconsService {
     total: number;
     falhas: number;
   }> {
-    const arquivos = await this.listarArquivosRepo();
+    const commanderDecks = await this.listarCommanderDecks();
 
-    // Baixa e parseia em paralelo com concorrência limitada (evita rate limit e é rápido).
+    // Baixa e parseia em paralelo com concorrência limitada.
     const parsedList: ParsedPrecon[] = [];
     let falhas = 0;
     const CONCORRENCIA = 8;
 
-    for (let i = 0; i < arquivos.length; i += CONCORRENCIA) {
-      const lote = arquivos.slice(i, i + CONCORRENCIA);
+    for (let i = 0; i < commanderDecks.length; i += CONCORRENCIA) {
+      const lote = commanderDecks.slice(i, i + CONCORRENCIA);
       const resultados = await Promise.all(
-        lote.map((path) =>
-          this.baixarEParsear(path).catch(() => {
-            this.logger.warn(`Falha ao baixar/parsear precon: ${path}`);
+        lote.map((item) =>
+          this.baixarEParsear(item).catch(() => {
+            this.logger.warn(`Falha ao baixar/parsear precon: ${item.fileName}`);
             return null;
           }),
         ),
@@ -305,29 +317,18 @@ export class PreconsService {
     }
 
     this.logger.log(
-      `Sync precons: ${criados} criados, ${atualizados} atualizados, ${falhas} falhas de ${arquivos.length} arquivos.`,
+      `Sync precons: ${criados} criados, ${atualizados} atualizados, ${falhas} falhas de ${commanderDecks.length} decks.`,
     );
 
     return { criados, atualizados, total: parsedList.length, falhas };
-  }
-
-  private githubHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
-      'User-Agent': 'diario-planinauta',
-      Accept: 'application/vnd.github+json',
-    };
-    const token = process.env.GITHUB_TOKEN;
-    if (token) headers.Authorization = `Bearer ${token}`;
-    return headers;
   }
 
   private async fetchComRetry(url: string, tentativas = 3): Promise<Response> {
     let ultimoErro: unknown;
     for (let i = 0; i < tentativas; i++) {
       try {
-        const res = await fetch(url, { headers: this.githubHeaders() });
+        const res = await fetch(url, { headers: { 'User-Agent': 'diario-planinauta' } });
         if (res.ok) return res;
-        // 403/429 = rate limit; espera e tenta de novo.
         if (res.status === 403 || res.status === 429) {
           await this.delay(800 * (i + 1));
           continue;
@@ -345,104 +346,94 @@ export class PreconsService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private async listarArquivosRepo(): Promise<string[]> {
-    const url =
-      'https://api.github.com/repos/Westly/CommanderPrecons/git/trees/main?recursive=1';
+  /** Lê o índice DeckList.json e retorna apenas os Commander Decks. */
+  private async listarCommanderDecks(): Promise<DeckListItem[]> {
     let res: Response;
     try {
-      res = await this.fetchComRetry(url);
+      res = await this.fetchComRetry(`${MTGJSON_BASE}/DeckList.json`);
     } catch {
-      throw new BadRequestException('Não foi possível acessar a lista oficial de precons.');
+      throw new BadRequestException('Não foi possível acessar a lista oficial de precons (MTGJSON).');
     }
-    const data = (await res.json()) as { tree?: { path: string; type: string }[] };
-    return (data.tree ?? [])
-      .filter((t) => t.type === 'blob' && t.path.startsWith('precon_json/') && t.path.endsWith('.json'))
-      .map((t) => t.path);
+    const json = (await res.json()) as { data?: DeckListItem[] };
+    return (json.data ?? []).filter((d) => d.type === 'Commander Deck');
   }
 
-  private async baixarEParsear(path: string): Promise<ParsedPrecon | null> {
-    const url = `https://raw.githubusercontent.com/Westly/CommanderPrecons/main/${encodeURI(path)}`;
+  private async baixarEParsear(item: DeckListItem): Promise<ParsedPrecon | null> {
+    const url = `${MTGJSON_BASE}/decks/${encodeURIComponent(item.fileName)}.json`;
     const res = await this.fetchComRetry(url);
 
-    type MoxCard = {
+    type MtgCard = {
       name?: string;
-      set_name?: string;
-      released_at?: string;
-      type_line?: string;
-      oracle_text?: string;
-      color_identity?: string[];
+      type?: string;
+      types?: string[];
+      supertypes?: string[];
+      text?: string;
+      keywords?: string[];
+      colorIdentity?: string[];
+      leadershipSkills?: { commander?: boolean };
     };
-    const deck = (await res.json()) as {
-      name?: string;
-      publicUrl?: string;
-      commanders?: Record<string, { card?: MoxCard }>;
-      main?: MoxCard;
-      mainboard?: Record<string, { card?: MoxCard }>;
+    const json = (await res.json()) as {
+      data?: {
+        commander?: MtgCard[];
+        mainBoard?: MtgCard[];
+      };
     };
+    const deck = json.data;
+    if (!deck) return null;
 
-    const nome = this.limparNomePrecon(deck.name ?? '');
+    const nome = item.name.trim();
     if (!nome) return null;
 
-    const deckUrl = deck.publicUrl?.trim() || null;
+    const setNome = item.code?.trim() || 'Desconhecido';
+    const ano = this.extrairAno(item.releaseDate);
+    const deckUrl = `https://mtgjson.com/decks/${item.fileName}/`;
 
-    // Comandante(s) principal(is) — do bloco commanders (fallback: main).
-    const principaisCards = Object.values(deck.commanders ?? {})
-      .map((c) => c.card)
-      .filter((c): c is MoxCard => !!c?.name);
-    if (principaisCards.length === 0 && deck.main?.name) {
-      principaisCards.push(deck.main);
-    }
-    if (principaisCards.length === 0) return null;
+    const isPartnerCard = (card: MtgCard): boolean =>
+      (card.keywords ?? []).some((k) => /^partner\b/i.test(k)) ||
+      /\bPartner\b/i.test(card.text ?? '');
 
-    const primeira = principaisCards[0];
-    const setNome = primeira.set_name?.trim() || 'Desconhecido';
-    const ano = this.extrairAno(primeira.released_at);
+    const isLegendaryCreature = (card: MtgCard): boolean =>
+      (card.supertypes ?? []).includes('Legendary') && (card.types ?? []).includes('Creature');
 
-    // Color identity do deck = a do comandante principal.
-    const ciDeck = normalizeColorIdentity(primeira.color_identity);
+    const canBeCommander = (card: MtgCard): boolean =>
+      card.leadershipSkills?.commander === true || isLegendaryCreature(card);
 
-    // Monta o mapa de comandantes elegíveis (dedup por nome).
+    // Dedup por nome (lowercase).
     const porNome = new Map<string, ParsedComandante>();
 
-    // 1) principais (marcados como principal, sempre elegíveis)
-    for (const card of principaisCards) {
-      const cardNome = card.name!.trim();
-      porNome.set(cardNome.toLowerCase(), {
-        nome: cardNome,
-        colorIdentity: normalizeColorIdentity(card.color_identity),
-        isPartner: /\bPartner\b/i.test(card.oracle_text ?? ''),
+    // 1) comandante(s) principal(is) do bloco commander.
+    const principais = (deck.commander ?? []).filter((c): c is MtgCard => !!c?.name);
+    for (const card of principais) {
+      const key = card.name!.trim().toLowerCase();
+      porNome.set(key, {
+        nome: card.name!.trim(),
+        colorIdentity: normalizeColorIdentity(card.colorIdentity),
+        isPartner: isPartnerCard(card),
         isPrincipal: true,
       });
     }
 
-    // 2) lendárias do mainboard com color identity EXATAMENTE igual à do deck
-    for (const entry of Object.values(deck.mainboard ?? {})) {
-      const card = entry.card;
-      if (!card?.name || !card.type_line) continue;
-      if (!/Legendary Creature/i.test(card.type_line)) continue;
-      const ci = normalizeColorIdentity(card.color_identity);
-      if (ci !== ciDeck) continue;
-
+    // 2) demais lendárias elegíveis do mainBoard (leadershipSkills.commander).
+    for (const card of deck.mainBoard ?? []) {
+      if (!card?.name) continue;
+      if (!canBeCommander(card)) continue;
       const key = card.name.trim().toLowerCase();
       if (porNome.has(key)) continue;
       porNome.set(key, {
         nome: card.name.trim(),
-        colorIdentity: ci,
-        isPartner: /\bPartner\b/i.test(card.oracle_text ?? ''),
+        colorIdentity: normalizeColorIdentity(card.colorIdentity),
+        isPartner: isPartnerCard(card),
         isPrincipal: false,
       });
     }
 
     const comandantes = [...porNome.values()];
+    if (comandantes.length === 0) return null;
+
     // Deck de partner = 2+ comandantes com a mecânica Partner.
     const isPartnerDeck = comandantes.filter((c) => c.isPartner).length >= 2;
 
     return { nome, setNome, ano, isPartnerDeck, deckUrl, comandantes };
-  }
-
-  /** Remove o sufixo "(... Precon Decklist)" do nome do deck. */
-  private limparNomePrecon(raw: string): string {
-    return raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
   }
 
   private extrairAno(releasedAt?: string): number {
