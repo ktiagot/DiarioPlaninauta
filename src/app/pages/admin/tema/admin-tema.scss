@@ -139,26 +139,46 @@
 }
 
 .tema-preview__palco {
-  background: var(--sys-color-bg);
+  position: relative;
+  background-color: var(--sys-color-bg);
+  background-image: var(--sys-bg-image);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   border: 1px solid var(--sys-color-border);
   border-radius: 0.75rem;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  overflow: hidden;
 }
 
+// Header com o mesmo tom escuro translúcido do portal real.
 .tema-preview__header {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding-bottom: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  margin: -1rem -1rem 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--sys-color-border);
 }
 
 .tema-preview__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
+  background: var(--sys-color-primary);
+  flex-shrink: 0;
 }
 
 .tema-preview__nav {
@@ -172,12 +192,50 @@
   }
 }
 
+.tema-preview__notif {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.6rem;
+  background: var(--sys-color-surface);
+  border-left: 3px solid var(--sys-color-primary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tema-preview__notif-icon {
+  font-size: 1rem;
+}
+
+.tema-preview__notif-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sys-color-text-muted);
+}
+
 .tema-preview__card {
   background: var(--sys-color-surface);
   border: 1px solid var(--sys-color-border);
-  border-radius: 0.75rem;
-  padding: 1rem;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
   text-align: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tema-preview__avatar {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 0.6rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--sys-color-primary);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+  border: 2px solid var(--sys-color-primary);
 }
 
 .tema-preview__card-titulo {
@@ -239,6 +297,11 @@
     color: var(--sys-color-primary);
     border: 1px solid color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
   }
+}
+
+.tema-preview__card--tabela {
+  text-align: left;
+  padding: 0.75rem 1rem;
 }
 
 .tema-preview__tabela {
