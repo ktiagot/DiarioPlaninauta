@@ -193,6 +193,7 @@
   flex-direction: column;
   gap: 0.25rem;
   width: 100%;
+  flex: 1; // ocupa o espaço variável, empurrando as ações para a base
 }
 
 .player-nick {
@@ -273,9 +274,9 @@
 
 // --- Botão contato ---
 .contato-btn {
-  margin-top: 0.5rem;
   font-size: 0.8rem;
   gap: 0.4rem;
+  width: 100%;
 
   mat-icon {
     font-size: 16px;
@@ -302,14 +303,16 @@
 
 .player-acoes {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
-  justify-content: center;
-  margin-top: 0.5rem;
+  width: 100%;
+  margin-top: auto; // fixa as ações na base, alinhando entre cards
+  padding-top: 0.5rem;
 }
 
 .convidar-btn {
   gap: 0.4rem;
+  width: 100%;
 
   mat-icon {
     font-size: 16px;
