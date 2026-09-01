@@ -1,11 +1,8 @@
 .login-banner {
-  width: 620px;
   max-width: 100%;
-  height: auto;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  max-height: 220px;
   object-fit: cover;
+  border-radius: 12px;
 }
 
 .login-card {
@@ -29,11 +26,7 @@
   padding: 28px 30px;
 }
 
-@media (max-width: 600px) {
-  .login-banner {
-    border-radius: 12px;
-  }
-}
+
 
 @media (max-width: 600px) {
   .login-card {
