@@ -54,6 +54,21 @@
 - **Loja de pontos por atividade** (jogar +5, vencer +10, mesa casual +2, perfil completo +5).
   Infra existe (models `Ponto`/`Produto`/`Resgate`), mas o crédito é só manual (admin). Não ativar sem definição.
 
+- **Tema dinâmico configurável pelo admin (esquema de cores global).**
+  Ideia: painel de admin para trocar o "tema" do site (hoje laranja `#f58220` + preto/branco)
+  de forma dinâmica, via variáveis globais de cor.
+  Pendências de decisão antes de implementar:
+  1. O que o admin controla — só a cor primária (a), um conjunto primária/fundo/texto/superfície (b),
+     ou presets de tema prontos (c)?
+  2. Alcance: global (admin define para todos) — provável — ou por usuário?
+  3. Persistência: como é global, precisa de config no backend (tabela/registro de tema) + o front
+     carrega no boot e aplica nas variáveis CSS.
+  Nota técnica: já existe `--sys-color-primary` no `:root` (`src/styles.scss`), mas a cor `#f58220`
+  está **hardcoded em dezenas de arquivos .scss** (comunidade, mesoes, perfil, estatísticas, landing,
+  precompeonato, loja, etc.). Para o tema funcionar em todo o site, essas ocorrências precisam passar
+  a usar `var(--sys-color-primary)`. Abordagem recomendada: faseada — infra (variáveis + endpoint +
+  tela admin) + converter primeiro a cor primária em todos os SCSS; fundo/texto numa fase seguinte.
+
 ### 🔧 Dívida técnica menor
 
 - Helper `hojeRangeUtc` duplicado em `backend/mesas/mesas.service.ts` e
