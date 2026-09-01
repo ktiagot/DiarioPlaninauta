@@ -178,3 +178,16 @@
   flex: 1;
   min-width: 240px;
 }
+
+@media (max-width: 640px) {
+  .precompeonato-tabela__filtros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .precompeonato-tabela__campeonato,
+  .precompeonato-tabela__filtros .precompeonato-tabela__search {
+    min-width: 0;
+    width: 100%;
+  }
+}

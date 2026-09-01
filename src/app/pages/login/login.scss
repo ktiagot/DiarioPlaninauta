@@ -19,6 +19,18 @@
   padding: 41px 38px;
 }
 
+@media (max-width: 600px) {
+  .login-card {
+    padding: 24px 18px;
+    border-radius: 1.25rem;
+  }
+
+  .form-container {
+    padding: 20px 16px;
+    border-radius: 1rem;
+  }
+}
+
 // Ensure the card footer link stretches full width
 mat-card-footer {
   a[mat-stroked-button] {

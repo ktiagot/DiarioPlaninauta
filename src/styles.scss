@@ -225,7 +225,7 @@ select,
 
   .mat-mdc-form-field-icon-prefix,
   .mat-mdc-form-field-icon-suffix {
-    color: $sys-color-primary;
+    color: var(--sys-color-primary);
   }
 }
 
@@ -234,7 +234,7 @@ select {
   background-color: rgba(217, 217, 217, 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid $sys-color-primary;
+  border: 1px solid var(--sys-color-primary);
   border-radius: 1.5rem;
   box-sizing: border-box;
   color: $sys-color-white;
@@ -253,7 +253,7 @@ select {
 
   &:focus {
     outline: none;
-    border-color: $sys-color-primary;
+    border-color: var(--sys-color-primary);
     background-color: rgba(217, 217, 217, 0.16);
   }
 }
@@ -262,7 +262,7 @@ textarea:not(.mat-mdc-input-element) {
   background-color: rgba(217, 217, 217, 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid $sys-color-primary;
+  border: 1px solid var(--sys-color-primary);
   border-radius: 1.5rem;
   box-sizing: border-box;
   color: $sys-color-white;
@@ -280,13 +280,13 @@ textarea:not(.mat-mdc-input-element) {
 
   &:focus {
     outline: none;
-    border-color: $sys-color-primary;
+    border-color: var(--sys-color-primary);
     background-color: rgba(217, 217, 217, 0.16);
   }
 }
 
 .mat-mdc-unelevated-button.mat-primary:not(:disabled):not(.mat-mdc-button-disabled) {
-  --mat-button-filled-container-color: #{$sys-color-primary};
+  --mat-button-filled-container-color: var(--sys-color-primary);
   --mat-button-filled-label-text-color: #{$sys-color-white};
   --mat-button-filled-state-layer-color: #{$sys-color-white};
   --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-white} 12%, transparent);
@@ -295,9 +295,9 @@ textarea:not(.mat-mdc-input-element) {
 .mat-mdc-unelevated-button.mat-secondary:not(:disabled):not(.mat-mdc-button-disabled),
 .mat-mdc-unelevated-button.mat-accent:not(:disabled):not(.mat-mdc-button-disabled) {
   --mat-button-filled-container-color: #{$sys-color-white};
-  --mat-button-filled-label-text-color: #{$sys-color-primary};
-  --mat-button-filled-state-layer-color: #{$sys-color-primary};
-  --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+  --mat-button-filled-label-text-color: var(--sys-color-primary);
+  --mat-button-filled-state-layer-color: var(--sys-color-primary);
+  --mat-button-filled-ripple-color: color-mix(in srgb, var(--sys-color-primary) 12%, transparent);
 }
 
 .mat-mdc-unelevated-button:disabled,
@@ -309,10 +309,10 @@ textarea:not(.mat-mdc-input-element) {
 .mat-mdc-outlined-button,
 .mat-mdc-outlined-button.mat-primary {
   background-color: #{$sys-color-white};
-  --mat-button-outlined-label-text-color: #{$sys-color-primary};
+  --mat-button-outlined-label-text-color: var(--sys-color-primary);
   --mat-button-outlined-outline-color: #{$sys-color-white};
-  --mat-button-outlined-state-layer-color: #{$sys-color-primary};
-  --mat-button-outlined-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+  --mat-button-outlined-state-layer-color: var(--sys-color-primary);
+  --mat-button-outlined-ripple-color: color-mix(in srgb, var(--sys-color-primary) 12%, transparent);
 }
 
 .mat-mdc-outlined-button:disabled,
@@ -343,7 +343,7 @@ textarea:not(.mat-mdc-input-element) {
     }
 
     &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
-      background: rgba(245, 130, 32, 0.2);
+      background: color-mix(in srgb, var(--sys-color-primary) 20%, transparent);
     }
   }
 
@@ -372,7 +372,7 @@ textarea:not(.mat-mdc-input-element) {
       }
 
       &:focus {
-        border-color: #{$sys-color-primary};
+        border-color: var(--sys-color-primary);
       }
     }
   }
@@ -395,12 +395,12 @@ textarea:not(.mat-mdc-input-element) {
 
 .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label,
 .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
-  color: #{$sys-color-primary} !important;
+  color: var(--sys-color-primary) !important;
 }
 
 .mat-mdc-tab .mdc-tab-indicator__content--underline,
 .mat-mdc-tab-link .mdc-tab-indicator__content--underline {
-  border-color: #{$sys-color-primary} !important;
+  border-color: var(--sys-color-primary) !important;
 }
 
 // ── Form fields (tema escuro) — labels e selects legíveis ────
@@ -415,7 +415,7 @@ textarea:not(.mat-mdc-input-element) {
 
   &.mat-focused .mdc-floating-label,
   &.mat-focused .mat-mdc-floating-label {
-    color: #{$sys-color-primary} !important;
+    color: var(--sys-color-primary) !important;
   }
 
   // Texto do valor selecionado e placeholder do mat-select

@@ -51,16 +51,19 @@
       background: rgba(0, 0, 0, 0.35);
       color: #fff;
       min-width: 140px;
+      max-width: 100%;
+      box-sizing: border-box;
       font-family: inherit;
     }
 
     textarea {
-      min-width: 280px;
+      min-width: 0;
+      width: 100%;
       resize: vertical;
     }
 
     input[type='file'] {
-      min-width: 180px;
+      min-width: 0;
       font-size: 0.75rem;
     }
   }

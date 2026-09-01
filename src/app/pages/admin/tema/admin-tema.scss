@@ -54,6 +54,12 @@
   border-radius: 0.6rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
 }
 
 .tema-cor__info {
@@ -302,6 +308,7 @@
 .tema-preview__card--tabela {
   text-align: left;
   padding: 0.75rem 1rem;
+  overflow-x: auto;
 }
 
 .tema-preview__tabela {
