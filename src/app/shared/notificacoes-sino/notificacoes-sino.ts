@@ -19,7 +19,7 @@ import { NotificacoesService } from '../../core/notificacoes/notificacoes.servic
 import { Notificacao } from '../../core/notificacoes/notificacoes.models';
 import { MesasService } from '../../core/mesas/mesas.service';
 
-const POLLING_INTERVAL_MS = 60_000;
+const POLLING_INTERVAL_MS = 25_000;
 
 @Component({
   selector: 'app-notificacoes-sino',
@@ -178,12 +178,38 @@ export class NotificacoesSinoComponent implements OnInit {
     return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
 
-  private buscarContagem(): void {
+  /**
+   * Atualiza a contagem de não lidas. Quando `reagirANovas` é true (polling),
+   * detecta chegada de novas notificações e atualiza a lista + avisa por toast.
+   */
+  private buscarContagem(reagirANovas = false): void {
     this.notificacoesService
       .contarNaoLidas()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => this.naoLidas.set(res.count),
+        next: (res) => {
+          const anterior = this.naoLidas();
+          this.naoLidas.set(res.count);
+
+          if (reagirANovas && res.count > anterior) {
+            const novas = res.count - anterior;
+            // Se o dropdown está aberto, recarrega a lista para já mostrar.
+            if (this.dropdownAberto()) {
+              this.buscarNotificacoes();
+            }
+            this.snackBar.open(
+              novas === 1 ? 'Você tem uma nova notificação' : `Você tem ${novas} novas notificações`,
+              'Ver',
+              { duration: 6000 },
+            )
+              .onAction()
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe(() => {
+                this.dropdownAberto.set(true);
+                this.buscarNotificacoes();
+              });
+          }
+        },
       });
   }
 
@@ -202,7 +228,7 @@ export class NotificacoesSinoComponent implements OnInit {
   }
 
   private iniciarPolling(): void {
-    this.pollingId = setInterval(() => this.buscarContagem(), POLLING_INTERVAL_MS);
+    this.pollingId = setInterval(() => this.buscarContagem(true), POLLING_INTERVAL_MS);
 
     this.destroyRef.onDestroy(() => {
       if (this.pollingId !== null) {
