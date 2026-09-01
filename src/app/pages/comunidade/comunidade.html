@@ -127,17 +127,42 @@
               }
             </div>
 
-            <!-- Botão ver contato (só se favoritei) -->
-            @if (isFavorito(jogador.id)) {
-              <button
-                mat-stroked-button
-                class="contato-btn"
-                (click)="verContato(jogador.id)"
-              >
-                <mat-icon>contact_phone</mat-icon>
-                Ver contato
-              </button>
-            }
+            <div class="player-acoes">
+              <!-- Botão ver contato (só se favoritei) -->
+              @if (isFavorito(jogador.id)) {
+                <button
+                  mat-stroked-button
+                  class="contato-btn"
+                  (click)="verContato(jogador.id)"
+                >
+                  <mat-icon>contact_phone</mat-icon>
+                  Ver contato
+                </button>
+              }
+
+              <!-- Convidar para uma das minhas mesas abertas -->
+              @if (minhasMesasConvidaveis().length > 0) {
+                <button
+                  mat-stroked-button
+                  class="convidar-btn"
+                  [matMenuTriggerFor]="menuMesas"
+                  [disabled]="convidandoId() === jogador.id"
+                >
+                  <mat-icon>group_add</mat-icon>
+                  Convidar
+                </button>
+                <mat-menu #menuMesas="matMenu">
+                  @for (mesa of minhasMesasConvidaveis(); track mesa.id) {
+                    <button mat-menu-item (click)="convidar(jogador.id, mesa.id)">
+                      {{ mesa.nome }}
+                      <span class="menu-mesa-vagas">
+                        ({{ mesa.quantidadeJogadores }}/{{ MAX_JOGADORES }})
+                      </span>
+                    </button>
+                  }
+                </mat-menu>
+              }
+            </div>
           </div>
         }
       </div>

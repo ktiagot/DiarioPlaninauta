@@ -76,6 +76,8 @@ export class NotificacoesService {
     titulo: string;
     mensagem: string;
     lida: boolean;
+    referenciaTipo: string | null;
+    referenciaId: string | null;
     createdAt: Date;
   }): NotificacaoResponseDto {
     return {
@@ -84,6 +86,8 @@ export class NotificacoesService {
       titulo: notificacao.titulo,
       mensagem: notificacao.mensagem,
       lida: notificacao.lida,
+      referenciaTipo: notificacao.referenciaTipo,
+      referenciaId: notificacao.referenciaId,
       createdAt: notificacao.createdAt,
     };
   }

@@ -6,12 +6,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { ComunidadeService } from '../../core/comunidade/comunidade.service';
 import { JogadorComunidade, ContatoResponse } from '../../core/comunidade/comunidade.models';
+import { MesasService } from '../../core/mesas/mesas.service';
+import { Mesa } from '../../core/mesas/mesas.models';
 
 @Component({
   selector: 'app-comunidade',
@@ -23,6 +26,7 @@ import { JogadorComunidade, ContatoResponse } from '../../core/comunidade/comuni
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatMenuModule,
     MatTooltipModule,
   ],
   templateUrl: './comunidade.html',
@@ -30,8 +34,15 @@ import { JogadorComunidade, ContatoResponse } from '../../core/comunidade/comuni
 })
 export class ComunidadeComponent implements OnInit {
   private readonly comunidadeService = inject(ComunidadeService);
+  private readonly mesasService = inject(MesasService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly buscaSubject = new Subject<string>();
+
+  protected readonly MAX_JOGADORES = 4;
+
+  /** Minhas mesas que ainda podem receber convidados (abertas e não cheias). */
+  readonly minhasMesasConvidaveis = signal<Mesa[]>([]);
+  readonly convidandoId = signal<string | null>(null);
 
   readonly loading = signal(true);
   readonly jogadores = signal<JogadorComunidade[]>([]);
@@ -194,6 +205,37 @@ export class ComunidadeComponent implements OnInit {
     this.comunidadeService.listarFavoritos().subscribe({
       next: (ids) => this.favoritos.set(new Set(ids)),
       error: () => {},
+    });
+
+    this.carregarMinhasMesasConvidaveis();
+  }
+
+  private carregarMinhasMesasConvidaveis(): void {
+    this.mesasService.minhas().subscribe({
+      next: (mesas) => {
+        const convidaveis = mesas.filter(
+          (m) => !m.finalizada && m.quantidadeJogadores < this.MAX_JOGADORES,
+        );
+        this.minhasMesasConvidaveis.set(convidaveis);
+      },
+      error: () => this.minhasMesasConvidaveis.set([]),
+    });
+  }
+
+  convidar(userId: string, mesaId: string): void {
+    this.convidandoId.set(userId);
+    this.mesasService.convidar(mesaId, userId).subscribe({
+      next: () => {
+        this.convidandoId.set(null);
+        this.snackBar.open('Convite enviado!', 'OK', { duration: 4000 });
+      },
+      error: (err) => {
+        this.convidandoId.set(null);
+        const msg =
+          (typeof err?.error?.message === 'string' ? err.error.message : null) ||
+          'Não foi possível enviar o convite.';
+        this.snackBar.open(msg, 'OK', { duration: 5000 });
+      },
     });
   }
 }

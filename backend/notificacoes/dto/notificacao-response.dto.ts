@@ -16,6 +16,12 @@ export class NotificacaoResponseDto {
   @ApiProperty({ description: 'Se foi lida' })
   lida!: boolean;
 
+  @ApiProperty({ description: 'Tipo do recurso referenciado (ex.: convite_mesa)', nullable: true })
+  referenciaTipo!: string | null;
+
+  @ApiProperty({ description: 'ID do recurso referenciado (ex.: id do convite)', nullable: true })
+  referenciaId!: string | null;
+
   @ApiProperty({ description: 'Data de criação' })
   createdAt!: Date;
 }

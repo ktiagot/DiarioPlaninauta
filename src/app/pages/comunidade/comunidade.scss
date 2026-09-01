@@ -58,7 +58,8 @@
     // Botões stroked (Meus favoritos, Ver contato): borda/label laranja em vez de branco.
     // Cobre tanto a var do MDC quanto o outline desenhado no ripple, com border no host.
     .filter-favoritos,
-    .contato-btn {
+    .contato-btn,
+    .convidar-btn {
       --mdc-outlined-button-label-text-color: #f58220;
       --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.45);
       color: #f58220 !important;
@@ -297,4 +298,27 @@
 // Alinha os selects e o botão pelo topo (o subscript dos selects some com dynamic sizing).
 .filter-selects {
   align-items: flex-start;
+}
+
+.player-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.convidar-btn {
+  gap: 0.4rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.menu-mesa-vagas {
+  color: rgba(0, 0, 0, 0.5);
+  margin-left: 0.25rem;
 }

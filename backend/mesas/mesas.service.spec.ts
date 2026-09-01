@@ -51,7 +51,13 @@ describe('MesasService', () => {
     mesaJogador: { update: jest.Mock; create: jest.Mock; delete: jest.Mock };
     eliminacao: { createMany: jest.Mock };
     user: { findUnique: jest.Mock };
-    notificacao: { createMany: jest.Mock };
+    notificacao: { createMany: jest.Mock; create: jest.Mock; updateMany: jest.Mock };
+    conviteMesa: {
+      findFirst: jest.Mock;
+      findUnique: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
+    };
     $transaction: jest.Mock;
   };
   let precons: { validateOptionalForMesa: jest.Mock };
@@ -70,7 +76,13 @@ describe('MesasService', () => {
       mesaJogador: { update: jest.fn(), create: jest.fn(), delete: jest.fn() },
       eliminacao: { createMany: jest.fn() },
       user: { findUnique: jest.fn().mockResolvedValue({ nick: 'fulano' }) },
-      notificacao: { createMany: jest.fn() },
+      notificacao: { createMany: jest.fn(), create: jest.fn(), updateMany: jest.fn() },
+      conviteMesa: {
+        findFirst: jest.fn(),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+      },
       $transaction: jest.fn(),
     };
 
@@ -294,6 +306,57 @@ describe('MesasService', () => {
       );
 
       await expect(service.entrar(MESA_ID, OTHER_USER)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    });
+  });
+
+  /* ============================================================== */
+  /*  convidar                                                      */
+  /* ============================================================== */
+  describe('convidar', () => {
+    it('cria convite e notifica o convidado quando o solicitante está na mesa', async () => {
+      prisma.mesa.findUnique.mockResolvedValue(
+        fakeMesa({ criadorUserId: USER_ID, jogadores: [{ userId: USER_ID }] }),
+      );
+      prisma.user.findUnique
+        .mockResolvedValueOnce({ id: OTHER_USER }) // alvo existe
+        .mockResolvedValueOnce({ nick: 'dono' }); // convidador
+      prisma.conviteMesa.findFirst.mockResolvedValue(null);
+      prisma.conviteMesa.create.mockResolvedValue({ id: 'conv-1' });
+
+      await service.convidar(MESA_ID, USER_ID, OTHER_USER);
+
+      expect(prisma.conviteMesa.create).toHaveBeenCalledWith({
+        data: { mesaId: MESA_ID, deUserId: USER_ID, paraUserId: OTHER_USER },
+      });
+      const notif = prisma.notificacao.create.mock.calls[0][0];
+      expect(notif.data).toMatchObject({
+        userId: OTHER_USER,
+        tipo: 'convite_mesa',
+        referenciaTipo: 'convite_mesa',
+        referenciaId: 'conv-1',
+      });
+    });
+
+    it('rejeita se o solicitante não está na mesa', async () => {
+      prisma.mesa.findUnique.mockResolvedValue(
+        fakeMesa({ criadorUserId: 'outro', jogadores: [{ userId: 'outro' }] }),
+      );
+
+      await expect(service.convidar(MESA_ID, USER_ID, OTHER_USER)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it('rejeita convite duplicado pendente', async () => {
+      prisma.mesa.findUnique.mockResolvedValue(
+        fakeMesa({ criadorUserId: USER_ID, jogadores: [{ userId: USER_ID }] }),
+      );
+      prisma.user.findUnique.mockResolvedValue({ id: OTHER_USER });
+      prisma.conviteMesa.findFirst.mockResolvedValue({ id: 'conv-x' });
+
+      await expect(service.convidar(MESA_ID, USER_ID, OTHER_USER)).rejects.toBeInstanceOf(
         ConflictException,
       );
     });

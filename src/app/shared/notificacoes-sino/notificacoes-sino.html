@@ -36,8 +36,7 @@
           <div class="notificacoes-sino__empty">Nenhuma notificação</div>
         } @else {
           @for (notificacao of notificacoes(); track notificacao.id) {
-            <button
-              type="button"
+            <div
               class="notificacoes-sino__item"
               [class.notificacoes-sino__item--nao-lida]="!notificacao.lida"
               (click)="marcarComoLida(notificacao)"
@@ -49,9 +48,30 @@
               <div class="notificacoes-sino__content">
                 <span class="notificacoes-sino__item-titulo">{{ notificacao.titulo }}</span>
                 <span class="notificacoes-sino__item-msg">{{ notificacao.mensagem }}</span>
+
+                @if (ehConviteAcionavel(notificacao)) {
+                  <div class="notificacoes-sino__acoes">
+                    <button
+                      type="button"
+                      class="notificacoes-sino__aceitar"
+                      [disabled]="respondendo() === notificacao.id"
+                      (click)="aceitarConvite(notificacao, $event)"
+                    >
+                      Aceitar
+                    </button>
+                    <button
+                      type="button"
+                      class="notificacoes-sino__rejeitar"
+                      [disabled]="respondendo() === notificacao.id"
+                      (click)="rejeitarConvite(notificacao, $event)"
+                    >
+                      Recusar
+                    </button>
+                  </div>
+                }
               </div>
               <span class="notificacoes-sino__tempo">{{ tempoRelativo(notificacao.createdAt) }}</span>
-            </button>
+            </div>
           }
         }
       </div>

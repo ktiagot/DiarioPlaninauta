@@ -88,6 +88,137 @@ export class MesasService {
     return mesas.map((m) => toMesaResponse(m, userId));
   }
 
+  /**
+   * Convida um usuário da comunidade para uma mesa casual.
+   * Quem convida precisa ser dono ou participante da mesa.
+   */
+  async convidar(
+    mesaId: string,
+    deUserId: string,
+    paraUserId: string,
+  ): Promise<void> {
+    if (deUserId === paraUserId) {
+      throw new ConflictException('Você não pode convidar a si mesmo.');
+    }
+
+    const mesa = await this.prisma.mesa.findUnique({
+      where: { id: mesaId },
+      include: { jogadores: { select: { userId: true } } },
+    });
+
+    if (!mesa) {
+      throw new NotFoundException('Mesa não encontrada.');
+    }
+    if (mesa.finalizada) {
+      throw new ConflictException('Esta mesa já foi finalizada.');
+    }
+
+    const solicitanteNaMesa =
+      mesa.criadorUserId === deUserId ||
+      mesa.jogadores.some((j) => j.userId === deUserId);
+    if (!solicitanteNaMesa) {
+      throw new ForbiddenException('Apenas quem está na mesa pode convidar.');
+    }
+
+    if (mesa.jogadores.some((j) => j.userId === paraUserId)) {
+      throw new ConflictException('Este jogador já está na mesa.');
+    }
+    if (mesa.jogadores.length >= MAX_JOGADORES) {
+      throw new ConflictException(`A mesa já está cheia (máximo ${MAX_JOGADORES} jogadores).`);
+    }
+
+    const alvo = await this.prisma.user.findUnique({
+      where: { id: paraUserId },
+      select: { id: true },
+    });
+    if (!alvo) {
+      throw new NotFoundException('Usuário convidado não encontrado.');
+    }
+
+    // Evita convite duplicado pendente para a mesma mesa.
+    const pendente = await this.prisma.conviteMesa.findFirst({
+      where: { mesaId, paraUserId, status: 'PENDENTE' },
+    });
+    if (pendente) {
+      throw new ConflictException('Já existe um convite pendente para este jogador nesta mesa.');
+    }
+
+    const convidador = await this.prisma.user.findUnique({
+      where: { id: deUserId },
+      select: { nick: true },
+    });
+    const nickConvidador = convidador?.nick ?? 'Alguém';
+
+    const convite = await this.prisma.conviteMesa.create({
+      data: { mesaId, deUserId, paraUserId },
+    });
+
+    await this.prisma.notificacao.create({
+      data: {
+        userId: paraUserId,
+        tipo: 'convite_mesa',
+        titulo: 'Convite para uma mesa',
+        mensagem: `${nickConvidador} convidou você para a mesa "${mesa.nome}".`,
+        referenciaTipo: 'convite_mesa',
+        referenciaId: convite.id,
+      },
+    });
+  }
+
+  /** Aceita um convite pendente: o convidado entra na mesa. */
+  async aceitarConvite(conviteId: string, userId: string): Promise<MesaResponseDto> {
+    const convite = await this.prisma.conviteMesa.findUnique({
+      where: { id: conviteId },
+    });
+
+    if (!convite || convite.paraUserId !== userId) {
+      throw new NotFoundException('Convite não encontrado.');
+    }
+    if (convite.status !== 'PENDENTE') {
+      throw new ConflictException('Este convite já foi respondido.');
+    }
+
+    // entrar() valida mesa aberta, não cheia e que ainda não participa.
+    const mesa = await this.entrar(convite.mesaId, userId);
+
+    await this.prisma.conviteMesa.update({
+      where: { id: conviteId },
+      data: { status: 'ACEITO' },
+    });
+
+    // Marca a notificação do convite como lida.
+    await this.prisma.notificacao.updateMany({
+      where: { userId, referenciaTipo: 'convite_mesa', referenciaId: conviteId },
+      data: { lida: true },
+    });
+
+    return mesa;
+  }
+
+  /** Rejeita um convite pendente. */
+  async rejeitarConvite(conviteId: string, userId: string): Promise<void> {
+    const convite = await this.prisma.conviteMesa.findUnique({
+      where: { id: conviteId },
+    });
+
+    if (!convite || convite.paraUserId !== userId) {
+      throw new NotFoundException('Convite não encontrado.');
+    }
+    if (convite.status !== 'PENDENTE') {
+      throw new ConflictException('Este convite já foi respondido.');
+    }
+
+    await this.prisma.conviteMesa.update({
+      where: { id: conviteId },
+      data: { status: 'REJEITADO' },
+    });
+
+    await this.prisma.notificacao.updateMany({
+      where: { userId, referenciaTipo: 'convite_mesa', referenciaId: conviteId },
+      data: { lida: true },
+    });
+  }
+
   async entrar(mesaId: string, userId: string): Promise<MesaResponseDto> {
     const mesa = await this.prisma.mesa.findUnique({
       where: { id: mesaId },

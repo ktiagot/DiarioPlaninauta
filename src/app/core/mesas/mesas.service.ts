@@ -50,4 +50,19 @@ export class MesasService {
   apagar(mesaId: string): Observable<void> {
     return this.http.delete<void>(`${API_URL}/mesas/${mesaId}`);
   }
+
+  convidar(mesaId: string, userId: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(
+      `${API_URL}/mesas/${mesaId}/convidar/${userId}`,
+      {},
+    );
+  }
+
+  aceitarConvite(conviteId: string): Observable<Mesa> {
+    return this.http.post<Mesa>(`${API_URL}/mesas/convites/${conviteId}/aceitar`, {});
+  }
+
+  rejeitarConvite(conviteId: string): Observable<void> {
+    return this.http.post<void>(`${API_URL}/mesas/convites/${conviteId}/rejeitar`, {});
+  }
 }

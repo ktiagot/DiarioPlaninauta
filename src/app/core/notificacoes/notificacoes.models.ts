@@ -8,10 +8,13 @@ export interface Notificacao {
     | 'mesa_entrou'
     | 'campeonato_novo'
     | 'dia_do_evento'
+    | 'convite_mesa'
     | 'geral';
   titulo: string;
   mensagem: string;
   lida: boolean;
+  referenciaTipo?: string | null;
+  referenciaId?: string | null;
   createdAt: string;
 }
 

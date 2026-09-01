@@ -160,3 +160,34 @@
     max-height: calc(100vh - 6rem);
   }
 }
+
+.notificacoes-sino__acoes {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.notificacoes-sino__aceitar,
+.notificacoes-sino__rejeitar {
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.notificacoes-sino__aceitar {
+  background: #f58220;
+  color: #1a1a1a;
+}
+
+.notificacoes-sino__rejeitar {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+}

@@ -81,6 +81,8 @@ model User {
   // --- mesas relations ---
   mesasCriadas       Mesa[]        @relation("MesaCriador")
   mesaJogadores      MesaJogador[] @relation("MesaJogadorUser")
+  convitesEnviados   ConviteMesa[] @relation("ConviteDe")
+  convitesRecebidos  ConviteMesa[] @relation("ConvitePara")
   eliminacoesFeitas  Eliminacao[]  @relation("EliminacaoEliminador")
   eliminacoesSofridas Eliminacao[] @relation("EliminacaoEliminado")
 
@@ -293,6 +295,7 @@ model Mesa {
 
   jogadores    MesaJogador[]
   eliminacoes  Eliminacao[]
+  convites     ConviteMesa[]
   criador      User?         @relation("MesaCriador", fields: [criadorUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
@@ -325,6 +328,31 @@ model MesaJogador {
   @@index([preconId])
   @@index([preconComandanteId])
   @@map("mesa_jogadores")
+}
+
+enum ConviteStatus {
+  PENDENTE
+  ACEITO
+  REJEITADO
+}
+
+model ConviteMesa {
+  id          String        @id @default(uuid())
+  mesaId      String
+  deUserId    String
+  paraUserId  String
+  status      ConviteStatus @default(PENDENTE)
+
+  mesa    Mesa @relation(fields: [mesaId], references: [id], onDelete: Cascade)
+  deUser  User @relation("ConviteDe", fields: [deUserId], references: [id], onDelete: Cascade)
+  paraUser User @relation("ConvitePara", fields: [paraUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mesaId])
+  @@index([paraUserId, status])
+  @@map("convites_mesa")
 }
 
 model Eliminacao {
@@ -416,13 +444,16 @@ model Ponto {
 // =============================================
 
 model Notificacao {
-  id        String   @id @default(uuid())
-  userId    String
-  tipo      String   // rodada_nova, resultado_publicado, favorito_mutuo, pontos_creditados, geral
-  titulo    String
-  mensagem  String
-  lida      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String
+  tipo           String   // rodada_nova, resultado_publicado, favorito_mutuo, pontos_creditados, mesa_entrou, campeonato_novo, dia_do_evento, convite_mesa, geral
+  titulo         String
+  mensagem       String
+  lida           Boolean  @default(false)
+  // Referência opcional (ex.: convite_mesa -> id do ConviteMesa) para ações no front.
+  referenciaTipo String?
+  referenciaId   String?
+  createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

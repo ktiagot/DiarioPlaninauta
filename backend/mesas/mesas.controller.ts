@@ -63,6 +63,52 @@ export class MesasController {
     return this.mesasService.entrar(id, req.user.id);
   }
 
+  @Post('convites/:conviteId/aceitar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Aceitar convite para uma mesa casual' })
+  @ApiOkResponse({ description: 'Convite aceito; entrou na mesa.', type: MesaResponseDto })
+  @ApiNotFoundResponse({ description: 'Convite não encontrado.' })
+  @ApiConflictResponse({ description: 'Convite já respondido ou mesa cheia/finalizada.' })
+  aceitarConvite(
+    @Request() req: { user: AuthUser },
+    @Param('conviteId') conviteId: string,
+  ): Promise<MesaResponseDto> {
+    return this.mesasService.aceitarConvite(conviteId, req.user.id);
+  }
+
+  @Post('convites/:conviteId/rejeitar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Rejeitar convite para uma mesa casual' })
+  @ApiNotFoundResponse({ description: 'Convite não encontrado.' })
+  @ApiConflictResponse({ description: 'Convite já respondido.' })
+  async rejeitarConvite(
+    @Request() req: { user: AuthUser },
+    @Param('conviteId') conviteId: string,
+  ): Promise<void> {
+    await this.mesasService.rejeitarConvite(conviteId, req.user.id);
+  }
+
+  @Post(':id/convidar/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Convidar um usuário da comunidade para a mesa' })
+  @ApiOkResponse({ description: 'Convite enviado.' })
+  @ApiNotFoundResponse({ description: 'Mesa ou usuário não encontrado.' })
+  @ApiConflictResponse({ description: 'Já na mesa, mesa cheia, ou convite pendente.' })
+  async convidar(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+    @Param('userId') paraUserId: string,
+  ): Promise<{ success: boolean }> {
+    await this.mesasService.convidar(id, req.user.id, paraUserId);
+    return { success: true };
+  }
+
   @Delete(':id/sair')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
