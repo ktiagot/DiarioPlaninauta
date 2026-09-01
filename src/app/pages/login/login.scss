@@ -1,5 +1,15 @@
+.login-banner {
+  width: 620px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  object-fit: cover;
+}
+
 .login-card {
-  width: 762px;
+  width: 620px;
   max-width: 100%;
   --mat-card-elevated-container-color: rgba(217, 217, 217, 0.1);
   --mat-card-elevated-container-shape: 45%;
@@ -9,14 +19,20 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6%;
   overflow: hidden;
-  padding: 36px 65px;
+  padding: 28px 48px;
 }
 
 .form-container {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6%;
   overflow: hidden;
-  padding: 41px 38px;
+  padding: 28px 30px;
+}
+
+@media (max-width: 600px) {
+  .login-banner {
+    border-radius: 12px;
+  }
 }
 
 @media (max-width: 600px) {

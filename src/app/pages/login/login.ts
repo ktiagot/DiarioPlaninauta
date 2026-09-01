@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { SessionService } from '../../core/auth/session.service';
+import { API_URL, bannerSrc } from '../../core/config/api.config';
 import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
 
 @Component({
@@ -26,17 +27,28 @@ import { PortalBrandComponent } from '../../shared/portal-brand/portal-brand';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email = '';
   password = '';
   protected readonly loading = signal(false);
+  protected readonly bannerUrl = signal<string | null>(null);
 
   constructor(
     private authService: AuthService,
     private session: SessionService,
     private snackBar: MatSnackBar,
     private router: Router,
+    private http: HttpClient,
   ) {}
+
+  ngOnInit(): void {
+    this.http
+      .get<{ bannerUrl: string | null }>(`${API_URL}/precompeonato/atual`)
+      .subscribe({
+        next: (c) => this.bannerUrl.set(bannerSrc(c?.bannerUrl)),
+        error: () => this.bannerUrl.set(null),
+      });
+  }
 
   createAccount(): void {
     this.router.navigate(['/cadastro']);

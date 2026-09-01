@@ -2,6 +2,10 @@
 
   <app-portal-brand />
 
+  @if (bannerUrl()) {
+    <img [src]="bannerUrl()" alt="Campeonato atual" class="login-banner" />
+  }
+
   <mat-card class="login-card">
     <mat-card-header class="text-center w-full flex flex-col items-center justify-center">
       <mat-card-title class="text-2xl font-bold text-white">Login</mat-card-title>
