@@ -49,6 +49,32 @@ export class NotificacoesService {
     return { count: result.count };
   }
 
+  async excluir(id: string, userId: string): Promise<void> {
+    const notificacao = await this.prisma.notificacao.findFirst({
+      where: { id, userId },
+    });
+
+    if (!notificacao) {
+      throw new NotFoundException('Notificação não encontrada.');
+    }
+
+    await this.prisma.notificacao.delete({ where: { id } });
+  }
+
+  async excluirTodas(userId: string): Promise<{ count: number }> {
+    const result = await this.prisma.notificacao.deleteMany({ where: { userId } });
+    return { count: result.count };
+  }
+
+  /** Remove notificações criadas há mais de 48h. Retorna quantas foram apagadas. */
+  async limparAntigas(): Promise<number> {
+    const limite = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const result = await this.prisma.notificacao.deleteMany({
+      where: { createdAt: { lt: limite } },
+    });
+    return result.count;
+  }
+
   async criar(dto: CreateNotificacaoDto): Promise<NotificacaoResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },

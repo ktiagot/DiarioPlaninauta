@@ -18,15 +18,26 @@
     <div class="notificacoes-sino__dropdown" role="menu" aria-label="Notificações">
       <div class="notificacoes-sino__header">
         <span class="notificacoes-sino__title">Notificações</span>
-        @if (naoLidas() > 0) {
-          <button
-            type="button"
-            class="notificacoes-sino__marcar-todas"
-            (click)="marcarTodasComoLidas()"
-          >
-            Marcar todas como lidas
-          </button>
-        }
+        <div class="notificacoes-sino__header-acoes">
+          @if (naoLidas() > 0) {
+            <button
+              type="button"
+              class="notificacoes-sino__acao-link"
+              (click)="marcarTodasComoLidas()"
+            >
+              Marcar todas como lidas
+            </button>
+          }
+          @if (notificacoes().length > 0) {
+            <button
+              type="button"
+              class="notificacoes-sino__acao-link notificacoes-sino__acao-link--danger"
+              (click)="excluirTodas()"
+            >
+              Excluir todas
+            </button>
+          }
+        </div>
       </div>
 
       <div class="notificacoes-sino__lista">
@@ -70,7 +81,18 @@
                   </div>
                 }
               </div>
-              <span class="notificacoes-sino__tempo">{{ tempoRelativo(notificacao.createdAt) }}</span>
+              <div class="notificacoes-sino__item-meta">
+                <span class="notificacoes-sino__tempo">{{ tempoRelativo(notificacao.createdAt) }}</span>
+                <button
+                  type="button"
+                  class="notificacoes-sino__excluir"
+                  aria-label="Excluir notificação"
+                  matTooltip="Excluir"
+                  (click)="excluir(notificacao, $event)"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
           }
         }

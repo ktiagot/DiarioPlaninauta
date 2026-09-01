@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Body,
   UseGuards,
@@ -72,6 +73,28 @@ export class NotificacoesController {
     @Request() req: { user: AuthUser },
   ): Promise<{ count: number }> {
     return this.notificacoesService.marcarTodasComoLidas(req.user.id);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Excluir uma notificação' })
+  @ApiNotFoundResponse({ description: 'Notificação não encontrada.' })
+  async excluir(
+    @Param('id') id: string,
+    @Request() req: { user: AuthUser },
+  ): Promise<void> {
+    await this.notificacoesService.excluir(id, req.user.id);
+  }
+
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Excluir todas as notificações do usuário logado' })
+  @ApiOkResponse({ description: 'Notificações excluídas.' })
+  excluirTodas(@Request() req: { user: AuthUser }): Promise<{ count: number }> {
+    return this.notificacoesService.excluirTodas(req.user.id);
   }
 
   @Post()

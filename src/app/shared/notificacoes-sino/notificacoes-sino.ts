@@ -86,6 +86,27 @@ export class NotificacoesSinoComponent implements OnInit {
       });
   }
 
+  protected excluir(notificacao: Notificacao, event: MouseEvent): void {
+    event.stopPropagation();
+    this.notificacoesService
+      .excluir(notificacao.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.notificacoes.update((lista) => lista.filter((n) => n.id !== notificacao.id));
+        if (!notificacao.lida) this.naoLidas.update((c) => Math.max(0, c - 1));
+      });
+  }
+
+  protected excluirTodas(): void {
+    this.notificacoesService
+      .excluirTodas()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.notificacoes.set([]);
+        this.naoLidas.set(0);
+      });
+  }
+
   protected ehConviteAcionavel(n: Notificacao): boolean {
     return n.tipo === 'convite_mesa' && !!n.referenciaId && !n.lida;
   }

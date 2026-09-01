@@ -32,4 +32,16 @@ export class NotificacoesService {
       .patch<{ count: number }>(`${API_URL}/notificacoes/ler-todas`, {})
       .pipe(catchError(() => throwError(() => new Error('Não foi possível marcar todas como lidas.'))));
   }
+
+  excluir(id: string): Observable<void> {
+    return this.http
+      .delete<void>(`${API_URL}/notificacoes/${id}`)
+      .pipe(catchError(() => throwError(() => new Error('Não foi possível excluir a notificação.'))));
+  }
+
+  excluirTodas(): Observable<{ count: number }> {
+    return this.http
+      .delete<{ count: number }>(`${API_URL}/notificacoes`)
+      .pipe(catchError(() => throwError(() => new Error('Não foi possível excluir as notificações.'))));
+  }
 }
