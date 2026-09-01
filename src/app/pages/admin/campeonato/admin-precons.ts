@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -34,26 +34,10 @@ export class AdminPreconsComponent implements OnInit {
 
   readonly precons = signal<PreconAdmin[]>([]);
   readonly loading = signal(true);
-  readonly saving = signal(false);
   readonly savingId = signal<string | null>(null);
   readonly syncing = signal(false);
 
-  readonly formNome = signal('');
-  readonly formSetNome = signal('');
-  readonly formAno = signal(new Date().getFullYear());
-  readonly formComandantes = signal<string[]>(['']);
-
   readonly editDrafts = signal<Record<string, PreconDraft>>({});
-
-  readonly podeCriar = computed(() => {
-    const cmds = this.formComandantes().map((c) => c.trim()).filter(Boolean);
-    return (
-      this.formNome().trim() &&
-      this.formSetNome().trim() &&
-      this.formAno() >= 1993 &&
-      cmds.length > 0
-    );
-  });
 
   ngOnInit(): void {
     this.carregar();
@@ -124,56 +108,6 @@ export class AdminPreconsComponent implements OnInit {
       const current = drafts[p.id] ?? this.draftFor(p);
       return { ...drafts, [p.id]: { ...current, [field]: value } };
     });
-  }
-
-  addFormComandante(): void {
-    this.formComandantes.update((list) => [...list, '']);
-  }
-
-  removeFormComandante(index: number): void {
-    this.formComandantes.update((list) => {
-      const next = list.filter((_, i) => i !== index);
-      return next.length ? next : [''];
-    });
-  }
-
-  updateFormComandante(index: number, value: string): void {
-    this.formComandantes.update((list) => {
-      const next = [...list];
-      next[index] = value;
-      return next;
-    });
-  }
-
-  criar(): void {
-    if (!this.podeCriar() || this.saving()) return;
-
-    const comandantes = this.formComandantes().map((c) => c.trim()).filter(Boolean);
-    this.saving.set(true);
-
-    this.preconsService
-      .create({
-        nome: this.formNome().trim(),
-        setNome: this.formSetNome().trim(),
-        ano: this.formAno(),
-        comandantes,
-      })
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this.formNome.set('');
-          this.formSetNome.set('');
-          this.formAno.set(new Date().getFullYear());
-          this.formComandantes.set(['']);
-          this.snackBar.open('Precon cadastrado.', 'Fechar', { duration: 3000 });
-          this.carregar();
-        },
-        error: (err) => {
-          this.snackBar.open(err?.error?.message || 'Erro ao cadastrar.', 'Fechar', {
-            duration: 5000,
-          });
-        },
-      });
   }
 
   salvar(p: PreconAdmin): void {

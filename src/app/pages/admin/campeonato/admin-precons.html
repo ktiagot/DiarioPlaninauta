@@ -4,54 +4,6 @@
   </div>
 } @else {
   <div class="admin-section admin-section--card">
-    <h4>Cadastrar precon</h4>
-    <div class="precon-form">
-      <label>
-        Nome
-        <input type="text" [ngModel]="formNome()" (ngModelChange)="formNome.set($event)" />
-      </label>
-      <label>
-        Set/Coleção
-        <input type="text" [ngModel]="formSetNome()" (ngModelChange)="formSetNome.set($event)" />
-      </label>
-      <label>
-        Ano
-        <input type="number" min="1993" [ngModel]="formAno()" (ngModelChange)="formAno.set(+$event)" />
-      </label>
-      <div class="precon-form__comandantes">
-        <span class="precon-form__label">Comandantes</span>
-        @for (cmd of formComandantes(); track $index) {
-          <div class="precon-form__cmd-row">
-            <input
-              type="text"
-              [ngModel]="cmd"
-              (ngModelChange)="updateFormComandante($index, $event)"
-              placeholder="Nome do comandante"
-            />
-            @if (formComandantes().length > 1) {
-              <button mat-stroked-button type="button" (click)="removeFormComandante($index)">
-                Remover
-              </button>
-            }
-          </div>
-        }
-        <button mat-stroked-button type="button" (click)="addFormComandante()">
-          <mat-icon>add</mat-icon>
-          Comandante
-        </button>
-      </div>
-      <button mat-flat-button color="primary" [disabled]="!podeCriar() || saving()" (click)="criar()">
-        @if (saving()) {
-          <mat-spinner diameter="18" />
-        } @else {
-          <mat-icon>add</mat-icon>
-        }
-        Adicionar precon
-      </button>
-    </div>
-  </div>
-
-  <div class="admin-section admin-section--card">
     <h4>Sincronizar com lista oficial</h4>
     <p class="admin-hint">
       Busca os precons oficiais de Commander e atualiza o cadastro (por nome + set).
