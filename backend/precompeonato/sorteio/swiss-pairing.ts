@@ -63,6 +63,23 @@ function rematchCount(
   return count;
 }
 
+/** Total de reencontros (pares que já jogaram juntos) em um conjunto de mesas. */
+function totalRematches(
+  mesas: SorteioMesa[],
+  players: SorteioPlayer[],
+  opponents: Set<OpponentPairKey>,
+): number {
+  const byId = new Map(players.map((p) => [p.id, p]));
+  let total = 0;
+  for (const mesa of mesas) {
+    const table = mesa.jogadorIds
+      .map((id) => byId.get(id))
+      .filter((p): p is SorteioPlayer => !!p);
+    total += rematchCount(table, opponents);
+  }
+  return total;
+}
+
 function sameDeckCount(table: SorteioPlayer[]): number {
   const counts = new Map<string, number>();
   for (const p of table) {
@@ -197,25 +214,43 @@ export function sortearMesasSuico(
     });
   }
 
-  // Sort by points desc, shuffle within same score
-  const byScore = new Map<number, SorteioPlayer[]>();
-  for (const p of players) {
-    const list = byScore.get(p.pontos) ?? [];
-    list.push(p);
-    byScore.set(p.pontos, list);
-  }
-  const scores = [...byScore.keys()].sort((a, b) => b - a);
-  const ordered: SorteioPlayer[] = [];
-  for (const s of scores) {
-    ordered.push(...shuffle(byScore.get(s)!));
+  const scores = [...new Set(players.map((p) => p.pontos))].sort((a, b) => b - a);
+
+  // Nunca repetir oponente enquanto houver alternativa. O algoritmo é guloso
+  // (mesa a mesa), então uma escolha inicial ruim pode gerar reencontros que
+  // outra ordem evitaria. Fazemos várias tentativas (embaralhando quem tem a
+  // mesma pontuação) e escolhemos a montagem com MENOS reencontros — parando
+  // assim que uma tentativa atinge zero.
+  const TENTATIVAS = 40;
+  let melhor: SorteioMesa[] = [];
+  let melhorRematches = Number.POSITIVE_INFINITY;
+
+  for (let t = 0; t < TENTATIVAS; t++) {
+    // Ordena por pontos (desc), embaralhando dentro do mesmo score.
+    const byScore = new Map<number, SorteioPlayer[]>();
+    for (const p of players) {
+      const list = byScore.get(p.pontos) ?? [];
+      list.push(p);
+      byScore.set(p.pontos, list);
+    }
+    const ordered: SorteioPlayer[] = [];
+    for (const s of scores) {
+      ordered.push(...shuffle(byScore.get(s)!));
+    }
+
+    const mesas = seatPlayers(ordered, sizes, opponents, {
+      hardAvoidRematch: true,
+      softAvoidRematch: true,
+      avoidSameDeck: false,
+    });
+
+    const rematches = totalRematches(mesas, players, opponents);
+    if (rematches < melhorRematches) {
+      melhorRematches = rematches;
+      melhor = mesas;
+      if (rematches === 0) break;
+    }
   }
 
-  const hard = rodadaNumero === 3;
-  const soft = rodadaNumero >= 2;
-
-  return seatPlayers(ordered, sizes, opponents, {
-    hardAvoidRematch: hard,
-    softAvoidRematch: soft,
-    avoidSameDeck: false,
-  });
+  return melhor;
 }

@@ -61,4 +61,18 @@ describe('swiss-pairing', () => {
       expect(ids.has('p1') && ids.has('p2')).toBe(false);
     }
   });
+
+  it('evita rematch já na rodada 2 quando há alternativa', () => {
+    const list: SorteioPlayer[] = players(8).map((p, i) => ({
+      ...p,
+      pontos: i < 4 ? 6 : 3,
+    }));
+    const opponents = new Set([opponentKey('p1', 'p2')]);
+    const mesas = sortearMesasSuico(list, 2, opponents);
+    expect(mesas).toHaveLength(2);
+    for (const mesa of mesas) {
+      const ids = new Set(mesa.jogadorIds);
+      expect(ids.has('p1') && ids.has('p2')).toBe(false);
+    }
+  });
 });
