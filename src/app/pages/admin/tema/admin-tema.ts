@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -35,7 +35,7 @@ const CAMPOS: CampoCor[] = [
   templateUrl: './admin-tema.html',
   styleUrl: './admin-tema.scss',
 })
-export class AdminTemaComponent implements OnInit {
+export class AdminTemaComponent implements OnInit, OnDestroy {
   private readonly temaService = inject(TemaService);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -48,12 +48,30 @@ export class AdminTemaComponent implements OnInit {
 
   protected readonly personalizado = computed(() => this.modo() === 'PERSONALIZADO');
 
+  /** Tema persistido (para reverter o preview ao sair sem salvar). */
+  private temaSalvo: Tema = { ...TEMA_PADRAO };
+  private salvou = false;
+
+  /** Tema montado a partir do formulário (usado no preview). */
+  protected readonly temaPreview = computed<Tema>(() => ({
+    modo: this.modo(),
+    ...this.cores(),
+  }));
+
+  ngOnDestroy(): void {
+    // Se saiu sem salvar, descarta o preview e reaplica o tema persistido.
+    if (!this.salvou) {
+      this.temaService.aplicar(this.temaSalvo);
+    }
+  }
+
   ngOnInit(): void {
     this.temaService
       .obter()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (tema) => {
+          this.temaSalvo = { ...tema };
           this.modo.set(tema.modo);
           this.cores.set({
             primary: tema.primary,
@@ -94,6 +112,8 @@ export class AdminTemaComponent implements OnInit {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: (salvo) => {
+          this.temaSalvo = { ...salvo };
+          this.salvou = true;
           this.temaService.aplicar(salvo);
           this.snackBar.open('Tema atualizado!', 'OK', { duration: 4000 });
         },
