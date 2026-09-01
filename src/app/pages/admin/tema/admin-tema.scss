@@ -1,0 +1,112 @@
+.admin-section--card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.admin-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  margin: 0.25rem 0 1rem;
+}
+
+.tema-modo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.tema-modo__opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+
+  &--ativo {
+    border-color: var(--sys-color-primary);
+    background: color-mix(in srgb, var(--sys-color-primary) 18%, transparent);
+    color: var(--sys-color-primary);
+  }
+}
+
+.tema-cores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.tema-cor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tema-cor__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tema-cor__label {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tema-cor__desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+}
+
+.tema-cor__inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tema-cor__picker {
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.4rem;
+  background: none;
+  cursor: pointer;
+}
+
+.tema-cor__hex {
+  width: 96px;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-family: monospace;
+  text-transform: lowercase;
+}
+
+.tema-restaurar {
+  margin-bottom: 1rem;
+}
+
+.tema-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}

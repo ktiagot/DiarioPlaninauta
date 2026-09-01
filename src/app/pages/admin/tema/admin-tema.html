@@ -1,0 +1,87 @@
+@if (loading()) {
+  <div class="admin-page__loading">
+    <mat-spinner diameter="36" />
+  </div>
+} @else {
+  <div class="admin-section admin-section--card">
+    <h4>Tema do portal</h4>
+    <p class="admin-hint">
+      Escolha entre o tema padrão (laranja) ou personalize as cores. A mudança vale para todos os usuários.
+    </p>
+
+    <div class="tema-modo">
+      <button
+        type="button"
+        class="tema-modo__opcao"
+        [class.tema-modo__opcao--ativo]="!personalizado()"
+        (click)="setModo('PADRAO')"
+      >
+        <mat-icon>palette</mat-icon>
+        Tema padrão
+      </button>
+      <button
+        type="button"
+        class="tema-modo__opcao"
+        [class.tema-modo__opcao--ativo]="personalizado()"
+        (click)="setModo('PERSONALIZADO')"
+      >
+        <mat-icon>tune</mat-icon>
+        Tema personalizado
+      </button>
+    </div>
+
+    @if (personalizado()) {
+      <div class="tema-cores">
+        @for (campo of campos; track campo.chave) {
+          <div class="tema-cor">
+            <div class="tema-cor__info">
+              <span class="tema-cor__label">{{ campo.label }}</span>
+              <span class="tema-cor__desc">{{ campo.descricao }}</span>
+            </div>
+            <div class="tema-cor__inputs">
+              <input
+                type="color"
+                class="tema-cor__picker"
+                [value]="corAtual(campo.chave)"
+                (input)="atualizarCor(campo.chave, $any($event.target).value)"
+              />
+              <input
+                type="text"
+                class="tema-cor__hex"
+                [value]="corAtual(campo.chave)"
+                (change)="atualizarCor(campo.chave, $any($event.target).value)"
+                placeholder="#RRGGBB"
+                maxlength="7"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <button mat-stroked-button type="button" class="tema-restaurar" (click)="restaurarPadrao()">
+        <mat-icon>restart_alt</mat-icon>
+        Restaurar cores padrão
+      </button>
+    } @else {
+      <p class="admin-hint">
+        O tema padrão está ativo. Selecione "Tema personalizado" para editar as cores.
+      </p>
+    }
+
+    <div class="tema-acoes">
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="saving()"
+        (click)="salvar()"
+      >
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        Salvar tema
+      </button>
+    </div>
+  </div>
+}

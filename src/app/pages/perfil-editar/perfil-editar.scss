@@ -34,13 +34,13 @@
   background: none;
 
   &:hover {
-    border-color: rgba(245, 130, 32, 0.6);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 60%, transparent);
     transform: scale(1.05);
   }
 
   &.selected {
-    border-color: #f58220;
-    box-shadow: 0 0 8px rgba(245, 130, 32, 0.4);
+    border-color: var(--sys-color-primary);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--sys-color-primary) 40%, transparent);
   }
 
   img {
@@ -61,7 +61,7 @@
     height: 56px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #f58220;
+    border: 2px solid var(--sys-color-primary);
   }
 }
 
@@ -96,7 +96,7 @@
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(245, 130, 32, 0.1);
+    background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
     color: #fff;
   }
 

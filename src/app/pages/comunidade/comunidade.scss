@@ -48,9 +48,9 @@
     .mat-mdc-form-field {
       --mdc-outlined-text-field-outline-color: rgba(255, 255, 255, 0.25);
       --mdc-outlined-text-field-hover-outline-color: rgba(255, 255, 255, 0.5);
-      --mdc-outlined-text-field-focus-outline-color: #f58220;
+      --mdc-outlined-text-field-focus-outline-color: var(--sys-color-primary);
       --mdc-outlined-text-field-label-text-color: rgba(255, 255, 255, 0.6);
-      --mdc-outlined-text-field-focus-label-text-color: #f58220;
+      --mdc-outlined-text-field-focus-label-text-color: var(--sys-color-primary);
       --mdc-outlined-text-field-input-text-color: white;
       --mat-select-trigger-text-color: white;
     }
@@ -60,32 +60,32 @@
     .filter-favoritos,
     .contato-btn,
     .convidar-btn {
-      --mdc-outlined-button-label-text-color: #f58220;
-      --mdc-outlined-button-outline-color: rgba(245, 130, 32, 0.45);
-      color: #f58220 !important;
-      border-color: rgba(245, 130, 32, 0.45) !important;
+      --mdc-outlined-button-label-text-color: var(--sys-color-primary);
+      --mdc-outlined-button-outline-color: color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
+      color: var(--sys-color-primary) !important;
+      border-color: color-mix(in srgb, var(--sys-color-primary) 45%, transparent) !important;
       padding: 0 1rem !important;
 
       .mdc-button__ripple {
-        border-color: rgba(245, 130, 32, 0.45) !important;
+        border-color: color-mix(in srgb, var(--sys-color-primary) 45%, transparent) !important;
       }
 
       .mdc-button__label {
-        color: #f58220;
+        color: var(--sys-color-primary);
       }
 
       .mat-icon {
-        color: #f58220;
+        color: var(--sys-color-primary);
       }
     }
 
     // Estado ativo do filtro de favoritos.
     .filter-favoritos--ativo {
-      background: rgba(245, 130, 32, 0.18);
-      border-color: #f58220 !important;
+      background: color-mix(in srgb, var(--sys-color-primary) 18%, transparent);
+      border-color: var(--sys-color-primary) !important;
 
       .mdc-button__ripple {
-        border-color: #f58220 !important;
+        border-color: var(--sys-color-primary) !important;
       }
     }
   }
@@ -126,7 +126,7 @@
   transition: border-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    border-color: rgba(245, 130, 32, 0.5);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 50%, transparent);
     transform: translateY(-2px);
   }
 }
@@ -165,12 +165,12 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  border: 2px solid #f58220;
+  border: 2px solid var(--sys-color-primary);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(245, 130, 32, 0.15);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
   flex-shrink: 0;
 
   img {
@@ -182,7 +182,7 @@
   .initials {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #f58220;
+    color: var(--sys-color-primary);
   }
 }
 
@@ -238,9 +238,9 @@
   font-size: 0.7rem;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
-  background: rgba(245, 130, 32, 0.2);
-  color: #f58220;
-  border: 1px solid rgba(245, 130, 32, 0.4);
+  background: color-mix(in srgb, var(--sys-color-primary) 20%, transparent);
+  color: var(--sys-color-primary);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 40%, transparent);
   white-space: nowrap;
 }
 
@@ -269,9 +269,9 @@
   font-size: 0.7rem;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
-  background: rgba(245, 130, 32, 0.1);
-  color: #f58220;
-  border: 1px solid rgba(245, 130, 32, 0.3);
+  background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
+  color: var(--sys-color-primary);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 30%, transparent);
 }
 
 // --- Botão contato ---

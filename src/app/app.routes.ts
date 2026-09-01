@@ -122,6 +122,12 @@ export const routes: Routes = [
               import('./pages/admin/comunidade/admin-comunidade').then((m) => m.AdminComunidadeComponent),
             data: { title: 'Admin — Comunidade' },
           },
+          {
+            path: 'tema',
+            loadComponent: () =>
+              import('./pages/admin/tema/admin-tema').then((m) => m.AdminTemaComponent),
+            data: { title: 'Admin — Tema' },
+          },
         ],
       },
       {

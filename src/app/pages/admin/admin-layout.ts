@@ -22,6 +22,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         >
           Comunidade
         </a>
+        <a
+          routerLink="/admin/tema"
+          routerLinkActive="admin-layout__nav-link--active"
+          class="admin-layout__nav-link"
+        >
+          Tema
+        </a>
       </nav>
       <div class="admin-layout__content">
         <router-outlet />

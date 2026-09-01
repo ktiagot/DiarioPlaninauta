@@ -7,6 +7,7 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 
 import { registerFontAwesomeIcons } from './core/fontawesome';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { TemaService } from './core/tema/tema.service';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -18,6 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAppInitializer(() => {
       registerFontAwesomeIcons(inject(FaIconLibrary));
+      // Carrega e aplica o tema global antes de renderizar.
+      inject(TemaService).carregarEAplicar().subscribe();
     }),
   ],
 };

@@ -53,7 +53,7 @@
   width: 7rem;
   height: 7rem;
   overflow: hidden;
-  border: 3px solid rgba(245, 130, 32, 0.45);
+  border: 3px solid color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -65,7 +65,7 @@
   width: 2.25rem;
   height: 2.25rem;
   margin-top: -1.125rem;
-  border: 2px solid rgba(245, 130, 32, 0.55);
+  border: 2px solid color-mix(in srgb, var(--sys-color-primary) 55%, transparent);
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.75);
   color: var(--sys-color-primary);
@@ -158,8 +158,8 @@
   gap: 0.35rem;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  background: rgba(245, 130, 32, 0.1);
-  border: 1px solid rgba(245, 130, 32, 0.3);
+  background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 30%, transparent);
 }
 
 @media (max-width: 1023px) {

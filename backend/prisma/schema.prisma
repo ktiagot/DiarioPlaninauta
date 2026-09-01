@@ -18,6 +18,27 @@ enum Visibilidade {
   PRIVADO
 }
 
+enum TemaModo {
+  PADRAO
+  PERSONALIZADO
+}
+
+/// Configuração global de tema do portal (registro único).
+model ConfiguracaoTema {
+  id            String   @id @default("singleton")
+  modo          TemaModo @default(PADRAO)
+  // Cores do tema personalizado (hex). Ignoradas quando modo = PADRAO.
+  primary       String   @default("#f58220")
+  primaryStrong String   @default("#ff6b00")
+  onPrimary     String   @default("#ffffff")
+  bg            String   @default("#000000")
+  text          String   @default("#ffffff")
+
+  updatedAt DateTime @updatedAt
+
+  @@map("configuracao_tema")
+}
+
 // Hub relacional do portal.
 // Outras tabelas devem referenciar User via:
 //   userId String

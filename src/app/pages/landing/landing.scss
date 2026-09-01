@@ -45,7 +45,7 @@
   &__brand-sub {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #f58220;
+    color: var(--sys-color-primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -53,7 +53,7 @@
   &__btn-entrar {
     display: inline-block;
     padding: 0.5rem 1.25rem;
-    background: #f58220;
+    background: var(--sys-color-primary);
     color: #fff;
     border-radius: 8px;
     font-weight: 700;
@@ -138,7 +138,7 @@
     transition: border-color 0.25s;
 
     &:hover {
-      border-color: rgba(245, 130, 32, 0.4);
+      border-color: color-mix(in srgb, var(--sys-color-primary) 40%, transparent);
     }
 
     h3 {
@@ -188,9 +188,9 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: rgba(245, 130, 32, 0.15);
-    border: 2px solid #f58220;
-    color: #f58220;
+    background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+    border: 2px solid var(--sys-color-primary);
+    color: var(--sys-color-primary);
     font-weight: 800;
     font-size: 1.25rem;
     display: flex;
@@ -208,7 +208,7 @@
   &__cta-btn {
     display: inline-block;
     padding: 1rem 2.5rem;
-    background: #f58220;
+    background: var(--sys-color-primary);
     color: #fff;
     border-radius: 10px;
     font-weight: 800;
@@ -230,7 +230,7 @@
     text-decoration: underline;
 
     &:hover {
-      color: #f58220;
+      color: var(--sys-color-primary);
     }
   }
 
@@ -262,7 +262,7 @@
       transition: color 0.2s;
 
       &:hover {
-        color: #f58220;
+        color: var(--sys-color-primary);
       }
     }
   }

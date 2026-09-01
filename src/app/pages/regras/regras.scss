@@ -12,11 +12,11 @@
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: rgba(245, 130, 32, 0.25);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 25%, transparent);
   }
 
   h3 {
-    color: #f58220;
+    color: var(--sys-color-primary);
     font-weight: 700;
     font-size: 1.125rem;
     margin-bottom: 0.75rem;
@@ -48,13 +48,13 @@
 }
 
 .info-destaque {
-  background: rgba(245, 130, 32, 0.08);
-  border-left: 3px solid #f58220;
+  background: color-mix(in srgb, var(--sys-color-primary) 8%, transparent);
+  border-left: 3px solid var(--sys-color-primary);
   border-radius: 8px;
   padding: 1rem 1.25rem;
 
   p:first-child {
-    color: #f58220;
+    color: var(--sys-color-primary);
     margin-bottom: 0.25rem;
   }
 
@@ -65,15 +65,15 @@
 }
 
 .destaque-info {
-  background: rgba(245, 130, 32, 0.06);
-  border: 1px solid rgba(245, 130, 32, 0.2);
+  background: color-mix(in srgb, var(--sys-color-primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 20%, transparent);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   margin: 0.75rem 0;
   color: rgba(255, 255, 255, 0.8);
 
   strong {
-    color: #f58220;
+    color: var(--sys-color-primary);
   }
 }
 
@@ -99,6 +99,6 @@
   color: rgba(255, 255, 255, 0.75);
 
   strong {
-    color: #f58220;
+    color: var(--sys-color-primary);
   }
 }

@@ -204,7 +204,7 @@
 .mesa-card__empate-toggle {
   flex-shrink: 0;
   --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.7);
-  --mat-slide-toggle-selected-track-color: #f58220;
+  --mat-slide-toggle-selected-track-color: var(--sys-color-primary);
   --mat-slide-toggle-selected-handle-color: #fff;
   --mat-slide-toggle-selected-hover-handle-color: #fff;
   --mat-slide-toggle-selected-focus-handle-color: #fff;
@@ -240,7 +240,7 @@
 
   &.cdk-drag-preview {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    border-color: rgba(245, 130, 32, 0.5);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 50%, transparent);
   }
 
   &.cdk-drag-animating {
@@ -252,7 +252,7 @@
   flex-shrink: 0;
   margin-left: auto;
   --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.65);
-  --mat-slide-toggle-selected-track-color: #f58220;
+  --mat-slide-toggle-selected-track-color: var(--sys-color-primary);
   --mat-slide-toggle-selected-handle-color: #fff;
   --mat-slide-toggle-selected-hover-handle-color: #fff;
   --mat-slide-toggle-selected-focus-handle-color: #fff;
@@ -278,9 +278,9 @@
 
 .mesa-jogador__drag-placeholder {
   min-height: 4.5rem;
-  border: 2px dashed rgba(245, 130, 32, 0.45);
+  border: 2px dashed color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
   border-radius: 0.625rem;
-  background: rgba(245, 130, 32, 0.06);
+  background: color-mix(in srgb, var(--sys-color-primary) 6%, transparent);
 }
 
 .mesa-jogador__handle {

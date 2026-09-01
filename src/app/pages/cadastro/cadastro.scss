@@ -120,7 +120,7 @@ mat-card-footer {
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(245, 130, 32, 0.1);
+    background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
     color: #fff;
   }
 

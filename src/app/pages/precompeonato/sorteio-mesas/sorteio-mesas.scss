@@ -45,8 +45,8 @@
   margin: 0;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(245, 130, 32, 0.35);
-  background: rgba(245, 130, 32, 0.1);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 35%, transparent);
+  background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
   color: rgba(255, 255, 255, 0.85);
   font-size: 0.9375rem;
 }
@@ -120,7 +120,7 @@
   background: transparent;
 
   --mat-table-background-color: transparent;
-  --mat-table-header-headline-color: #f58220;
+  --mat-table-header-headline-color: var(--sys-color-primary);
   --mat-table-row-item-label-text-color: rgba(255, 255, 255, 0.9);
   --mat-table-row-item-outline-color: rgba(255, 255, 255, 0.1);
 }
@@ -164,7 +164,7 @@
 }
 
 .sorteio-tabela__row--primeiro {
-  background: rgba(245, 130, 32, 0.12);
+  background: color-mix(in srgb, var(--sys-color-primary) 12%, transparent);
 }
 
 .sorteio-tabela__row--secundario {

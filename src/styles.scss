@@ -30,14 +30,26 @@ html {
 
 :root {
   --sys-font-family: #{$sys-font-family};
-  --sys-color-primary: #{$sys-color-primary};
+
+  // ── Tema (editável pelo admin) ───────────────────────────
+  // Estes valores são o TEMA PADRÃO. O tema personalizado sobrescreve
+  // estas variáveis em tempo de execução (ThemeService no boot).
+  --sys-color-primary: #{$sys-color-primary};          // destaque (laranja)
+  --sys-color-primary-strong: #ff6b00;                 // gradiente/hover forte
+  --sys-color-on-primary: #{$sys-color-white};         // texto/ícone sobre a primária
+  --sys-color-bg: #{$sys-color-black};                 // fundo base
+  --sys-color-surface: rgba(255, 255, 255, 0.06);      // cards / glass
+  --sys-color-border: rgba(255, 255, 255, 0.18);       // bordas
+  --sys-color-text: #{$sys-color-white};               // texto principal
+  --sys-color-text-muted: rgba(255, 255, 255, 0.6);    // texto secundário
+
   --sys-color-white: #{$sys-color-white};
   --sys-color-black: #{$sys-color-black};
   --sys-bg-image: url(#{$sys-bg-image});
 
-  // Alinha tokens do Angular Material à identidade visual
-  --mat-sys-primary: #{$sys-color-primary};
-  --mat-sys-on-primary: #{$sys-color-white};
+  // Alinha tokens do Angular Material à identidade visual (usam as vars de tema)
+  --mat-sys-primary: var(--sys-color-primary);
+  --mat-sys-on-primary: var(--sys-color-on-primary);
 
   // matInput — glass, texto branco, borda primária
   --sys-input-height: #{$sys-input-height};
@@ -58,10 +70,10 @@ html {
   --mat-form-field-container-text-line-height: 24px;
 
   // mat-flat-button (primary) — válido: cor primária; inválido: #e08f4a
-  --mat-button-filled-container-color: #{$sys-color-primary};
-  --mat-button-filled-label-text-color: #{$sys-color-white};
-  --mat-button-filled-state-layer-color: #{$sys-color-white};
-  --mat-button-filled-ripple-color: color-mix(in srgb, #{$sys-color-white} 12%, transparent);
+  --mat-button-filled-container-color: var(--sys-color-primary);
+  --mat-button-filled-label-text-color: var(--sys-color-on-primary);
+  --mat-button-filled-state-layer-color: var(--sys-color-on-primary);
+  --mat-button-filled-ripple-color: color-mix(in srgb, var(--sys-color-on-primary) 12%, transparent);
   --mat-button-filled-hover-state-layer-opacity: 0.04;
   --mat-button-filled-focus-state-layer-opacity: 0.12;
   --mat-button-filled-pressed-state-layer-opacity: 0.12;
@@ -77,19 +89,19 @@ html {
   --mat-button-filled-disabled-label-text-color: #{$sys-color-white};
 
   // mat-stroked-button (secondary) — mesmo layout do mat-button, fundo branco e texto primário
-  --mat-button-outlined-label-text-color: #{$sys-color-primary};
+  --mat-button-outlined-label-text-color: var(--sys-color-primary);
 
   // mat-tab (dark theme override)
   --mat-tab-header-inactive-label-text-color: rgba(255, 255, 255, 0.65);
-  --mat-tab-header-active-label-text-color: #{$sys-color-primary};
-  --mat-tab-header-active-focus-label-text-color: #{$sys-color-primary};
-  --mat-tab-header-active-hover-label-text-color: #{$sys-color-primary};
+  --mat-tab-header-active-label-text-color: var(--sys-color-primary);
+  --mat-tab-header-active-focus-label-text-color: var(--sys-color-primary);
+  --mat-tab-header-active-hover-label-text-color: var(--sys-color-primary);
   --mat-tab-header-inactive-hover-label-text-color: rgba(255, 255, 255, 0.85);
-  --mdc-tab-indicator-active-indicator-color: #{$sys-color-primary};
+  --mdc-tab-indicator-active-indicator-color: var(--sys-color-primary);
   --mdc-secondary-navigation-tab-container-height: 44px;
-  --mat-button-outlined-outline-color: #{$sys-color-white};
-  --mat-button-outlined-state-layer-color: #{$sys-color-primary};
-  --mat-button-outlined-ripple-color: color-mix(in srgb, #{$sys-color-primary} 12%, transparent);
+  --mat-button-outlined-outline-color: var(--sys-color-text);
+  --mat-button-outlined-state-layer-color: var(--sys-color-primary);
+  --mat-button-outlined-ripple-color: color-mix(in srgb, var(--sys-color-primary) 12%, transparent);
   --mat-button-outlined-hover-state-layer-opacity: 0.04;
   --mat-button-outlined-focus-state-layer-opacity: 0.12;
   --mat-button-outlined-pressed-state-layer-opacity: 0.12;
@@ -108,7 +120,7 @@ html {
 body {
   color-scheme: dark;
 
-  background-color: $sys-color-black;
+  background-color: var(--sys-color-bg);
   background-image: var(--sys-bg-image);
   background-position: center center;
   background-repeat: no-repeat;

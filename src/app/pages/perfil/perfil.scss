@@ -54,7 +54,7 @@
   width: 7rem;
   height: 7rem;
   overflow: hidden;
-  border: 3px solid rgba(245, 130, 32, 0.45);
+  border: 3px solid color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -66,7 +66,7 @@
   width: 2.25rem;
   height: 2.25rem;
   margin-top: -1.125rem;
-  border: 2px solid rgba(245, 130, 32, 0.55);
+  border: 2px solid color-mix(in srgb, var(--sys-color-primary) 55%, transparent);
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.75);
   color: var(--sys-color-primary);
@@ -159,9 +159,9 @@
   width: 100%;
   min-height: 6rem;
   overflow: hidden;
-  border: 1px dashed rgba(245, 130, 32, 0.35);
+  border: 1px dashed color-mix(in srgb, var(--sys-color-primary) 35%, transparent);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(245, 130, 32, 0.2), rgba(120, 40, 0, 0.28));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sys-color-primary) 20%, transparent), rgba(120, 40, 0, 0.28));
   padding: 0;
   cursor: default;
 
@@ -169,7 +169,7 @@
     cursor: pointer;
 
     &:hover {
-      border-color: rgba(245, 130, 32, 0.6);
+      border-color: color-mix(in srgb, var(--sys-color-primary) 60%, transparent);
     }
   }
 }
@@ -184,16 +184,16 @@
   width: 100%;
   min-height: 7rem;
   padding: 1.25rem 1rem;
-  border: 1px solid rgba(245, 130, 32, 0.35);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 35%, transparent);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(245, 130, 32, 0.12), rgba(120, 40, 0, 0.18));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sys-color-primary) 12%, transparent), rgba(120, 40, 0, 0.18));
   color: rgba(255, 255, 255, 0.85);
   text-align: center;
   cursor: default;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
 
   mat-icon {
-    color: #f58220;
+    color: var(--sys-color-primary);
     font-size: 1.6rem;
     width: 1.6rem;
     height: 1.6rem;
@@ -206,7 +206,7 @@
 
   &__cta {
     font-size: 0.75rem;
-    color: #f58220;
+    color: var(--sys-color-primary);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -216,8 +216,8 @@
     cursor: pointer;
 
     &:hover {
-      border-color: rgba(245, 130, 32, 0.7);
-      background: linear-gradient(135deg, rgba(245, 130, 32, 0.2), rgba(120, 40, 0, 0.28));
+      border-color: color-mix(in srgb, var(--sys-color-primary) 70%, transparent);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--sys-color-primary) 20%, transparent), rgba(120, 40, 0, 0.28));
       transform: translateY(-1px);
     }
   }
@@ -270,8 +270,8 @@
   }
 
   &--andamento {
-    background: rgba(245, 130, 32, 0.2);
-    color: #f58220;
+    background: color-mix(in srgb, var(--sys-color-primary) 20%, transparent);
+    color: var(--sys-color-primary);
   }
 }
 
@@ -321,9 +321,9 @@
   letter-spacing: 0.03em;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  color: #f58220;
-  background: rgba(245, 130, 32, 0.15);
-  border: 1px solid rgba(245, 130, 32, 0.35);
+  color: var(--sys-color-primary);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 35%, transparent);
 }
 
 .perfil-mesa-link {
@@ -336,12 +336,12 @@
   font-size: 0.8rem;
   font-weight: 600;
   text-decoration: none;
-  color: #f58220;
-  background: rgba(245, 130, 32, 0.15);
+  color: var(--sys-color-primary);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(245, 130, 32, 0.25);
+    background: color-mix(in srgb, var(--sys-color-primary) 25%, transparent);
   }
 
   mat-icon {

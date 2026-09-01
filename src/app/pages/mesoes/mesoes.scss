@@ -22,13 +22,13 @@
   transition: all 0.2s ease;
 
   &.filtro-ativo {
-    background: #f58220 !important;
+    background: var(--sys-color-primary) !important;
     color: #fff !important;
   }
 }
 
 .criar-btn {
-  background: #f58220 !important;
+  background: var(--sys-color-primary) !important;
   color: #fff !important;
   border-radius: 0.5rem !important;
   font-weight: 600;
@@ -98,7 +98,7 @@
   gap: 0.35rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #f58220;
+  color: var(--sys-color-primary);
   margin: 0;
 
   .datahora-icon {
@@ -129,7 +129,7 @@
   font-size: 1.1rem;
   width: 1.1rem;
   height: 1.1rem;
-  color: #f58220;
+  color: var(--sys-color-primary);
   flex-shrink: 0;
 }
 
@@ -171,8 +171,8 @@
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #f58220;
-  background: rgba(245, 130, 32, 0.15);
+  color: var(--sys-color-primary);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
   padding: 0.05rem 0.35rem;
   border-radius: 0.35rem;
   vertical-align: middle;
@@ -207,8 +207,8 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.4rem 0.75rem;
-  background: rgba(245, 130, 32, 0.15);
-  color: #f58220;
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+  color: var(--sys-color-primary);
   border-radius: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
@@ -216,7 +216,7 @@
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(245, 130, 32, 0.25);
+    background: color-mix(in srgb, var(--sys-color-primary) 25%, transparent);
   }
 
   mat-icon {
@@ -256,7 +256,7 @@
 }
 
 .entrar-btn {
-  background: #f58220 !important;
+  background: var(--sys-color-primary) !important;
   color: #1a1a1a !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
@@ -325,7 +325,7 @@
 
 // Datepicker toggle e texto no tema escuro
 ::ng-deep .mat-datepicker-toggle {
-  color: #f58220;
+  color: var(--sys-color-primary);
 }
 
 .link-edit-row {

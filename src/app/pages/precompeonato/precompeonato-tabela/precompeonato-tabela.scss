@@ -68,7 +68,7 @@
   background: transparent;
 
   --mat-table-background-color: transparent;
-  --mat-table-header-headline-color: #f58220;
+  --mat-table-header-headline-color: var(--sys-color-primary);
   --mat-table-row-item-label-text-color: rgba(255, 255, 255, 0.9);
   --mat-table-row-item-outline-color: rgba(255, 255, 255, 0.1);
 }
@@ -78,7 +78,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  border-bottom-color: rgba(245, 130, 32, 0.35) !important;
+  border-bottom-color: color-mix(in srgb, var(--sys-color-primary) 35%, transparent) !important;
   white-space: nowrap;
 }
 
@@ -115,19 +115,19 @@
 
 .precompeonato-tabela__row--secundario {
   .mat-mdc-cell {
-    background: rgba(245, 130, 32, 0.12);
+    background: color-mix(in srgb, var(--sys-color-primary) 12%, transparent);
   }
 
   &:hover .mat-mdc-cell {
-    background: rgba(245, 130, 32, 0.2);
+    background: color-mix(in srgb, var(--sys-color-primary) 20%, transparent);
   }
 
   .precompeonato-tabela__posicao {
-    color: #f58220;
+    color: var(--sys-color-primary);
   }
 
   .precompeonato-tabela__pontos {
-    color: #f58220;
+    color: var(--sys-color-primary);
   }
 }
 
@@ -148,19 +148,19 @@
 .precompeonato-tabela__comandante-link {
   color: rgba(255, 255, 255, 0.9);
   text-decoration: underline;
-  text-decoration-color: rgba(245, 130, 32, 0.55);
+  text-decoration-color: color-mix(in srgb, var(--sys-color-primary) 55%, transparent);
   text-underline-offset: 0.2em;
   transition: color 0.15s ease, text-decoration-color 0.15s ease;
 
   &:hover {
-    color: #f58220;
-    text-decoration-color: #f58220;
+    color: var(--sys-color-primary);
+    text-decoration-color: var(--sys-color-primary);
   }
 }
 
 .precompeonato-tabela__pontos {
   font-weight: 700;
-  color: var(--sys-color-primary, #f58220);
+  color: var(--sys-color-primary, var(--sys-color-primary));
 }
 
 .precompeonato-tabela__filtros {

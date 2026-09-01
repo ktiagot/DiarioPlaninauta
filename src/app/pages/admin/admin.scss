@@ -124,8 +124,8 @@
   }
 
   &--active {
-    background: rgba(245, 130, 32, 0.15);
-    color: #f58220;
+    background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+    color: var(--sys-color-primary);
   }
 
   &--draft {
@@ -163,7 +163,7 @@
   transition: border-color 0.2s;
 
   &:hover {
-    border-color: rgba(245, 130, 32, 0.3);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 30%, transparent);
   }
 
   &--finalizada {
@@ -217,7 +217,7 @@
 }
 
 .jogador-resultado {
-  color: #f58220;
+  color: var(--sys-color-primary);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -281,7 +281,7 @@
   input[type='checkbox'] {
     width: 16px;
     height: 16px;
-    accent-color: #f58220;
+    accent-color: var(--sys-color-primary);
   }
 }
 

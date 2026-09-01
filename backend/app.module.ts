@@ -9,6 +9,7 @@ import { NotificacoesModule } from './notificacoes/notificacoes.module';
 import { PreconsModule } from './precons/precons.module';
 import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
 import { SugestoesModule } from './sugestoes/sugestoes.module';
+import { TemaModule } from './tema/tema.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     LojaModule,
     NotificacoesModule,
     PreconsModule,
+    TemaModule,
   ],
 })
 export class AppModule {}

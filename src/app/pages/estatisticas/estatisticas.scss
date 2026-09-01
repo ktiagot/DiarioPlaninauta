@@ -17,10 +17,10 @@
 }
 
 .estatisticas-tabs {
-  --mdc-tab-indicator-active-indicator-color: #f58220;
-  --mat-tab-header-active-label-text-color: #f58220;
-  --mat-tab-header-active-focus-label-text-color: #f58220;
-  --mat-tab-header-active-hover-label-text-color: #f58220;
+  --mdc-tab-indicator-active-indicator-color: var(--sys-color-primary);
+  --mat-tab-header-active-label-text-color: var(--sys-color-primary);
+  --mat-tab-header-active-focus-label-text-color: var(--sys-color-primary);
+  --mat-tab-header-active-hover-label-text-color: var(--sys-color-primary);
   --mat-tab-header-inactive-label-text-color: rgba(255, 255, 255, 0.6);
 }
 
@@ -45,7 +45,7 @@
 }
 
 .stat-icon {
-  color: #f58220;
+  color: var(--sys-color-primary);
   font-size: 1.75rem;
   width: 1.75rem;
   height: 1.75rem;
@@ -54,7 +54,7 @@
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #f58220;
+  color: var(--sys-color-primary);
   line-height: 1;
 }
 
@@ -69,7 +69,7 @@
 // --- Section title ---
 .section-title {
   margin-bottom: 1rem;
-  color: #f58220;
+  color: var(--sys-color-primary);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -145,7 +145,7 @@
 .metagame-stat-value {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f58220;
+  color: var(--sys-color-primary);
 }
 
 .metagame-stat-label {
@@ -163,7 +163,7 @@
 
 .metagame-bar {
   height: 100%;
-  background: linear-gradient(90deg, #f58220, #ff9f44);
+  background: linear-gradient(90deg, var(--sys-color-primary), #ff9f44);
   border-radius: 2px;
   transition: width 0.4s ease;
 }
@@ -185,7 +185,7 @@
 .killer-rank {
   font-size: 1rem;
   font-weight: 700;
-  color: #f58220;
+  color: var(--sys-color-primary);
   min-width: 2rem;
 }
 
@@ -206,7 +206,7 @@
 
 .killer-bar {
   height: 100%;
-  background: linear-gradient(90deg, #f58220, #ff6b00);
+  background: linear-gradient(90deg, var(--sys-color-primary), #ff6b00);
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -257,7 +257,7 @@
   color: rgba(255, 255, 255, 0.6);
 
   &--highlight {
-    color: #f58220;
+    color: var(--sys-color-primary);
     font-weight: 600;
   }
 }

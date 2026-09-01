@@ -1,4 +1,3 @@
-$primary: #f58220;
 $glass-bg: rgba(255, 255, 255, 0.05);
 $glass-border: rgba(255, 255, 255, 0.1);
 $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -30,7 +29,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   margin: 0;
 
   .title-icon {
-    color: $primary;
+    color: var(--sys-color-primary);
     font-size: 2rem;
     width: 2rem;
     height: 2rem;
@@ -42,10 +41,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: rgba($primary, 0.15);
-  border: 1px solid rgba($primary, 0.4);
+  background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 40%, transparent);
   border-radius: 2rem;
-  color: $primary;
+  color: var(--sys-color-primary);
   font-size: 0.95rem;
   font-weight: 500;
   backdrop-filter: blur(8px);
@@ -174,7 +173,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: $primary;
+  color: var(--sys-color-primary);
   font-weight: 700;
   font-size: 0.95rem;
 
@@ -202,7 +201,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 .btn-resgatar {
   margin-top: 0.75rem;
   width: 100%;
-  background: $primary !important;
+  background: var(--sys-color-primary) !important;
   color: #fff !important;
   font-weight: 600;
   border-radius: 0.5rem;
@@ -238,7 +237,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     margin: 0 0 1.5rem;
 
     mat-icon {
-      color: $primary;
+      color: var(--sys-color-primary);
     }
   }
 }
@@ -258,11 +257,11 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: rgba($primary, 0.4);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 40%, transparent);
   }
 
   mat-icon {
-    color: $primary;
+    color: var(--sys-color-primary);
     font-size: 2rem;
     width: 2rem;
     height: 2rem;
@@ -319,7 +318,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     font-size: 4rem;
     width: 4rem;
     height: 4rem;
-    color: $primary;
+    color: var(--sys-color-primary);
     opacity: 0.85;
   }
 

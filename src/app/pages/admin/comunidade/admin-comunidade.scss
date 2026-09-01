@@ -59,11 +59,11 @@
   transition: border-color 0.2s;
 
   &:hover {
-    border-color: rgba(245, 130, 32, 0.3);
+    border-color: color-mix(in srgb, var(--sys-color-primary) 30%, transparent);
   }
 
   &__icon {
-    color: #f58220;
+    color: var(--sys-color-primary);
     font-size: 1.5rem;
     width: 1.5rem;
     height: 1.5rem;
@@ -128,8 +128,8 @@
   }
 
   &--active {
-    background: rgba(245, 130, 32, 0.15);
-    color: #f58220;
+    background: color-mix(in srgb, var(--sys-color-primary) 15%, transparent);
+    color: var(--sys-color-primary);
   }
 
   &--inativo {

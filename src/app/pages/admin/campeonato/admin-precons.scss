@@ -90,7 +90,7 @@
 
   &:focus {
     outline: none;
-    border-color: #f58220;
+    border-color: var(--sys-color-primary);
     background: rgba(255, 255, 255, 0.1);
   }
 }
@@ -142,8 +142,8 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 
   &--principal {
-    border-color: rgba(245, 130, 32, 0.6);
-    color: #f58220;
+    border-color: color-mix(in srgb, var(--sys-color-primary) 60%, transparent);
+    color: var(--sys-color-primary);
   }
 
   &--partner {
@@ -197,8 +197,8 @@
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  background: rgba(245, 130, 32, 0.1);
-  border: 1px solid rgba(245, 130, 32, 0.3);
+  background: color-mix(in srgb, var(--sys-color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sys-color-primary) 30%, transparent);
   color: rgba(255, 255, 255, 0.85);
   font-size: 0.85rem;
   line-height: 1.4;
@@ -211,7 +211,7 @@
   gap: 0.25rem;
   margin-top: 0.4rem;
   font-size: 0.75rem;
-  color: #f58220;
+  color: var(--sys-color-primary);
   text-decoration: none;
 
   &:hover {
