@@ -51,6 +51,15 @@ html {
   --mat-sys-primary: var(--sys-color-primary);
   --mat-sys-on-primary: var(--sys-color-on-primary);
 
+  // Botões Material (M3) — cobre os nomes de token MDC atuais para que
+  // botões color="primary" (flat/outlined) respondam ao tema.
+  --mdc-filled-button-container-color: var(--sys-color-primary);
+  --mdc-filled-button-label-text-color: var(--sys-color-on-primary);
+  --mdc-protected-button-container-color: var(--sys-color-primary);
+  --mdc-protected-button-label-text-color: var(--sys-color-on-primary);
+  --mdc-outlined-button-label-text-color: var(--sys-color-primary);
+  --mdc-outlined-button-outline-color: color-mix(in srgb, var(--sys-color-primary) 45%, transparent);
+
   // matInput — glass, texto branco, borda primária
   --sys-input-height: #{$sys-input-height};
   --mat-form-field-container-height: #{$sys-input-height};
@@ -151,7 +160,7 @@ select,
     background-color: rgba(217, 217, 217, 0.1);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid $sys-color-primary;
+    border: 1px solid var(--sys-color-primary);
     height: $sys-input-height;
     padding-left: 12px;
     padding-right: 12px;
@@ -161,7 +170,7 @@ select,
   }
 
   &.mat-focused .mdc-text-field--outlined {
-    border-color: $sys-color-primary;
+    border-color: var(--sys-color-primary);
     background-color: rgba(217, 217, 217, 0.16);
   }
 
