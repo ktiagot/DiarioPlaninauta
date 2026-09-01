@@ -263,7 +263,9 @@
 // --- Badge apoio ---
 .apoio-badge {
   display: inline-block;
-  margin-top: 0.5rem;
+  // Fixa o badge ao fim do conteúdo, logo acima das ações, uniforme entre cards.
+  margin-top: auto;
+  align-self: center;
   font-size: 0.7rem;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;

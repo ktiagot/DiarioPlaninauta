@@ -15,6 +15,7 @@ import { ComunidadeService } from '../../core/comunidade/comunidade.service';
 import { JogadorComunidade, ContatoResponse } from '../../core/comunidade/comunidade.models';
 import { MesasService } from '../../core/mesas/mesas.service';
 import { Mesa } from '../../core/mesas/mesas.models';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-comunidade',
@@ -35,8 +36,11 @@ import { Mesa } from '../../core/mesas/mesas.models';
 export class ComunidadeComponent implements OnInit {
   private readonly comunidadeService = inject(ComunidadeService);
   private readonly mesasService = inject(MesasService);
+  private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly buscaSubject = new Subject<string>();
+
+  private readonly meuUserId = this.session.getUserId();
 
   protected readonly MAX_JOGADORES = 4;
 
@@ -69,7 +73,8 @@ export class ComunidadeComponent implements OnInit {
   });
 
   readonly jogadoresFiltrados = computed(() => {
-    let lista = this.jogadores();
+    // Não faz sentido aparecer a si mesmo na comunidade (favoritar/convidar).
+    let lista = this.jogadores().filter((j) => j.id !== this.meuUserId);
     const cidade = this.filtroCidade();
     const formato = this.filtroFormato();
     const disponibilidade = this.filtroDisponibilidade();
