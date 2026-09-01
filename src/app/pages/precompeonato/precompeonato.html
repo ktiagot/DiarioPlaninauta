@@ -63,12 +63,7 @@
         Inscrever-se
       </button>
 
-      @if (isAdmin()) {
-        <button mat-stroked-button color="primary" type="button" (click)="toggleSorteioView()">
-          <fa-icon [icon]="faDice" class="precompeonato-hero__cta-icon" />
-          {{ ctaSorteioLabel() }}
-        </button>
-      }
+
 
       @if (showCheckInButton()) {
         <button
@@ -123,8 +118,6 @@
 
   @if (viewMode() === 'mesas') {
     <app-mesas />
-  } @else if (viewMode() === 'sorteio') {
-    <app-sorteio-mesas />
   } @else if (viewMode() === 'tabela') {
     @if (loading()) {
       <div class="flex flex-1 items-center justify-center py-24">

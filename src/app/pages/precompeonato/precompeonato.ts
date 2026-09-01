@@ -10,7 +10,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faCheck,
-  faDice,
   faLayerGroup,
   faMagnifyingGlass,
   faTableCells,
@@ -33,9 +32,8 @@ import { MesasComponent } from '../mesas/mesas';
 import { InscricaoFormComponent } from './inscricao-form/inscricao-form';
 import { JogadorCardComponent } from './jogador-card/jogador-card';
 import { PrecompeonatoTabelaComponent } from './precompeonato-tabela/precompeonato-tabela';
-import { SorteioMesasComponent } from './sorteio-mesas/sorteio-mesas';
 
-type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela' | 'sorteio';
+type PrecompeonatoViewMode = 'jogadores' | 'mesas' | 'tabela';
 
 interface CampeonatoAtual {
   id: string;
@@ -62,7 +60,6 @@ interface CampeonatoAtual {
     InscricaoFormComponent,
     MesasComponent,
     PrecompeonatoTabelaComponent,
-    SorteioMesasComponent,
   ],
   templateUrl: './precompeonato.html',
   styleUrl: './precompeonato.scss',
@@ -86,7 +83,6 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
   protected readonly faLayerGroup = faLayerGroup;
   protected readonly faWandSparkles = faWandSparkles;
   protected readonly faMagnifyingGlass = faMagnifyingGlass;
-  protected readonly faDice = faDice;
   protected readonly faUserCheck = faUserCheck;
   protected readonly faCheck = faCheck;
 
@@ -143,10 +139,6 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
 
   protected readonly ctaTabelaIcon = computed(() =>
     this.viewMode() === 'tabela' ? this.faUserGroup : this.faTableList,
-  );
-
-  protected readonly ctaSorteioLabel = computed(() =>
-    this.viewMode() === 'sorteio' ? 'Ver Planeswalkers' : 'Sorteio de mesas',
   );
 
   protected readonly deckFilterOptions = computed<DeckFilterOption[]>(() => {
@@ -228,11 +220,6 @@ export class PrecompeonatoComponent implements OnInit, OnDestroy {
 
   protected toggleTabelaView(): void {
     this.viewMode.update((mode) => (mode === 'tabela' ? 'jogadores' : 'tabela'));
-  }
-
-  protected toggleSorteioView(): void {
-    if (!this.isAdmin()) return;
-    this.viewMode.update((mode) => (mode === 'sorteio' ? 'jogadores' : 'sorteio'));
   }
 
   protected carregarJogadores(): void {
