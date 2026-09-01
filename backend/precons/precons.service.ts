@@ -37,7 +37,7 @@ const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G'];
 /** Ordena e junta uma color identity em string canônica WUBRG. Ex: ["G","U"] -> "UG". */
 function normalizeColorIdentity(ci: string[] | undefined): string {
   if (!ci || ci.length === 0) return '';
-  return [...ci]
+  return [...new Set(ci)]
     .filter((c) => WUBRG_ORDER.includes(c))
     .sort((a, b) => WUBRG_ORDER.indexOf(a) - WUBRG_ORDER.indexOf(b))
     .join('');
@@ -395,13 +395,10 @@ export class PreconsService {
     const isLegendaryCreature = (card: MtgCard): boolean =>
       (card.supertypes ?? []).includes('Legendary') && (card.types ?? []).includes('Creature');
 
-    const canBeCommander = (card: MtgCard): boolean =>
-      card.leadershipSkills?.commander === true || isLegendaryCreature(card);
-
     // Dedup por nome (lowercase).
     const porNome = new Map<string, ParsedComandante>();
 
-    // 1) comandante(s) principal(is) do bloco commander.
+    // 1) comandante(s) principal(is) do bloco commander — sempre elegíveis.
     const principais = (deck.commander ?? []).filter((c): c is MtgCard => !!c?.name);
     for (const card of principais) {
       const key = card.name!.trim().toLowerCase();
@@ -413,15 +410,25 @@ export class PreconsService {
       });
     }
 
-    // 2) demais lendárias elegíveis do mainBoard (leadershipSkills.commander).
+    // CI base do deck = união das color identities de todos os principais (WUBRG).
+    const ciDeck = normalizeColorIdentity(
+      principais.flatMap((c) => c.colorIdentity ?? []),
+    );
+
+    // 2) demais lendárias do mainBoard elegíveis se:
+    //    - forem partner/companion (formam par com o principal), OU
+    //    - tiverem color identity EXATAMENTE igual à CI base do deck.
     for (const card of deck.mainBoard ?? []) {
       if (!card?.name) continue;
-      if (!canBeCommander(card)) continue;
+      if (!isLegendaryCreature(card)) continue;
+      const ciCard = normalizeColorIdentity(card.colorIdentity);
+      const elegivel = isPartnerCard(card) || ciCard === ciDeck;
+      if (!elegivel) continue;
       const key = card.name.trim().toLowerCase();
       if (porNome.has(key)) continue;
       porNome.set(key, {
         nome: card.name.trim(),
-        colorIdentity: normalizeColorIdentity(card.colorIdentity),
+        colorIdentity: ciCard,
         isPartner: isPartnerCard(card),
         isPrincipal: false,
       });
