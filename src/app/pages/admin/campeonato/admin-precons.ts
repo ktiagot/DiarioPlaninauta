@@ -6,7 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
-import { PreconAdmin } from '../../../core/precons/precons.models';
+import { PreconAdmin, PreconComandante } from '../../../core/precons/precons.models';
 import { PreconsService } from '../../../core/precons/precons.service';
 
 interface PreconDraft {
@@ -38,6 +38,29 @@ export class AdminPreconsComponent implements OnInit {
   readonly syncing = signal(false);
 
   readonly editDrafts = signal<Record<string, PreconDraft>>({});
+
+  /** Ids de precons com a lista de comandantes expandida. */
+  readonly expandidos = signal<Set<string>>(new Set());
+
+  /** Qtde de comandantes mostrados antes do "ver mais". */
+  readonly limiteComandantes = 6;
+
+  isExpandido(id: string): boolean {
+    return this.expandidos().has(id);
+  }
+
+  comandantesVisiveis(p: PreconAdmin): PreconComandante[] {
+    if (this.isExpandido(p.id)) return p.comandantes;
+    return p.comandantes.slice(0, this.limiteComandantes);
+  }
+
+  toggleExpandido(id: string): void {
+    this.expandidos.update((set) => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   ngOnInit(): void {
     this.carregar();

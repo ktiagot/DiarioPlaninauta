@@ -30,6 +30,8 @@ interface DeckListItem {
   name: string;
   releaseDate: string;
   type: string;
+  /** URL oficial da decklist (WotC/mtg.wiki). Usada como deckUrl. */
+  source?: string;
 }
 
 const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G'];
@@ -386,11 +388,30 @@ export class PreconsService {
 
     const setNome = item.code?.trim() || 'Desconhecido';
     const ano = this.extrairAno(item.releaseDate);
-    const deckUrl = `https://mtgjson.com/decks/${item.fileName}/`;
+    // O MTGJSON não tem página HTML por deck (mtgjson.com/decks/<x>/ dá 404).
+    // Usa a URL oficial da decklist (WotC/mtg.wiki) vinda do índice.
+    const src = item.source?.trim();
+    const deckUrl = src && /^https?:\/\//i.test(src) ? src : null;
 
-    const isPartnerCard = (card: MtgCard): boolean =>
-      (card.keywords ?? []).some((k) => /^partner\b/i.test(k)) ||
-      /\bPartner\b/i.test(card.text ?? '');
+    // "Pareável": pode formar par com o principal (2 comandantes).
+    // Cobre Partner / Partner—<tipo>, Friends forever, Doctor's companion,
+    // "the Doctor" (parceiro dos companions) e Choose a Background.
+    const isPartnerCard = (card: MtgCard): boolean => {
+      const keywords = card.keywords ?? [];
+      const text = card.text ?? '';
+      const type = card.type ?? '';
+      return (
+        keywords.some((k) => /^partner\b/i.test(k)) ||
+        keywords.some((k) => /friends forever/i.test(k)) ||
+        keywords.some((k) => /doctor'?s companion/i.test(k)) ||
+        keywords.some((k) => /choose a background/i.test(k)) ||
+        /\bPartner\b/i.test(text) ||
+        /friends forever/i.test(text) ||
+        /doctor'?s companion/i.test(text) ||
+        /can have two commanders if the other is the doctor/i.test(text) ||
+        /\bTime Lord Doctor\b/i.test(type)
+      );
+    };
 
     const isLegendaryCreature = (card: MtgCard): boolean =>
       (card.supertypes ?? []).includes('Legendary') && (card.types ?? []).includes('Creature');

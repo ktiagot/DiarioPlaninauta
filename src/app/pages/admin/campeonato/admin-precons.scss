@@ -162,6 +162,23 @@
   }
 }
 
+.cmd-ver-mais {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--sys-color-primary);
+  border: 1px dashed color-mix(in srgb, var(--sys-color-primary) 55%, transparent);
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(245, 130, 32, 0.12);
+  }
+}
+
 .precon-status {
   display: flex;
   flex-direction: column;

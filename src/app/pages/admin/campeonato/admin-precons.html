@@ -88,7 +88,7 @@
                 </td>
                 <td>
                   <div class="cmd-chips">
-                    @for (cmd of p.comandantes; track cmd.id) {
+                    @for (cmd of comandantesVisiveis(p); track cmd.id) {
                       <span
                         class="cmd-chip"
                         [class.cmd-chip--principal]="cmd.isPrincipal"
@@ -101,6 +101,15 @@
                       </span>
                     } @empty {
                       <span class="admin-empty">—</span>
+                    }
+                    @if (p.comandantes.length > limiteComandantes) {
+                      <button type="button" class="cmd-ver-mais" (click)="toggleExpandido(p.id)">
+                        @if (isExpandido(p.id)) {
+                          Ver menos
+                        } @else {
+                          + {{ p.comandantes.length - limiteComandantes }} — ver mais
+                        }
+                      </button>
                     }
                   </div>
                 </td>
