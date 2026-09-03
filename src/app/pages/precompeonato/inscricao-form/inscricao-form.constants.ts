@@ -4,4 +4,4 @@ export const PRECON_HELP_URL =
 
 export const REGRAS_URL = 'https://diarioplaninauta.com.br';
 export const PRIVACIDADE_URL = 'https://diarioplaninauta.com.br';
-export const DISCORD_URL = 'https://discord.gg/diarioplaninauta';
+export const DISCORD_URL = 'https://discord.gg/vBhe86cvK';
