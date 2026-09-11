@@ -207,13 +207,17 @@
 }
 
 .jogador-nick {
+  display: block;
   font-weight: 600;
   color: var(--text, #fff);
 }
 
 .jogador-deck {
+  display: block;
+  margin-top: 0.15rem;
   color: var(--text-secondary, #aaa);
   font-size: 0.8rem;
+  line-height: 1.2;
 }
 
 .jogador-resultado {
