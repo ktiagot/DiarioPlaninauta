@@ -6,7 +6,9 @@ export const authGuard: CanActivateFn = () => {
   const token = localStorage.getItem('access_token');
 
   if (!token) {
-    return router.createUrlTree(['/login']);
+    // Visitante deslogado vai para a página de apresentação (Landing),
+    // que traz os botões de login/cadastro/apoiar.
+    return router.createUrlTree(['/landing']);
   }
 
   return true;
