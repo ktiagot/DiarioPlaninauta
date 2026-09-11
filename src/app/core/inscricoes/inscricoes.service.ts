@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, throwError } from 'rxjs';
 
 import { API_URL } from '../config/api.config';
-import { mapRodada } from '../rodadas/rodadas.mapper';
-import { RodadaApi } from '../rodadas/rodadas.models';
+import { mapRodadaAtual } from '../rodadas/rodadas.mapper';
+import { Rodada, RodadaAtualApi } from '../rodadas/rodadas.models';
 import { aplicarMeta, mapInscricao, ordenarPorRanking } from './inscricoes.mapper';
 import { INSCRICOES_MOCK } from './inscricoes.mock';
 import {
@@ -23,11 +23,12 @@ export class InscricoesService {
       inscricoes: this.http.get<InscricaoApi[]>(`${API_URL}/precompeonato/atual/jogadores`).pipe(
         catchError(() => of(null)),
       ),
-      rodadas: this.http.get<RodadaApi[]>(`${API_URL}/precompeonato/atual/rodada`).pipe(
-        catchError(() => of([] as RodadaApi[])),
-      ),
+      // `/atual/rodada` retorna UM objeto (RodadaAtualDto) ou null — não um array.
+      rodada: this.http
+        .get<RodadaAtualApi | null>(`${API_URL}/precompeonato/atual/rodada`)
+        .pipe(catchError(() => of(null))),
     }).pipe(
-      map(({ inscricoes, rodadas }) => {
+      map(({ inscricoes, rodada }) => {
         if (!inscricoes) {
           if (this.useMockFallback()) {
             return INSCRICOES_MOCK;
@@ -35,6 +36,7 @@ export class InscricoesService {
           throw new Error('Não foi possível carregar os jogadores inscritos.');
         }
 
+        const rodadas: Rodada[] = rodada ? [mapRodadaAtual(rodada)] : [];
         const rodadaMap = this.buildRodadaMesaMap(rodadas);
         const eliminacoesMap = this.buildEliminacoesMap(rodadas);
         const jogadores = inscricoes
@@ -79,12 +81,11 @@ export class InscricoesService {
   }
 
   private buildRodadaMesaMap(
-    rodadas: RodadaApi[],
+    rodadas: Rodada[],
   ): Map<string, { rodada: number; mesa: number }> {
     const map = new Map<string, { rodada: number; mesa: number }>();
 
-    for (const rodadaApi of rodadas) {
-      const rodada = mapRodada(rodadaApi);
+    for (const rodada of rodadas) {
       for (const mesa of rodada.mesas) {
         for (const jogador of mesa.jogadores) {
           map.set(String(jogador.inscricaoId), {
@@ -98,11 +99,10 @@ export class InscricoesService {
     return map;
   }
 
-  private buildEliminacoesMap(rodadas: RodadaApi[]): Map<string, number> {
+  private buildEliminacoesMap(rodadas: Rodada[]): Map<string, number> {
     const map = new Map<string, number>();
 
-    for (const rodadaApi of rodadas) {
-      const rodada = mapRodada(rodadaApi);
+    for (const rodada of rodadas) {
       for (const mesa of rodada.mesas) {
         for (const jogador of mesa.jogadores) {
           const kills = jogador.kills ?? 0;
