@@ -73,6 +73,20 @@
       </button>
     </div>
 
+    @if (!jogadoresLoading() && jogadores().length > 0) {
+      <mat-button-toggle-group
+        class="comunidade-admin__filtro"
+        [value]="filtroStatus()"
+        (change)="setFiltroStatus($event.value)"
+        aria-label="Filtrar por status"
+      >
+        <mat-button-toggle value="todos">Todos ({{ jogadores().length }})</mat-button-toggle>
+        <mat-button-toggle value="ativo">Ativos ({{ jogadoresAtivosCount() }})</mat-button-toggle>
+        <mat-button-toggle value="inativo">Inativos ({{ jogadoresInativosCount() }})</mat-button-toggle>
+        <mat-button-toggle value="ex">Ex-apoiadores ({{ jogadoresExCount() }})</mat-button-toggle>
+      </mat-button-toggle-group>
+    }
+
     @if (jogadoresLoading()) {
       <div class="comunidade-admin__loading">
         <mat-spinner diameter="32" />
@@ -92,7 +106,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (jogador of jogadores(); track jogador.id) {
+            @for (jogador of jogadoresFiltrados(); track jogador.id) {
               <tr>
                 <td>
                   <span class="jogador-nick">{{ jogador.nome }}</span>
@@ -116,6 +130,12 @@
                       Verificar
                     }
                   </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="comunidade-admin__empty">
+                  Nenhum jogador com este status.
                 </td>
               </tr>
             }

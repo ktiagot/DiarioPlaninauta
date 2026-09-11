@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -23,10 +24,13 @@ interface ComunidadeMetricas {
 
 type VerifyUiState = 'idle' | 'verifying' | 'ativo' | 'inativo' | 'exApoiador' | 'apiIndisponivel';
 
+type StatusFiltro = 'todos' | 'ativo' | 'inativo' | 'ex';
+
 @Component({
   selector: 'app-admin-comunidade',
   imports: [
     MatButtonModule,
+    MatButtonToggleModule,
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -55,6 +59,34 @@ export class AdminComunidadeComponent implements OnInit {
   readonly jogadoresAtivosCount = computed(
     () => this.jogadores().filter((j) => j.isApoiadorAtivo).length,
   );
+
+  /** Filtro por status: todos | ativo | inativo | ex. */
+  readonly filtroStatus = signal<StatusFiltro>('todos');
+
+  /** Status persistente do jogador (derivado dos campos do model, não do verifyState). */
+  private statusDe(j: JogadorAdmin): Exclude<StatusFiltro, 'todos'> {
+    if (j.isApoiadorAtivo) return 'ativo';
+    if (j.isExApoiador) return 'ex';
+    return 'inativo';
+  }
+
+  readonly jogadoresExCount = computed(
+    () => this.jogadores().filter((j) => this.statusDe(j) === 'ex').length,
+  );
+  readonly jogadoresInativosCount = computed(
+    () => this.jogadores().filter((j) => this.statusDe(j) === 'inativo').length,
+  );
+
+  readonly jogadoresFiltrados = computed(() => {
+    const filtro = this.filtroStatus();
+    const lista = this.jogadores();
+    if (filtro === 'todos') return lista;
+    return lista.filter((j) => this.statusDe(j) === filtro);
+  });
+
+  setFiltroStatus(status: StatusFiltro): void {
+    this.filtroStatus.set(status);
+  }
 
   readonly cidadesChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,

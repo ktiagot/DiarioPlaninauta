@@ -56,6 +56,7 @@ export class AdminCampeonatoComponent implements OnInit {
   readonly reSorteando = signal(false);
   readonly abrindoRodada = signal(false);
   readonly togglingCheckInId = signal<string | null>(null);
+  readonly checkingInTodos = signal(false);
   readonly togglingInscricaoId = signal<string | null>(null);
   readonly campeonatoEncerrado = signal(false);
   readonly finalizandoRodada = signal(false);
@@ -168,7 +169,7 @@ export class AdminCampeonatoComponent implements OnInit {
   }
 
   toggleCheckInAdmin(jogadorId: string, checkedIn: boolean): void {
-    if (!this.rodadaEmCheckIn() || this.togglingCheckInId()) return;
+    if (!this.rodadaEmCheckIn() || this.togglingCheckInId() || this.checkingInTodos()) return;
 
     this.togglingCheckInId.set(jogadorId);
     this.adminService.adminCheckIn(jogadorId, !checkedIn).subscribe({
@@ -183,6 +184,52 @@ export class AdminCampeonatoComponent implements OnInit {
         });
       },
     });
+  }
+
+  /** Quantos jogadores da rodada ainda não fizeram check-in. */
+  readonly semCheckInCount = computed(
+    () => this.snapshot()?.jogadores.filter((j) => !j.checkIn).length ?? 0,
+  );
+
+  /** Faz check-in de todos os inscritos que ainda não estão marcados (sequencial). */
+  async checkInTodos(): Promise<void> {
+    if (!this.rodadaEmCheckIn() || this.checkingInTodos() || this.togglingCheckInId()) return;
+
+    const pendentes = (this.snapshot()?.jogadores ?? []).filter((j) => !j.checkIn);
+    if (pendentes.length === 0) {
+      this.snackBar.open('Todos os jogadores já estão com check-in.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.checkingInTodos.set(true);
+    let falhas = 0;
+
+    for (const jogador of pendentes) {
+      await new Promise<void>((resolve) => {
+        this.adminService.adminCheckIn(jogador.id, true).subscribe({
+          next: (snap) => {
+            this.snapshot.set(snap);
+            resolve();
+          },
+          error: () => {
+            falhas++;
+            resolve();
+          },
+        });
+      });
+    }
+
+    this.checkingInTodos.set(false);
+    // Garante estado consistente ao final.
+    this.adminService.getSorteio().subscribe({
+      next: (snap) => this.snapshot.set(snap),
+    });
+
+    const msg =
+      falhas > 0
+        ? `Check-in concluído com ${falhas} falha(s).`
+        : 'Check-in de todos realizado!';
+    this.snackBar.open(msg, 'OK', { duration: 4000 });
   }
 
   sortearMesas(): void {

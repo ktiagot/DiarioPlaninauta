@@ -91,9 +91,22 @@
               <h4>Check-in — Rodada {{ snap.rodadaNumero }}</h4>
               <div class="admin-actions">
                 <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="semCheckInCount() === 0 || checkingInTodos() || togglingCheckInId()"
+                  (click)="checkInTodos()"
+                >
+                  @if (checkingInTodos()) {
+                    <mat-spinner diameter="18" />
+                  } @else {
+                    <mat-icon>done_all</mat-icon>
+                  }
+                  Check-in de todos ({{ semCheckInCount() }})
+                </button>
+                <button
                   mat-flat-button
                   color="primary"
-                  [disabled]="!snap.podeSortear || sorteando()"
+                  [disabled]="!snap.podeSortear || sorteando() || checkingInTodos()"
                   (click)="sortearMesas()"
                 >
                   @if (sorteando()) {
