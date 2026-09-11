@@ -58,3 +58,6 @@ docs/dump.sql
 
 # Local git worktrees
 .worktrees/
+
+# Scripts locais (geram SQL/senhas em texto plano — não versionar)
+/scripts/
