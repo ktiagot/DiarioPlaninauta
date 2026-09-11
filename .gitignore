@@ -61,3 +61,6 @@ docs/dump.sql
 
 # Scripts locais (geram SQL/senhas em texto plano — não versionar)
 /scripts/
+
+# Planilha de jogadores (contém a coluna de senhas iniciais — não versionar)
+/JOGADORES PRECOMPEONATO.xlsx
