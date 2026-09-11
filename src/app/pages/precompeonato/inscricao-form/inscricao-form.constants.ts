@@ -5,3 +5,12 @@ export const PRECON_HELP_URL =
 export const REGRAS_URL = 'https://diarioplaninauta.com.br';
 export const PRIVACIDADE_URL = 'https://diarioplaninauta.com.br';
 export const DISCORD_URL = 'https://discord.gg/vBhe86cvK';
+
+/** Exércitos disponíveis no campeonato atual (value = enum backend). */
+export const EXERCITOS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: 'ANAOS', label: 'Anãos' },
+  { value: 'HUMANOS', label: 'Humanos' },
+  { value: 'ELFOS', label: 'Elfos' },
+  { value: 'WARGS', label: 'Wargs' },
+  { value: 'ORCS', label: 'Orcs' },
+];

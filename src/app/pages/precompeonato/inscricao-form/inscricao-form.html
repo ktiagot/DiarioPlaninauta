@@ -117,6 +117,26 @@
               </mat-form-field>
             }
           </div>
+
+          <div class="field-group">
+            <label for="exercito">Exército</label>
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+              <mat-select
+                id="exercito"
+                formControlName="exercito"
+                placeholder="Selecione"
+                panelClass="inscricao-select-panel"
+              >
+                @for (ex of exercitos; track ex.value) {
+                  <mat-option [value]="ex.value">{{ ex.label }}</mat-option>
+                }
+              </mat-select>
+              @if (form.controls.exercito.invalid && form.controls.exercito.touched) {
+                <mat-error>Selecione o exército</mat-error>
+              }
+            </mat-form-field>
+            <p class="field-hint">Seu exército neste campeonato.</p>
+          </div>
         </div>
 
         <div class="inscricao-form__checks" role="group" aria-label="Aceites obrigatórios">

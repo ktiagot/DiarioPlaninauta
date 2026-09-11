@@ -130,6 +130,14 @@ enum CampeonatoStatus {
   ENCERRADO
 }
 
+enum Exercito {
+  ANAOS
+  HUMANOS
+  ELFOS
+  WARGS
+  ORCS
+}
+
 model Precon {
   id            String  @id @default(uuid())
   nome          String
@@ -200,6 +208,7 @@ model Inscricao {
   preconId            String
   preconComandanteId  String
   preconComandante2Id String?
+  exercito            Exercito?
   aceiteTermos        Boolean
   aceiteTermosEm    DateTime
   aceitePrivacidade Boolean

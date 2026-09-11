@@ -4,6 +4,8 @@ import { toDateOnly } from '../date-only';
 
 import { CAMPEONATO_STATUS_LABEL } from '../constants/status-labels';
 
+import { exercitoLabel } from '../constants/exercito-labels';
+
 import {
 
   CampeonatoAtualResponseDto,
@@ -103,6 +105,8 @@ export function toInscricaoResumo(inscricao: InscricaoComPrecon): InscricaoResum
 
     comandante: comandanteFromInscricao(inscricao),
 
+    exercito: exercitoLabel(inscricao.exercito),
+
   };
 
 }
@@ -130,6 +134,8 @@ export function toInscricaoResponse(
     deckNome: deckNomeFromInscricao(inscricao),
 
     comandante: comandanteFromInscricao(inscricao),
+
+    exercito: exercitoLabel(inscricao.exercito),
 
     nome: inscricao.user.nome,
 
@@ -193,6 +199,8 @@ export function toJogadorResponse(
 
     comandante: comandanteFromInscricao(inscricao),
 
+    exercito: exercitoLabel(inscricao.exercito),
+
     nomeJogador: inscricao.user.nome,
 
     nick: inscricao.user.nick,
@@ -252,6 +260,8 @@ export function toInscritoAdminResponse(
     deckNome: deckNomeFromInscricao(inscricao),
 
     comandante: comandanteFromInscricao(inscricao),
+
+    exercito: exercitoLabel(inscricao.exercito),
 
     pontos: inscricao.pontos,
 

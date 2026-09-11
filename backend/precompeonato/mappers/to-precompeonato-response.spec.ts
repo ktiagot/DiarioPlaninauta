@@ -38,6 +38,7 @@ describe('toInscritoAdminResponse / sortInscritosAdmin', () => {
       preconId: 'precon-1',
       preconComandanteId: 'cmd-1',
       preconComandante2Id: null,
+      exercito: 'ANAOS',
       precon: { nome: 'Deck' },
       preconComandante: { comandante: 'Cmd' },
       preconComandante2: null,
@@ -56,6 +57,7 @@ describe('toInscritoAdminResponse / sortInscritosAdmin', () => {
 
     expect(dto.vitorias).toBe(1);
     expect(dto.email).toBe('a@email.com');
+    expect(dto.exercito).toBe('Anãos');
 
     const sorted = sortInscritosAdmin([
       { ...dto, id: 'b', ativo: false, posicao: 1, pontos: 9 },

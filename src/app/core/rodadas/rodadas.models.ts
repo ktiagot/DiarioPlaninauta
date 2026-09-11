@@ -62,6 +62,8 @@ export interface MesaJogador {
 
   deckUrl?: string;
 
+  exercito?: string | null;
+
   rankingCampeonato?: number;
 
   posicaoFinal?: number;
@@ -163,6 +165,8 @@ export interface MesaJogadorAtualApi {
   deckNome?: string;
 
   deckUrl?: string | null;
+
+  exercito?: string | null;
 
   rankingCampeonato?: number | null;
 

@@ -14,6 +14,7 @@ export function mapInscricao(i: InscricaoApi): Omit<
     comandante: i.comandante ?? i.comandante_principal ?? '',
     deckNome: i.deck_nome ?? '',
     deckUrl: i.deck_url,
+    exercito: i.exercito ?? null,
     pontos: i.pontos ?? 0,
   };
 }

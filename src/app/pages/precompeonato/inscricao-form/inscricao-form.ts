@@ -32,6 +32,7 @@ import { PreconComandante, PreconListItem } from '../../../core/precons/precons.
 import { PreconsService } from '../../../core/precons/precons.service';
 import {
   DISCORD_URL,
+  EXERCITOS,
   PRECON_HELP_URL,
   PRIVACIDADE_URL,
   REGRAS_URL,
@@ -71,6 +72,7 @@ export class InscricaoFormComponent implements OnInit {
   protected readonly regrasUrl = REGRAS_URL;
   protected readonly privacidadeUrl = PRIVACIDADE_URL;
   protected readonly discordUrl = DISCORD_URL;
+  protected readonly exercitos = EXERCITOS;
 
   protected readonly submitting = signal(false);
   protected readonly loadingPrecons = signal(true);
@@ -83,6 +85,7 @@ export class InscricaoFormComponent implements OnInit {
     preconId: ['', [Validators.required]],
     preconComandanteId: [{ value: '', disabled: true }, [Validators.required]],
     preconComandante2Id: [{ value: '', disabled: true }],
+    exercito: ['', [Validators.required]],
     aceiteTermos: [false, [requiredTrue]],
     aceitePrivacidade: [false, [requiredTrue]],
     entrouDiscord: [false, [requiredTrue]],
@@ -235,6 +238,7 @@ export class InscricaoFormComponent implements OnInit {
         preconId: raw.preconId,
         preconComandanteId: raw.preconComandanteId,
         ...(raw.preconComandante2Id ? { preconComandante2Id: raw.preconComandante2Id } : {}),
+        exercito: raw.exercito,
         aceiteTermos: raw.aceiteTermos,
         aceitePrivacidade: raw.aceitePrivacidade,
         entrouDiscord: raw.entrouDiscord,

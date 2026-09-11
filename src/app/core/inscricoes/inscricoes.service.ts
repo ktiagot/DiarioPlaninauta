@@ -53,6 +53,7 @@ export class InscricoesService {
               comandante: base.comandante,
               deckNome: base.deckNome,
               deckUrl: base.deckUrl,
+              exercito: base.exercito,
               meta: 0,
               pontos: base.pontos,
               eliminacoes: eliminacoesMap.get(String(i.id)) ?? 0,

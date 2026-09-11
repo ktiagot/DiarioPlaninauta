@@ -38,6 +38,8 @@ function mapJogadorAtual(j: MesaJogadorAtualApi): MesaJogador {
 
     deckUrl: j.deckUrl ?? undefined,
 
+    exercito: j.exercito ?? null,
+
     rankingCampeonato: j.rankingCampeonato ?? undefined,
 
     posicaoFinal: j.posicaoFinal ?? undefined,

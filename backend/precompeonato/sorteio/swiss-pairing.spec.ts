@@ -9,6 +9,7 @@ function players(n: number): SorteioPlayer[] {
     id: `p${i + 1}`,
     pontos: 0,
     deckNome: `Deck ${(i % 4) + 1}`,
+    exercito: null,
   }));
 }
 
@@ -60,6 +61,33 @@ describe('swiss-pairing', () => {
       const ids = new Set(mesa.jogadorIds);
       expect(ids.has('p1') && ids.has('p2')).toBe(false);
     }
+  });
+
+  it('rodada 1: não repete exército na mesa quando há distribuição viável', () => {
+    // 8 jogadores, 5 exércitos: cada mesa de 4 pode ter exércitos distintos.
+    const armies = ['Anãos', 'Humanos', 'Elfos', 'Wargs'];
+    const list: SorteioPlayer[] = players(8).map((p, i) => ({
+      ...p,
+      exercito: armies[i % 4],
+    }));
+    const mesas = sortearMesasSuico(list, 1, new Set());
+    expect(mesas).toHaveLength(2);
+    const byId = new Map(list.map((p) => [p.id, p]));
+    for (const mesa of mesas) {
+      const exercitos = mesa.jogadorIds.map((id) => byId.get(id)!.exercito);
+      expect(new Set(exercitos).size).toBe(exercitos.length);
+    }
+  });
+
+  it('rodada 1: nunca trava o sorteio mesmo sem exércitos suficientes', () => {
+    // Todos do mesmo exército: fallback deve permitir montar as mesas.
+    const list: SorteioPlayer[] = players(8).map((p) => ({
+      ...p,
+      exercito: 'Anãos',
+    }));
+    const mesas = sortearMesasSuico(list, 1, new Set());
+    const seated = mesas.flatMap((m) => m.jogadorIds);
+    expect(seated).toHaveLength(8);
   });
 
   it('evita rematch já na rodada 2 quando há alternativa', () => {

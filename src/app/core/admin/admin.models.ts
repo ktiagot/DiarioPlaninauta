@@ -81,6 +81,7 @@ export interface InscritoResumo {
   deckUrl: string | null;
   deckNome: string;
   comandante: string;
+  exercito?: string | null;
   pontos: number;
   vitorias: number;
   posicao: number | null;

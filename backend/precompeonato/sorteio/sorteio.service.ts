@@ -33,6 +33,7 @@ import {
   inscricaoPreconInclude,
   inscricaoWithPreconInclude,
 } from '../../precons/mappers/to-precon-response';
+import { exercitoLabel } from '../constants/exercito-labels';
 
 type InscricaoComUser = Prisma.InscricaoGetPayload<{
   include: typeof inscricaoWithPreconInclude;
@@ -148,6 +149,7 @@ export class SorteioService {
         discordNick: i.discordNick,
         deckNome: deckNomeFromInscricao(i),
         comandante: comandanteFromInscricao(i),
+        exercito: exercitoLabel(i.exercito),
         deckUrl: i.deckUrl,
         pontos: i.pontos,
         posicao: i.posicao ?? index + 1,
@@ -461,6 +463,7 @@ export class SorteioService {
           comandante: comandanteFromInscricao(j.inscricao),
           deckNome: deckNomeFromInscricao(j.inscricao),
           deckUrl: j.inscricao.deckUrl,
+          exercito: exercitoLabel(j.inscricao.exercito),
           rankingCampeonato: j.inscricao.posicao,
           posicaoFinal: j.posicaoFinal,
           kills: j.kills,
@@ -864,6 +867,7 @@ export class SorteioService {
       id: c.inscricaoId,
       pontos: c.inscricao.pontos,
       deckNome: deckNomeFromInscricao(c.inscricao),
+      exercito: exercitoLabel(c.inscricao.exercito),
     }));
 
     const opponents = await this.buildOpponentSet(campeonato.id, rodada.numero);
@@ -1127,6 +1131,7 @@ export class SorteioService {
         discordNick: j.inscricao.discordNick,
         deckNome: deckNomeFromInscricao(j.inscricao),
         comandante: comandanteFromInscricao(j.inscricao),
+        exercito: exercitoLabel(j.inscricao.exercito),
         pontos: j.inscricao.pontos,
       })),
     }));

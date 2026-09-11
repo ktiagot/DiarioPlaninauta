@@ -19,6 +19,9 @@ export class InscricaoResumoDto {
 
   @ApiProperty({ example: 'Atraxa, Praetors\' Voice' })
   comandante: string;
+
+  @ApiPropertyOptional({ example: 'Anãos', nullable: true })
+  exercito: string | null;
 }
 
 export class CampeonatoAtualResponseDto {

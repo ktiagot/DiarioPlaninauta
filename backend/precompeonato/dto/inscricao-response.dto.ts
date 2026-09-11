@@ -25,6 +25,9 @@ export class InscricaoResponseDto {
   @ApiProperty({ example: 'Atraxa, Praetors\' Voice' })
   comandante: string;
 
+  @ApiPropertyOptional({ example: 'Anãos', nullable: true })
+  exercito: string | null;
+
   @ApiProperty({ example: 'João' })
   nome: string;
 

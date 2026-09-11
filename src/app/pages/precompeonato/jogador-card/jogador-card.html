@@ -26,6 +26,9 @@
     @if (jogador.deckNome) {
       <span class="jogador-card__tag jogador-card__tag--deck">{{ jogador.deckNome }}</span>
     }
+    @if (jogador.exercito) {
+      <span class="jogador-card__tag jogador-card__tag--exercito">{{ jogador.exercito }}</span>
+    }
     <span class="jogador-card__tag jogador-card__tag--meta">Meta {{ jogador.meta }}</span>
   </div>
 

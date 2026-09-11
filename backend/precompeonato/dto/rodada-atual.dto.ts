@@ -19,6 +19,9 @@ export class RodadaAtualJogadorDto {
   @ApiPropertyOptional({ nullable: true })
   deckUrl?: string | null;
 
+  @ApiPropertyOptional({ example: 'Anãos', nullable: true })
+  exercito?: string | null;
+
   @ApiPropertyOptional({ nullable: true })
   rankingCampeonato?: number | null;
 

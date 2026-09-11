@@ -37,6 +37,7 @@ function inscricao(over: Partial<{
     deckUrl: null,
     preconId: 'precon-1',
     preconComandanteId: 'cmd-1',
+    exercito: 'ANAOS',
     precon: { nome: 'Precon Atraxa' },
     preconComandante: { comandante: 'Atraxa' },
     aceiteTermos: true,
