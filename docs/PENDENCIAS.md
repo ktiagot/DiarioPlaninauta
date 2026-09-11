@@ -48,6 +48,14 @@
   - Requer PostgreSQL 12+ (uso de `ALTER TYPE ... ADD VALUE`). Confirmar que o pipeline rodou sem erro.
 - **Re-sincronizar os precons no admin** — precons sincronizados antes da feature de partners
   não têm `colorIdentity` / `isPartner` / `isPrincipal` / `isPartnerDeck` até um novo sync.
+- **Validar apoio dos jogadores inscritos** — os jogadores criados em massa via SQL
+  (`scripts/saida_inscricoes.sql`) entraram com `isApoiadorAtivo = false` / `isExApoiador = false`
+  (estado neutro). Isso **não** bloqueia login nem participação no campeonato, mas eles não
+  aparecem na lista pública de comunidade (que filtra `isApoiadorAtivo: true`). Pendente:
+  - Rodar a **verificação/revalidação APOIA.se** no admin (ou `UPDATE` manual) para marcar
+    quem é apoiador ativo.
+  - **Validar quem é membro no YouTube** (fonte de apoio à parte do APOIA.se) e definir como
+    refletir isso no portal — hoje não há integração/flag para membros do YouTube.
 
 ### ⏸️ Em HOLD (decisão de produto)
 
