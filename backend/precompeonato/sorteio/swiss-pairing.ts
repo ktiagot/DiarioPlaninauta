@@ -26,29 +26,30 @@ function shuffle<T>(items: T[]): T[] {
   return arr;
 }
 
+/**
+ * Divide `n` jogadores em mesas de 4 (preferencial) e 3, SEMPRE assentando
+ * todos (a soma dos tamanhos é exatamente `n`). Como Commander comporta 3–4
+ * jogadores, todo n >= 3 é escrito como 4a + 3b, exceto n = 5, que não tem
+ * solução com apenas 3/4 — nesse caso usamos uma única mesa de 5 para não
+ * deixar ninguém de fora.
+ */
 function buildTableSizes(n: number): number[] {
   if (n < 3) return [];
-  if (n % 4 === 0) return Array(n / 4).fill(4);
-  if (n % 4 === 3) return [...Array(Math.floor(n / 4)).fill(4), 3];
-  if (n % 4 === 2) {
-    if (n === 6) return [3, 3];
-    const fours = Math.floor(n / 4) - 1;
-    return [...Array(Math.max(0, fours)).fill(4), 3, 3];
+  if (n === 5) return [5];
+
+  // Máximo de mesas de 4 tal que o restante seja múltiplo de 3 (>= 0).
+  // n - 4*fours >= 0 e divisível por 3. Iteramos de cima para baixo.
+  const maxFours = Math.floor(n / 4);
+  for (let fours = maxFours; fours >= 0; fours--) {
+    const resto = n - fours * 4;
+    if (resto % 3 === 0) {
+      const threes = resto / 3;
+      return [...Array(fours).fill(4), ...Array(threes).fill(3)];
+    }
   }
-  // rem === 1: 5, 9, 13...
-  if (n === 5) return [3];
-  if (n === 9) return [3, 3, 3];
-  let left = n;
-  const sizes: number[] = [];
-  while (left > 6) {
-    sizes.push(4);
-    left -= 4;
-  }
-  if (left === 6) sizes.push(3, 3);
-  else if (left === 5) sizes.push(3);
-  else if (left === 4) sizes.push(4);
-  else if (left === 3) sizes.push(3);
-  return sizes;
+
+  // Inalcançável para n >= 3 (exceto 5, já tratado), mas mantém a função total.
+  return [];
 }
 
 function rematchCount(

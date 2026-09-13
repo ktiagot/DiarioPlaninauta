@@ -24,10 +24,24 @@ describe('swiss-pairing', () => {
     expect(mesas[0].jogadorIds).toHaveLength(4);
   });
 
-  it('forms one table of 3 for 5 players', () => {
+  it('forms one table of 5 for 5 players (nobody left out)', () => {
     const mesas = sortearMesasSuico(players(5), 1, new Set());
     expect(mesas).toHaveLength(1);
-    expect(mesas[0].jogadorIds).toHaveLength(3);
+    expect(mesas[0].jogadorIds).toHaveLength(5);
+  });
+
+  it('seats every player for tricky counts (5,7,9,11,13,17)', () => {
+    for (const n of [5, 7, 9, 11, 13, 17]) {
+      const mesas = sortearMesasSuico(players(n), 1, new Set());
+      const seated = mesas.flatMap((m) => m.jogadorIds);
+      expect(seated).toHaveLength(n);
+      expect(new Set(seated).size).toBe(n);
+      // Todas as mesas têm tamanho válido (3, 4 ou 5 no caso de n=5).
+      for (const m of mesas) {
+        expect(m.jogadorIds.length).toBeGreaterThanOrEqual(3);
+        expect(m.jogadorIds.length).toBeLessThanOrEqual(5);
+      }
+    }
   });
 
   it('forms two tables of 4 for 8 players', () => {

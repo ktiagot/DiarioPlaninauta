@@ -224,11 +224,13 @@ export class MesasController {
   }
 
   @Post(':id/resultado')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Registrar resultado da mesa',
     description:
-      'Salva link da partida, posições finais, eliminações e marca a mesa como finalizada.',
+      'Salva link da partida, posições finais, eliminações e marca a mesa como finalizada. Apenas participantes da mesa.',
   })
   @ApiOkResponse({ description: 'Resultado registrado.', type: MesaResponseDto })
   @ApiCreatedResponse({ description: 'Resultado registrado.', type: MesaResponseDto })
@@ -236,9 +238,10 @@ export class MesasController {
   @ApiConflictResponse({ description: 'Mesa já finalizada.' })
   @ApiBadRequestResponse({ description: 'Payload inválido para a mesa.' })
   submitResultado(
+    @Request() req: { user: AuthUser },
     @Param('id') id: string,
     @Body() dto: SubmitMesaResultadoDto,
   ): Promise<MesaResponseDto> {
-    return this.mesasService.submitResultado(id, dto);
+    return this.mesasService.submitResultado(id, dto, req.user.id);
   }
 }

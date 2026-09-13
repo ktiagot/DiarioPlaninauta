@@ -502,7 +502,11 @@ export class MesasService {
     return mesa;
   }
 
-  async submitResultado(mesaId: string, dto: SubmitMesaResultadoDto): Promise<MesaResponseDto> {
+  async submitResultado(
+    mesaId: string,
+    dto: SubmitMesaResultadoDto,
+    actorUserId: string,
+  ): Promise<MesaResponseDto> {
     const mesa = await this.prisma.mesa.findUnique({
       where: { id: mesaId },
       include: mesaInclude,
@@ -518,6 +522,12 @@ export class MesasService {
 
     const alocados = mesa.jogadores.map((j) => j.userId);
     const n = alocados.length;
+
+    if (!alocados.includes(actorUserId)) {
+      throw new ForbiddenException(
+        'Apenas participantes da mesa podem registrar o resultado.',
+      );
+    }
 
     if (n === 0) {
       throw new BadRequestException('A mesa não possui jogadores alocados.');

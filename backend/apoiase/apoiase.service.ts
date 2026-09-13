@@ -33,6 +33,7 @@ export class ApoiaSeService {
     try {
       const response = await firstValueFrom(
         this.http.get<ApoiaSeResponse>(url, {
+          timeout: 8000,
           headers: {
             Accept: '*/*',
             'Content-Type': 'application/json',
@@ -73,6 +74,11 @@ export class ApoiaSeService {
   }
 
   private isMockEnabled(): boolean {
+    // Nunca permite o mock em produção, mesmo que a env vaze — evita liberar
+    // qualquer email como apoiador pago sem verificação real.
+    if (this.config.get<string>('NODE_ENV') === 'production') {
+      return false;
+    }
     const value = this.config.get<string>('APOIASE_MOCK');
     return value === 'true' || value === '1';
   }

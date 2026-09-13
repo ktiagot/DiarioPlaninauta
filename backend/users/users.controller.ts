@@ -6,9 +6,12 @@ import {
   Body,
   Param,
   Query,
+  Request,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +22,7 @@ import {
   ApiConflictResponse,
   ApiServiceUnavailableResponse,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -26,6 +30,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserPublicResponseDto } from './dto/user-public-response.dto';
 import { AvailabilityResponseDto } from './dto/availability-response.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('Users')
 @Controller('users')
@@ -84,24 +90,48 @@ export class UsersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Buscar usuário por ID',
-    description: 'Retorna os dados completos de um usuário pelo seu UUID.',
+    description:
+      'Retorna os dados completos (inclui e-mail e telefone) de um usuário. Restrito ao próprio usuário ou a administradores. Para dados de terceiros use /:id/publico.',
   })
   @ApiOkResponse({ description: 'Usuário encontrado.', type: UserResponseDto })
   @ApiNotFoundResponse({ description: 'Usuário não encontrado.' })
-  findOne(@Param('id') id: string): Promise<UserResponseDto> {
+  findOne(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+  ): Promise<UserResponseDto> {
+    this.assertProprioOuAdmin(req.user, id);
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Atualizar perfil do usuário',
-    description: 'Atualiza parcialmente os dados do perfil de um usuário.',
+    description:
+      'Atualiza parcialmente o perfil. Restrito ao próprio usuário ou a administradores.',
   })
   @ApiOkResponse({ description: 'Usuário atualizado com sucesso.', type: UserResponseDto })
   @ApiNotFoundResponse({ description: 'Usuário não encontrado.' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto): Promise<UserResponseDto> {
+  update(
+    @Request() req: { user: AuthUser },
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    this.assertProprioOuAdmin(req.user, id);
     return this.usersService.update(id, dto);
+  }
+
+  /** Garante que o chamador é o dono do recurso ou um administrador. */
+  private assertProprioOuAdmin(user: AuthUser, targetId: string): void {
+    if (user.id !== targetId && !user.isAdmin) {
+      throw new ForbiddenException(
+        'Você só pode acessar ou alterar o seu próprio perfil.',
+      );
+    }
   }
 }

@@ -44,6 +44,7 @@ describe('SorteioService', () => {
       findUnique: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
     };
     checkInRodada: { findMany: jest.Mock };
     mesaTorneio: {
@@ -73,6 +74,7 @@ describe('SorteioService', () => {
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       checkInRodada: { findMany: jest.fn() },
       mesaTorneio: {
@@ -508,12 +510,45 @@ describe('SorteioService', () => {
     expect(posicoes.get('ins-2')).toBe(2);
     expect(posicoes.get('ins-3')).toBe(3);
 
-    expect(prisma.rodada.update).toHaveBeenCalledWith(
+    // A finalização agora é atômica: updateMany condicional (finalizada:false).
+    expect(prisma.rodada.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'r-1' },
+        where: { id: 'r-1', finalizada: false },
         data: expect.objectContaining({ finalizada: true, ativa: false }),
       }),
     );
+  });
+
+  it('finalizarRodada é atômica: não soma pontos se a trava já foi tomada', async () => {
+    prisma.rodada.findUnique.mockResolvedValue({
+      id: 'r-1',
+      campeonatoId: 'camp-1',
+      numero: 1,
+      finalizada: false,
+      mesas: [
+        {
+          validada: true,
+          validadaEm: new Date(),
+          empate: false,
+          empatadosInscricaoIds: [],
+          jogadores: [
+            { inscricaoId: 'ins-1', posicaoFinal: 1 },
+            { inscricaoId: 'ins-2', posicaoFinal: 2 },
+          ],
+        },
+      ],
+    });
+    // Outra finalização concorrente já marcou finalizada: updateMany não afeta linhas.
+    prisma.rodada.updateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(service.finalizarRodada('r-1')).rejects.toThrow(ConflictException);
+
+    // Nenhum incremento de pontos deve ter ocorrido.
+    const somouPontos = prisma.inscricao.update.mock.calls.some((call) => {
+      const arg = call[0] as { data?: { pontos?: unknown } };
+      return arg.data?.pontos !== undefined;
+    });
+    expect(somouPontos).toBe(false);
   });
 
   it('abrirRodada bloqueia se a anterior tiver mesa não validada', async () => {

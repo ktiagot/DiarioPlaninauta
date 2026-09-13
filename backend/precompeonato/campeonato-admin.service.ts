@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificacoesService } from '../notificacoes/notificacoes.service';
@@ -32,6 +37,8 @@ export function toAdminResponse(c: Campeonato): CampeonatoAdminResponseDto {
 
 @Injectable()
 export class CampeonatoAdminService {
+  private readonly logger = new Logger(CampeonatoAdminService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly bannerStorage: BannerStorage,
@@ -128,36 +135,46 @@ export class CampeonatoAdminService {
     return toAdminResponse(updated);
   }
 
+  /** Notifica os inscritos ativos que o campeonato foi encerrado. Best-effort. */
   private async notificarCampeonatoEncerrado(campeonato: Campeonato): Promise<void> {
-    const inscricoes = await this.prisma.inscricao.findMany({
-      where: { campeonatoId: campeonato.id, ativo: true },
-      select: { userId: true },
-    });
-    const userIds = [...new Set(inscricoes.map((i) => i.userId))];
-    if (userIds.length === 0) return;
+    try {
+      const inscricoes = await this.prisma.inscricao.findMany({
+        where: { campeonatoId: campeonato.id, ativo: true },
+        select: { userId: true },
+      });
+      const userIds = [...new Set(inscricoes.map((i) => i.userId))];
+      if (userIds.length === 0) return;
 
-    await this.prisma.notificacao.createMany({
-      data: userIds.map((userId) => ({
-        userId,
-        tipo: 'campeonato_encerrado',
-        titulo: 'Campeonato encerrado',
-        mensagem: `O "${campeonato.nome} — ${campeonato.edicao}" foi encerrado. Confira a classificação final!`,
-      })),
-    });
+      await this.prisma.notificacao.createMany({
+        data: userIds.map((userId) => ({
+          userId,
+          tipo: 'campeonato_encerrado',
+          titulo: 'Campeonato encerrado',
+          mensagem: `O "${campeonato.nome} — ${campeonato.edicao}" foi encerrado. Confira a classificação final!`,
+        })),
+      });
+    } catch (err) {
+      this.logger.error('Falha ao notificar campeonato encerrado.', err as Error);
+    }
   }
 
+  /** Notifica todos os usuários que um novo campeonato foi publicado. Best-effort. */
   private async notificarCampeonatoPublicado(campeonato: Campeonato): Promise<void> {
-    const users = await this.prisma.user.findMany({ select: { id: true } });
-    if (users.length === 0) return;
+    try {
+      const users = await this.prisma.user.findMany({ select: { id: true } });
+      if (users.length === 0) return;
 
-    await this.prisma.notificacao.createMany({
-      data: users.map((u) => ({
-        userId: u.id,
-        tipo: 'campeonato_novo',
-        titulo: 'Novo campeonato aberto',
-        mensagem: `As inscrições para "${campeonato.nome} — ${campeonato.edicao}" estão abertas!`,
-      })),
-    });
+      await this.prisma.notificacao.createMany({
+        data: users.map((u) => ({
+          userId: u.id,
+          tipo: 'campeonato_novo',
+          titulo: 'Novo campeonato aberto',
+          mensagem: `As inscrições para "${campeonato.nome} — ${campeonato.edicao}" estão abertas!`,
+        })),
+      });
+    } catch (err) {
+      this.logger.error('Falha ao notificar campeonato publicado.', err as Error);
+    }
   }
 
   async updateBanner(

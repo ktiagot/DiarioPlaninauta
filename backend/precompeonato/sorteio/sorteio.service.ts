@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma, Rodada } from '@prisma/client';
@@ -77,6 +78,8 @@ function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
 
 @Injectable()
 export class SorteioService {
+  private readonly logger = new Logger(SorteioService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificacoes: NotificacoesService,
@@ -362,11 +365,13 @@ export class SorteioService {
       );
     }
 
-    await this.prisma.mesaTorneio.deleteMany({
-      where: { rodadaId: rodada.id },
+    // Apagar as mesas antigas e recriar acontece na mesma transação (dentro de
+    // executeSorteio) para não deixar a rodada sem mesas se o sorteio falhar.
+    // Não notifica: re-sorteio não deve gerar avisos duplicados.
+    await this.executeSorteio(campeonato, rodada, {
+      apagarMesasExistentes: true,
+      notificar: false,
     });
-
-    await this.executeSorteio(campeonato, rodada);
 
     return this.getSnapshot();
   }
@@ -631,6 +636,16 @@ export class SorteioService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      // Trava atômica: só a primeira transação a marcar `finalizada` prossegue.
+      // Evita que duas finalizações concorrentes somem os pontos duas vezes.
+      const lock = await tx.rodada.updateMany({
+        where: { id: rodadaId, finalizada: false },
+        data: { finalizada: true, ativa: false },
+      });
+      if (lock.count !== 1) {
+        throw new ConflictException('Esta rodada já foi finalizada.');
+      }
+
       for (const [inscricaoId, delta] of pontosDelta) {
         if (delta <= 0) continue;
         await tx.inscricao.update({
@@ -650,11 +665,6 @@ export class SorteioService {
           data: { posicao: i + 1 },
         });
       }
-
-      await tx.rodada.update({
-        where: { id: rodadaId },
-        data: { finalizada: true, ativa: false },
-      });
     });
 
     await this.notifyResultadoPublicado(rodada.id, rodada.numero);
@@ -679,14 +689,18 @@ export class SorteioService {
     const userIds = [...new Set(jogadores.map((j) => j.inscricao.userId))];
     if (userIds.length === 0) return;
 
-    await this.prisma.notificacao.createMany({
-      data: userIds.map((userId) => ({
-        userId,
-        tipo: 'resultado_publicado',
-        titulo: `Resultados da rodada ${numero}`,
-        mensagem: `Os resultados da rodada ${numero} foram publicados. Confira a classificação!`,
-      })),
-    });
+    try {
+      await this.prisma.notificacao.createMany({
+        data: userIds.map((userId) => ({
+          userId,
+          tipo: 'resultado_publicado',
+          titulo: `Resultados da rodada ${numero}`,
+          mensagem: `Os resultados da rodada ${numero} foram publicados. Confira a classificação!`,
+        })),
+      });
+    } catch (err) {
+      this.logger.error('Falha ao notificar resultado publicado.', err as Error);
+    }
   }
 
   async getCheckInStatus(userId: string): Promise<CheckInStatusDto> {
@@ -832,7 +846,9 @@ export class SorteioService {
   private async executeSorteio(
     campeonato: Campeonato,
     rodada: Rodada,
+    opts: { apagarMesasExistentes?: boolean; notificar?: boolean } = {},
   ): Promise<void> {
+    const { apagarMesasExistentes = false, notificar = true } = opts;
     const prevOk = await this.isPreviousRodadaComplete(
       campeonato.id,
       rodada.numero,
@@ -880,6 +896,12 @@ export class SorteioService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      // Re-sorteio: apaga as mesas antigas na MESMA transação da recriação,
+      // para nunca deixar a rodada sem mesas se algo falhar no meio.
+      if (apagarMesasExistentes) {
+        await tx.mesaTorneio.deleteMany({ where: { rodadaId: rodada.id } });
+      }
+
       await tx.rodada.updateMany({
         where: { campeonatoId: campeonato.id, ativa: true },
         data: { ativa: false },
@@ -912,13 +934,20 @@ export class SorteioService {
       }
     });
 
-    const userIdPorInscricao = new Map(
-      checkIns.map((c) => [c.inscricaoId, c.inscricao.userId]),
-    );
-    await this.notifyMesasSorteadas(rodada.numero, mesasPlan, userIdPorInscricao);
+    // Não notifica em re-sorteio para evitar avisos duplicados/desatualizados.
+    if (notificar) {
+      const userIdPorInscricao = new Map(
+        checkIns.map((c) => [c.inscricaoId, c.inscricao.userId]),
+      );
+      await this.notifyMesasSorteadas(
+        rodada.numero,
+        mesasPlan,
+        userIdPorInscricao,
+      );
+    }
   }
 
-  /** Notifica cada jogador em qual mesa caiu na rodada recém-sorteada. */
+  /** Notifica cada jogador em qual mesa caiu na rodada recém-sorteada. Best-effort. */
   private async notifyMesasSorteadas(
     numero: number,
     mesasPlan: { numeroMesa: number; jogadorIds: string[] }[],
@@ -934,7 +963,12 @@ export class SorteioService {
     for (const mesa of mesasPlan) {
       for (const inscricaoId of mesa.jogadorIds) {
         const userId = userIdPorInscricao.get(inscricaoId);
-        if (!userId) continue;
+        if (!userId) {
+          this.logger.warn(
+            `Sorteio: inscrição ${inscricaoId} sem userId no mapa — jogador não notificado.`,
+          );
+          continue;
+        }
         dados.push({
           userId,
           tipo: 'mesas_sorteadas',
@@ -946,7 +980,11 @@ export class SorteioService {
 
     if (dados.length === 0) return;
 
-    await this.prisma.notificacao.createMany({ data: dados });
+    try {
+      await this.prisma.notificacao.createMany({ data: dados });
+    } catch (err) {
+      this.logger.error('Falha ao notificar mesas sorteadas.', err as Error);
+    }
   }
 
   private async buildAbrirRodadaContext(
@@ -1021,14 +1059,18 @@ export class SorteioService {
     if (inscricoes.length === 0) return;
 
     const dataFmt = formatDataRodada(rodada.dataRodada);
-    await this.prisma.notificacao.createMany({
-      data: inscricoes.map((i) => ({
-        userId: i.userId,
-        tipo: 'rodada_nova',
-        titulo: `Rodada ${rodada.numero} aberta`,
-        mensagem: `Check-in disponível para a rodada ${rodada.numero} (${dataFmt}).`,
-      })),
-    });
+    try {
+      await this.prisma.notificacao.createMany({
+        data: inscricoes.map((i) => ({
+          userId: i.userId,
+          tipo: 'rodada_nova',
+          titulo: `Rodada ${rodada.numero} aberta`,
+          mensagem: `Check-in disponível para a rodada ${rodada.numero} (${dataFmt}).`,
+        })),
+      });
+    } catch (err) {
+      this.logger.error('Falha ao notificar rodada nova.', err as Error);
+    }
   }
 
   /**
