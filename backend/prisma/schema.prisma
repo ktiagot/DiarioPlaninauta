@@ -476,7 +476,7 @@ model Ponto {
 model Notificacao {
   id             String   @id @default(uuid())
   userId         String
-  tipo           String   // rodada_nova, resultado_publicado, favorito_mutuo, pontos_creditados, mesa_entrou, campeonato_novo, dia_do_evento, convite_mesa, geral
+  tipo           String   // rodada_nova, resultado_publicado, favorito_mutuo, pontos_creditados, mesa_entrou, campeonato_novo, dia_do_evento, convite_mesa, inscricao_confirmada, mesas_sorteadas, campeonato_encerrado, geral
   titulo         String
   mensagem       String
   lida           Boolean  @default(false)

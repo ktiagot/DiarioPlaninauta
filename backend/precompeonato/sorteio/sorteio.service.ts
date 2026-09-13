@@ -911,6 +911,42 @@ export class SorteioService {
         });
       }
     });
+
+    const userIdPorInscricao = new Map(
+      checkIns.map((c) => [c.inscricaoId, c.inscricao.userId]),
+    );
+    await this.notifyMesasSorteadas(rodada.numero, mesasPlan, userIdPorInscricao);
+  }
+
+  /** Notifica cada jogador em qual mesa caiu na rodada recém-sorteada. */
+  private async notifyMesasSorteadas(
+    numero: number,
+    mesasPlan: { numeroMesa: number; jogadorIds: string[] }[],
+    userIdPorInscricao: Map<string, string>,
+  ): Promise<void> {
+    const dados: {
+      userId: string;
+      tipo: string;
+      titulo: string;
+      mensagem: string;
+    }[] = [];
+
+    for (const mesa of mesasPlan) {
+      for (const inscricaoId of mesa.jogadorIds) {
+        const userId = userIdPorInscricao.get(inscricaoId);
+        if (!userId) continue;
+        dados.push({
+          userId,
+          tipo: 'mesas_sorteadas',
+          titulo: `Mesas da rodada ${numero} sorteadas`,
+          mensagem: `Você foi alocado na mesa ${mesa.numeroMesa} da rodada ${numero}. Boa partida!`,
+        });
+      }
+    }
+
+    if (dados.length === 0) return;
+
+    await this.prisma.notificacao.createMany({ data: dados });
   }
 
   private async buildAbrirRodadaContext(

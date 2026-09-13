@@ -117,7 +117,33 @@ export class CampeonatoAdminService {
       await this.notificarCampeonatoPublicado(updated);
     }
 
+    // Encerramento: em andamento -> encerrado notifica os inscritos ativos.
+    if (
+      campeonato.status === CampeonatoStatus.EM_ANDAMENTO &&
+      status === CampeonatoStatus.ENCERRADO
+    ) {
+      await this.notificarCampeonatoEncerrado(updated);
+    }
+
     return toAdminResponse(updated);
+  }
+
+  private async notificarCampeonatoEncerrado(campeonato: Campeonato): Promise<void> {
+    const inscricoes = await this.prisma.inscricao.findMany({
+      where: { campeonatoId: campeonato.id, ativo: true },
+      select: { userId: true },
+    });
+    const userIds = [...new Set(inscricoes.map((i) => i.userId))];
+    if (userIds.length === 0) return;
+
+    await this.prisma.notificacao.createMany({
+      data: userIds.map((userId) => ({
+        userId,
+        tipo: 'campeonato_encerrado',
+        titulo: 'Campeonato encerrado',
+        mensagem: `O "${campeonato.nome} — ${campeonato.edicao}" foi encerrado. Confira a classificação final!`,
+      })),
+    });
   }
 
   private async notificarCampeonatoPublicado(campeonato: Campeonato): Promise<void> {

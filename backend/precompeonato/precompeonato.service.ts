@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus } from '@prisma/client';
@@ -54,6 +55,8 @@ function isMesaTorneioFinalizada(mesa: {
 
 @Injectable()
 export class PrecompeonatoService {
+  private readonly logger = new Logger(PrecompeonatoService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly preconsService: PreconsService,
@@ -180,7 +183,28 @@ export class PrecompeonatoService {
       return created;
     });
 
+    await this.notifyInscricaoConfirmada(user.id, campeonato);
+
     return toInscricaoResponse(inscricao);
+  }
+
+  /** Confirma ao jogador que a inscrição foi aceita. Best-effort. */
+  private async notifyInscricaoConfirmada(
+    userId: string,
+    campeonato: Campeonato,
+  ): Promise<void> {
+    try {
+      await this.prisma.notificacao.create({
+        data: {
+          userId,
+          tipo: 'inscricao_confirmada',
+          titulo: 'Inscrição confirmada',
+          mensagem: `Sua inscrição em "${campeonato.nome} — ${campeonato.edicao}" foi confirmada. Boa sorte!`,
+        },
+      });
+    } catch (err) {
+      this.logger.error('Falha ao notificar inscrição confirmada.', err as Error);
+    }
   }
 
   async listJogadores(campeonatoId?: string): Promise<JogadorPrecompeonatoResponseDto[]> {

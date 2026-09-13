@@ -46,6 +46,7 @@ describe('CampeonatoAdminService create/list', () => {
       update: jest.Mock;
     };
     user: { findMany: jest.Mock };
+    inscricao: { findMany: jest.Mock };
     notificacao: { createMany: jest.Mock };
   };
 
@@ -59,6 +60,7 @@ describe('CampeonatoAdminService create/list', () => {
         update: jest.fn(),
       },
       user: { findMany: jest.fn().mockResolvedValue([]) },
+      inscricao: { findMany: jest.fn().mockResolvedValue([]) },
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
@@ -134,6 +136,7 @@ describe('CampeonatoAdminService update/updateStatus', () => {
       update: jest.Mock;
     };
     user: { findMany: jest.Mock };
+    inscricao: { findMany: jest.Mock };
     notificacao: { createMany: jest.Mock };
   };
 
@@ -147,6 +150,7 @@ describe('CampeonatoAdminService update/updateStatus', () => {
         update: jest.fn(),
       },
       user: { findMany: jest.fn().mockResolvedValue([]) },
+      inscricao: { findMany: jest.fn().mockResolvedValue([]) },
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
@@ -216,6 +220,21 @@ describe('CampeonatoAdminService update/updateStatus', () => {
     });
   });
 
+  it('EM_ANDAMENTO → ENCERRADO notifica os inscritos ativos', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
+    prisma.campeonato.update.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
+    prisma.inscricao.findMany.mockResolvedValue([{ userId: 'u1' }, { userId: 'u2' }]);
+
+    await service.updateStatus('c1', CampeonatoStatus.ENCERRADO);
+
+    expect(prisma.notificacao.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({ userId: 'u1', tipo: 'campeonato_encerrado' }),
+        expect.objectContaining({ userId: 'u2', tipo: 'campeonato_encerrado' }),
+      ],
+    });
+  });
+
   it('ENCERRADO → qualquer status → 409', async () => {
     prisma.campeonato.findUnique.mockResolvedValue(camp({ status: CampeonatoStatus.ENCERRADO }));
     await expect(
@@ -240,6 +259,7 @@ describe('CampeonatoAdminService updateBanner', () => {
       update: jest.Mock;
     };
     user: { findMany: jest.Mock };
+    inscricao: { findMany: jest.Mock };
     notificacao: { createMany: jest.Mock };
   };
 
@@ -253,6 +273,7 @@ describe('CampeonatoAdminService updateBanner', () => {
         update: jest.fn(),
       },
       user: { findMany: jest.fn().mockResolvedValue([]) },
+      inscricao: { findMany: jest.fn().mockResolvedValue([]) },
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
