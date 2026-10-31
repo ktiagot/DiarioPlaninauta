@@ -23,6 +23,7 @@ import { MinhasMesa } from '../../core/precompeonato/minhas-mesas.models';
 import { MinhasMesasService } from '../../core/precompeonato/minhas-mesas.service';
 import { MesasService } from '../../core/mesas/mesas.service';
 import { Mesa } from '../../core/mesas/mesas.models';
+import { SessionService } from '../../core/auth/session.service';
 
 interface MinhaMesaView {
   id: string;
@@ -54,6 +55,7 @@ export class PerfilComponent implements OnInit {
   private readonly usersService = inject(UsersService);
   private readonly minhasMesasService = inject(MinhasMesasService);
   private readonly mesasService = inject(MesasService);
+  private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly faLocationDot = faLocationDot;
@@ -64,12 +66,12 @@ export class PerfilComponent implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly profile = signal<User | null>(null);
-  protected readonly isAuthenticated = signal(!!localStorage.getItem('access_token'));
+  protected readonly isAuthenticated = signal(this.session.isAuthenticated());
   protected readonly promos = PROFILE_PROMOS;
   protected readonly minhasMesas = signal<MinhasMesa[]>([]);
   protected readonly minhasMesasCasuais = signal<Mesa[]>([]);
 
-  private readonly userId = localStorage.getItem('user_id');
+  private readonly userId = this.session.getUserId();
 
   /** Formata data/hora da mesa casual em UTC-3. */
   private formatarDataHora(iso: string): string {
@@ -155,7 +157,7 @@ export class PerfilComponent implements OnInit {
   protected readonly badgeLabel = computed(() => this.profile()?.badge ?? null);
 
   ngOnInit(): void {
-    const userId = localStorage.getItem('user_id');
+    const userId = this.userId;
 
     if (!userId) {
       this.loading.set(false);

@@ -35,18 +35,6 @@
       <p class="precompeonato-hero__subtitle">Nenhum campeonato cadastrado.</p>
     }
 
-    @if (timerTarget()) {
-      <div class="timer-section glass-card">
-        <p class="timer-label">{{ timerLabel() }}</p>
-        <div class="timer-grid">
-          <div class="timer-unit"><span class="timer-num">{{ timerDays() }}</span><span class="timer-txt">Dias</span></div>
-          <div class="timer-unit"><span class="timer-num">{{ timerHours() }}</span><span class="timer-txt">Horas</span></div>
-          <div class="timer-unit"><span class="timer-num">{{ timerMinutes() }}</span><span class="timer-txt">Min</span></div>
-          <div class="timer-unit"><span class="timer-num">{{ timerSeconds() }}</span><span class="timer-txt">Seg</span></div>
-        </div>
-      </div>
-    }
-
     <div class="precompeonato-hero__ctas">
       <button mat-flat-button color="primary" type="button" (click)="toggleMesasView()">
         <fa-icon [icon]="ctaMesasIcon()" class="precompeonato-hero__cta-icon" />

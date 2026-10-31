@@ -4,6 +4,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter } from '@angular/router';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import { firstValueFrom } from 'rxjs';
 
 import { registerFontAwesomeIcons } from './core/fontawesome';
 import { authInterceptor } from './core/auth/auth.interceptor';
@@ -19,8 +20,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAppInitializer(() => {
       registerFontAwesomeIcons(inject(FaIconLibrary));
-      // Carrega e aplica o tema global antes de renderizar.
-      inject(TemaService).carregarEAplicar().subscribe();
+      // Carrega e aplica o tema global ANTES de renderizar (evita flash de tema
+      // padrão). Retorna a Promise para que o bootstrap aguarde; carregarEAplicar
+      // já cai no tema padrão em caso de erro.
+      return firstValueFrom(inject(TemaService).carregarEAplicar());
     }),
   ],
 };
