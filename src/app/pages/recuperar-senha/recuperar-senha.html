@@ -1,0 +1,120 @@
+<main class="recuperar-senha-page mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <mat-card class="senha-card">
+    <mat-card-header>
+      <mat-card-title>Recuperar senha</mat-card-title>
+      <mat-card-subtitle>
+        @if (etapa() === 'solicitar') {
+          Informe seu e-mail para receber um código de redefinição
+        } @else {
+          Digite o código enviado por e-mail e escolha a nova senha
+        }
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="pt-4">
+
+      @if (etapa() === 'solicitar') {
+        <form [formGroup]="emailForm" (ngSubmit)="solicitar()" class="flex flex-col gap-4" novalidate>
+          <div class="field-group">
+            <label for="email" class="text-white">E-mail</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="seu@email.com"
+                autocomplete="email"
+              />
+              @if (emailForm.controls.email.invalid && emailForm.controls.email.touched) {
+                <mat-error>Informe um e-mail válido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button mat-flat-button color="primary" type="submit" [disabled]="enviando()" class="flex-1">
+              @if (enviando()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                Enviar código
+              }
+            </button>
+            <a mat-stroked-button routerLink="/login" class="flex-1 text-center">Voltar ao login</a>
+          </div>
+        </form>
+      } @else {
+        <form [formGroup]="resetForm" (ngSubmit)="redefinir()" class="flex flex-col gap-4" novalidate>
+          <div class="field-group">
+            <label for="codigo" class="text-white">Código de 6 dígitos</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="codigo"
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                formControlName="codigo"
+                placeholder="000000"
+                autocomplete="one-time-code"
+              />
+              @if (resetForm.controls.codigo.invalid && resetForm.controls.codigo.touched) {
+                <mat-error>O código tem 6 dígitos</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label for="novaSenha" class="text-white">Nova senha</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="novaSenha"
+                type="password"
+                formControlName="novaSenha"
+                placeholder="Mínimo 8 caracteres"
+                autocomplete="new-password"
+              />
+              @if (resetForm.controls.novaSenha.invalid && resetForm.controls.novaSenha.touched) {
+                <mat-error>A nova senha deve ter no mínimo 8 caracteres</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <label for="confirmarSenha" class="text-white">Confirmar nova senha</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                id="confirmarSenha"
+                type="password"
+                formControlName="confirmarSenha"
+                placeholder="Repita a nova senha"
+                autocomplete="new-password"
+              />
+              @if (resetForm.controls.confirmarSenha.hasError('senhasDivergentes') && resetForm.controls.confirmarSenha.touched) {
+                <mat-error>As senhas não conferem</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button mat-flat-button color="primary" type="submit" [disabled]="enviando()" class="flex-1">
+              @if (enviando()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                Redefinir senha
+              }
+            </button>
+            <button mat-stroked-button type="button" class="flex-1" (click)="voltarParaEmail()">
+              Usar outro e-mail
+            </button>
+          </div>
+        </form>
+      }
+
+    </mat-card-content>
+  </mat-card>
+
+</main>

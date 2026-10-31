@@ -40,6 +40,14 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/login/login').then((m) => m.LoginComponent),
       },
       {
+        path: 'recuperar-senha',
+        loadComponent: () =>
+          import('./pages/recuperar-senha/recuperar-senha').then(
+            (m) => m.RecuperarSenhaComponent,
+          ),
+        data: { title: 'Recuperar senha' },
+      },
+      {
         path: 'cadastro',
         loadComponent: () => import('./pages/cadastro/cadastro').then((m) => m.CadastroComponent),
       },
@@ -92,6 +100,18 @@ export const routes: Routes = [
         data: { title: 'Loja de Pontos' },
       },
       {
+        path: 'hall-da-fama',
+        loadComponent: () =>
+          import('./pages/hall-da-fama/hall-da-fama').then((m) => m.HallDaFamaComponent),
+        data: { title: 'Hall da Fama' },
+      },
+      {
+        path: 'parceiros',
+        loadComponent: () =>
+          import('./pages/parceiros/parceiros').then((m) => m.ParceirosComponent),
+        data: { title: 'Parceiros' },
+      },
+      {
         path: 'regras',
         loadComponent: () =>
           import('./pages/regras/regras').then((m) => m.RegrasComponent),
@@ -127,6 +147,14 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/admin/tema/admin-tema').then((m) => m.AdminTemaComponent),
             data: { title: 'Admin — Tema' },
+          },
+          {
+            path: 'parceiros',
+            loadComponent: () =>
+              import('./pages/admin/parceiros/admin-parceiros').then(
+                (m) => m.AdminParceirosComponent,
+              ),
+            data: { title: 'Admin — Parceiros' },
           },
         ],
       },

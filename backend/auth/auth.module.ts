@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ApoiaSeModule } from '../apoiase/apoiase.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { MailModule } from './mail/mail.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
@@ -26,6 +27,7 @@ import { AdminGuard } from './guards/admin.guard';
     }),
     ApoiaSeModule,
     PrismaModule,
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],

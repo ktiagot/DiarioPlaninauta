@@ -14,14 +14,18 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { label: 'Comunidade', path: '/comunidade' },
   { label: 'Precompeonato', path: '/precompeonato' },
   { label: 'Estatisticas', path: '/estatisticas' },
+  { label: 'Hall da Fama', path: '/hall-da-fama' },
   { label: 'Mesões', path: '/mesoes' },
   { label: 'Loja de Pontos', path: '/loja' },
+  { label: 'Parceiros', path: '/parceiros' },
   { label: 'Sugestões', path: '/sugestoes' },
 ];
 
 export const PORTAL_GUEST_NAV_ITEMS: PortalNavItem[] = [
   { label: 'Login', path: '/login', exact: true },
   { label: 'Cadastro', path: '/cadastro', exact: true },
+  { label: 'Hall da Fama', path: '/hall-da-fama' },
+  { label: 'Parceiros', path: '/parceiros' },
   { label: 'Sugestões', path: '/sugestoes' },
   { label: 'Apoia-se', href: APOIA_SE_URL, external: true },
 ];

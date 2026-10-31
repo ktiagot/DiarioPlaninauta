@@ -10,6 +10,7 @@ import { HealthModule } from './health/health.module';
 import { LojaModule } from './loja/loja.module';
 import { MesasModule } from './mesas/mesas.module';
 import { NotificacoesModule } from './notificacoes/notificacoes.module';
+import { ParceirosModule } from './parceiros/parceiros.module';
 import { PreconsModule } from './precons/precons.module';
 import { PrecompeonatoModule } from './precompeonato/precompeonato.module';
 import { SugestoesModule } from './sugestoes/sugestoes.module';
@@ -31,6 +32,7 @@ import { UsersModule } from './users/users.module';
     SugestoesModule,
     LojaModule,
     NotificacoesModule,
+    ParceirosModule,
     PreconsModule,
     TemaModule,
     HealthModule,

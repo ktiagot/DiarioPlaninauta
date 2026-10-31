@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from './mail/mail.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -17,6 +18,7 @@ describe('AuthService', () => {
   };
   let apoiase: { verify: jest.Mock };
   let jwt: { signAsync: jest.Mock };
+  let mail: { sendResetSenhaCode: jest.Mock };
 
   const baseUser = {
     id: 'u1',
@@ -39,6 +41,7 @@ describe('AuthService', () => {
     };
     apoiase = { verify: jest.fn() };
     jwt = { signAsync: jest.fn().mockResolvedValue('token-abc') };
+    mail = { sendResetSenhaCode: jest.fn().mockResolvedValue(undefined) };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -46,6 +49,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: ApoiaSeService, useValue: apoiase },
         { provide: JwtService, useValue: jwt },
+        { provide: MailService, useValue: mail },
       ],
     }).compile();
 
@@ -217,6 +221,105 @@ describe('AuthService', () => {
 
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { passwordHash: 'novo-hash' } }),
+      );
+    });
+  });
+
+  describe('esqueciSenha', () => {
+    it('não revela inexistência e não envia e-mail quando a conta não existe', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(service.esqueciSenha('nao@existe.com')).resolves.toBeUndefined();
+      expect(mail.sendResetSenhaCode).not.toHaveBeenCalled();
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('gera código, grava hash com validade e envia e-mail quando a conta existe', async () => {
+      prisma.user.findUnique.mockResolvedValue(baseUser);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('hash-do-codigo');
+      prisma.user.update.mockResolvedValue(baseUser);
+
+      await service.esqueciSenha(baseUser.email);
+
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            resetSenhaHash: 'hash-do-codigo',
+            resetSenhaExpiraEm: expect.any(Date),
+          }),
+        }),
+      );
+      expect(mail.sendResetSenhaCode).toHaveBeenCalledWith(
+        baseUser.email,
+        expect.stringMatching(/^\d{6}$/),
+      );
+    });
+
+    it('não propaga erro se o envio de e-mail falhar (best-effort)', async () => {
+      prisma.user.findUnique.mockResolvedValue(baseUser);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('hash-do-codigo');
+      prisma.user.update.mockResolvedValue(baseUser);
+      mail.sendResetSenhaCode.mockRejectedValue(new Error('smtp down'));
+
+      await expect(service.esqueciSenha(baseUser.email)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('resetSenha', () => {
+    const comReset = {
+      ...baseUser,
+      resetSenhaHash: 'hash-do-codigo',
+      resetSenhaExpiraEm: new Date(Date.now() + 10 * 60 * 1000),
+    };
+
+    it('400 quando não há solicitação de reset pendente', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...baseUser,
+        resetSenhaHash: null,
+        resetSenhaExpiraEm: null,
+      });
+
+      await expect(service.resetSenha(baseUser.email, '123456', 'novasenha')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('400 quando o código expirou', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...comReset,
+        resetSenhaExpiraEm: new Date(Date.now() - 1000),
+      });
+
+      await expect(service.resetSenha(baseUser.email, '123456', 'novasenha')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('400 quando o código não confere', async () => {
+      prisma.user.findUnique.mockResolvedValue(comReset);
+      jest.spyOn(argon2, 'verify').mockResolvedValue(false);
+
+      await expect(service.resetSenha(baseUser.email, '000000', 'novasenha')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('grava nova senha e limpa o código quando tudo confere', async () => {
+      prisma.user.findUnique.mockResolvedValue(comReset);
+      jest.spyOn(argon2, 'verify').mockResolvedValue(true);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('novo-hash');
+      prisma.user.update.mockResolvedValue(baseUser);
+
+      await service.resetSenha(baseUser.email, '123456', 'novasenha');
+
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            passwordHash: 'novo-hash',
+            resetSenhaHash: null,
+            resetSenhaExpiraEm: null,
+          },
+        }),
       );
     });
   });

@@ -26,4 +26,16 @@ export class AuthService {
       novaSenha,
     });
   }
+
+  esqueciSenha(email: string) {
+    return this.http.post<{ success: boolean }>(`${API_URL}/auth/esqueci-senha`, { email });
+  }
+
+  resetSenha(email: string, codigo: string, novaSenha: string) {
+    return this.http.post<{ success: boolean }>(`${API_URL}/auth/reset-senha`, {
+      email,
+      codigo,
+      novaSenha,
+    });
+  }
 }

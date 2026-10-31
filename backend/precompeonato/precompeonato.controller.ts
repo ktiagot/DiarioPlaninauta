@@ -41,6 +41,7 @@ import { UpdateCampeonatoStatusDto } from './dto/update-campeonato-status.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
 import { ProximaRodadaDto } from './dto/proxima-rodada.dto';
 import { CampeonatoPublicoDto } from './dto/campeonato-publico.dto';
+import { HallDaFamaEntryDto } from './dto/hall-da-fama-response.dto';
 import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
@@ -153,6 +154,16 @@ export class PrecompeonatoController {
   @ApiOkResponse({ description: 'Lista de campeonatos.', type: [CampeonatoPublicoDto] })
   listCampeonatosPublicos(): Promise<CampeonatoPublicoDto[]> {
     return this.precompeonatoService.listCampeonatosPublicos();
+  }
+
+  @Get('hall-da-fama')
+  @ApiOperation({
+    summary: 'Hall da Fama',
+    description: 'Campeões (1º lugar) de cada campeonato encerrado, do mais recente ao mais antigo.',
+  })
+  @ApiOkResponse({ description: 'Lista de campeões.', type: [HallDaFamaEntryDto] })
+  getHallDaFama(): Promise<HallDaFamaEntryDto[]> {
+    return this.precompeonatoService.getHallDaFama();
   }
 
   @Get('ranking-geral')

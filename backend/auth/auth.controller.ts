@@ -18,6 +18,8 @@ import { AuthService } from './auth.service';
 import { RequestLoginDto } from './dto/request-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { EsqueciSenhaDto } from './dto/esqueci-senha.dto';
+import { ResetSenhaDto } from './dto/reset-senha.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthUser } from './strategies/jwt.strategy';
 
@@ -82,6 +84,34 @@ export class AuthController {
   })
   verifyBacker(@Body() dto: RequestLoginDto) {
     return this.authService.verifyBacker(dto.email);
+  }
+
+  @Post('esqueci-senha')
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Solicitar redefinição de senha',
+    description:
+      'Envia um código de 6 dígitos por e-mail (válido por 15 min). A resposta é sempre ' +
+      'genérica, independentemente de o e-mail existir ou não.',
+  })
+  @ApiOkResponse({ description: 'Se o e-mail existir, o código foi enviado.' })
+  async esqueciSenha(@Body() dto: EsqueciSenhaDto): Promise<{ success: boolean }> {
+    await this.authService.esqueciSenha(dto.email);
+    return { success: true };
+  }
+
+  @Post('reset-senha')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Redefinir senha com código',
+    description: 'Valida o código recebido por e-mail e grava a nova senha.',
+  })
+  @ApiOkResponse({ description: 'Senha redefinida com sucesso.' })
+  async resetSenha(@Body() dto: ResetSenhaDto): Promise<{ success: boolean }> {
+    await this.authService.resetSenha(dto.email, dto.codigo, dto.novaSenha);
+    return { success: true };
   }
 
   @Post('change-password')

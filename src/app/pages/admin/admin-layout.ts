@@ -29,6 +29,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         >
           Tema
         </a>
+        <a
+          routerLink="/admin/parceiros"
+          routerLinkActive="admin-layout__nav-link--active"
+          class="admin-layout__nav-link"
+        >
+          Parceiros
+        </a>
       </nav>
       <div class="admin-layout__content">
         <router-outlet />

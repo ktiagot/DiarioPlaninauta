@@ -10,14 +10,19 @@ import { Campeonato, CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
 import {
+  comandanteFromInscricao,
+  deckNomeFromInscricao,
   inscricaoPreconInclude,
   inscricaoWithPreconInclude,
 } from '../precons/mappers/to-precon-response';
+import { exercitoLabel } from './constants/exercito-labels';
+import { toDateOnly } from './date-only';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
 import { InscricaoResponseDto } from './dto/inscricao-response.dto';
 import { JogadorPrecompeonatoResponseDto } from './dto/jogador-precompeonato-response.dto';
 import { CampeonatoPublicoDto } from './dto/campeonato-publico.dto';
+import { HallDaFamaEntryDto } from './dto/hall-da-fama-response.dto';
 import { InscritoAdminResponseDto } from './dto/inscrito-admin-response.dto';
 import {
   EstatisticasFullResponseDto,
@@ -257,6 +262,41 @@ export class PrecompeonatoService {
       select: { id: true, nome: true, edicao: true },
     });
     return campeonatos;
+  }
+
+  /**
+   * Hall da Fama: campeões (posição 1) de cada campeonato ENCERRADO, do mais
+   * recente ao mais antigo. Campeonato encerrado sem campeão definido ainda
+   * aparece com os campos de campeão nulos.
+   */
+  async getHallDaFama(): Promise<HallDaFamaEntryDto[]> {
+    const campeonatos = await this.prisma.campeonato.findMany({
+      where: { status: CampeonatoStatus.ENCERRADO },
+      orderBy: { dataInicio: 'desc' },
+      include: {
+        inscricoes: {
+          where: { posicao: 1 },
+          take: 1,
+          include: inscricaoWithPreconInclude,
+        },
+      },
+    });
+
+    return campeonatos.map((c) => {
+      const campeao = c.inscricoes[0] ?? null;
+      return {
+        campeonatoId: c.id,
+        campeonatoNome: c.nome,
+        edicao: c.edicao,
+        dataInicio: toDateOnly(c.dataInicio),
+        campeaoNome: campeao?.user.nome ?? null,
+        campeaoNick: campeao?.user.nick ?? null,
+        comandante: campeao ? comandanteFromInscricao(campeao) : null,
+        deckNome: campeao ? deckNomeFromInscricao(campeao) : null,
+        exercito: campeao ? exercitoLabel(campeao.exercito) : null,
+        pontos: campeao?.pontos ?? null,
+      };
+    });
   }
 
   /**

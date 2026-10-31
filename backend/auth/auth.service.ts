@@ -1,14 +1,17 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
+import { randomInt } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from './mail/mail.service';
 
 // Hash fictício para rodar argon2.verify mesmo quando o usuário não existe,
 // evitando timing attack por diferença de tempo de resposta.
@@ -17,10 +20,13 @@ const DUMMY_HASH =
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly apoiaseService: ApoiaSeService,
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
   async verifyBacker(email: string) {
@@ -87,6 +93,67 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash: novoHash },
+    });
+  }
+
+  /**
+   * Inicia a redefinição de senha: gera um código de 6 dígitos, guarda o HASH
+   * dele com validade de 15 min e envia o código por e-mail. Resposta sempre
+   * genérica (não revela se o e-mail existe) para evitar enumeração de contas.
+   */
+  async esqueciSenha(email: string): Promise<void> {
+    const normalizado = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizado },
+    });
+
+    if (!user) return; // resposta genérica: não sinaliza inexistência
+
+    const codigo = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    const resetSenhaHash = await argon2.hash(codigo);
+    const resetSenhaExpiraEm = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { resetSenhaHash, resetSenhaExpiraEm },
+    });
+
+    try {
+      await this.mailService.sendResetSenhaCode(user.email, codigo);
+    } catch (err) {
+      this.logger.error('Falha ao enviar e-mail de redefinição de senha.', err as Error);
+    }
+  }
+
+  /** Conclui a redefinição validando o código e gravando a nova senha. */
+  async resetSenha(email: string, codigo: string, novaSenha: string): Promise<void> {
+    const normalizado = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizado },
+    });
+
+    const invalido = new BadRequestException('Código inválido ou expirado.');
+
+    if (!user || !user.resetSenhaHash || !user.resetSenhaExpiraEm) {
+      throw invalido;
+    }
+    if (user.resetSenhaExpiraEm.getTime() < Date.now()) {
+      throw invalido;
+    }
+
+    const codigoOk = await argon2.verify(user.resetSenhaHash, codigo);
+    if (!codigoOk) {
+      throw invalido;
+    }
+
+    const novoHash = await argon2.hash(novaSenha);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: novoHash,
+        resetSenhaHash: null,
+        resetSenhaExpiraEm: null,
+      },
     });
   }
 

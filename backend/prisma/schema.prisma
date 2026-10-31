@@ -100,6 +100,10 @@ model User {
   membroYoutubeDesde      DateTime?
   membroYoutubeValidadoEm DateTime?
 
+  // --- recuperação de senha (código enviado por email) ---
+  resetSenhaHash      String?
+  resetSenhaExpiraEm  DateTime?
+
   // --- comunidade / favoritos ---
   favoritosDe   Favorito[] @relation("FavoritoDe")
   favoritosPara Favorito[] @relation("FavoritoPara")
@@ -499,4 +503,27 @@ model Notificacao {
   @@index([userId, lida])
   @@index([createdAt])
   @@map("notificacoes")
+}
+
+// =============================================
+// PARCEIROS
+// =============================================
+
+model Parceiro {
+  id          String  @id @default(uuid())
+  nome        String
+  descricao   String?
+  logoUrl     String?
+  url         String
+  ativo       Boolean @default(true)
+  // Ordem de exibição (menor primeiro).
+  ordem       Int     @default(0)
+  // Contador de cliques para métrica simples.
+  cliques     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ativo, ordem])
+  @@map("parceiros")
 }

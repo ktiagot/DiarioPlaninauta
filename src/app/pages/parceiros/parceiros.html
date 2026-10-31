@@ -1,0 +1,44 @@
+<main class="parceiros-page mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <header class="parceiros-header">
+    <h1 class="parceiros-title">
+      <mat-icon class="parceiros-title__icon" fontSet="material-icons-outlined">handshake</mat-icon>
+      Parceiros
+    </h1>
+    <p class="parceiros-subtitle">Lojas e marcas que apoiam o Diário Planinauta.</p>
+  </header>
+
+  @if (loading()) {
+    <div class="parceiros-loading">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <p class="parceiros-empty">{{ error() }}</p>
+  } @else if (parceiros().length === 0) {
+    <p class="parceiros-empty">Em breve, novos parceiros por aqui.</p>
+  } @else {
+    <div class="parceiros-grid">
+      @for (p of parceiros(); track p.id) {
+        <button type="button" class="parceiro-card glass-card" (click)="abrir(p)">
+          @if (logoSrc(p.logoUrl); as logo) {
+            <div class="parceiro-card__logo">
+              <img [src]="logo" [alt]="p.nome" loading="lazy" (error)="$any($event.target).style.display='none'" />
+            </div>
+          } @else {
+            <div class="parceiro-card__logo parceiro-card__logo--placeholder">
+              <mat-icon>storefront</mat-icon>
+            </div>
+          }
+          <div class="parceiro-card__body">
+            <span class="parceiro-card__nome">{{ p.nome }}</span>
+            @if (p.descricao) {
+              <span class="parceiro-card__descricao">{{ p.descricao }}</span>
+            }
+          </div>
+          <mat-icon class="parceiro-card__link">open_in_new</mat-icon>
+        </button>
+      }
+    </div>
+  }
+
+</main>

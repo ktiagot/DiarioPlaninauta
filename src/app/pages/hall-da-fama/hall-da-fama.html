@@ -1,0 +1,62 @@
+<main class="hall-page mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <header class="hall-header">
+    <h1 class="hall-title">
+      <mat-icon class="hall-title__icon" fontSet="material-icons-outlined">emoji_events</mat-icon>
+      Hall da Fama
+    </h1>
+    <p class="hall-subtitle">Os campeões de cada edição do Precompeonato.</p>
+  </header>
+
+  @if (loading()) {
+    <div class="hall-loading">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <p class="hall-empty">{{ error() }}</p>
+  } @else if (entradas().length === 0) {
+    <p class="hall-empty">Nenhum campeonato encerrado ainda. Os campeões aparecerão aqui.</p>
+  } @else {
+    <div class="hall-grid">
+      @for (e of entradas(); track e.campeonatoId) {
+        <article class="hall-card glass-card">
+          @if (artUrl(e.comandante); as art) {
+            <div class="hall-card__art">
+              <img [src]="art" [alt]="e.comandante" loading="lazy" (error)="$any($event.target).style.display='none'" />
+            </div>
+          }
+          <div class="hall-card__body">
+            <span class="hall-card__edicao">{{ e.campeonatoNome }} — {{ e.edicao }}</span>
+
+            @if (e.campeaoNome) {
+              <div class="hall-card__campeao">
+                <mat-icon class="hall-card__trophy">emoji_events</mat-icon>
+                <div>
+                  <p class="hall-card__nome">{{ e.campeaoNome }}</p>
+                  @if (e.campeaoNick) {
+                    <p class="hall-card__nick">{{ e.campeaoNick }}</p>
+                  }
+                </div>
+              </div>
+
+              <div class="hall-card__tags">
+                @if (e.comandante) {
+                  <span class="hall-card__tag">{{ e.comandante }}</span>
+                }
+                @if (e.exercito) {
+                  <span class="hall-card__tag hall-card__tag--exercito">{{ e.exercito }}</span>
+                }
+                @if (e.pontos !== null) {
+                  <span class="hall-card__tag hall-card__tag--pontos">{{ e.pontos }} pts</span>
+                }
+              </div>
+            } @else {
+              <p class="hall-card__sem-campeao">Campeão ainda não definido.</p>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+</main>

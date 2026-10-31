@@ -1,0 +1,105 @@
+<div class="admin-parceiros">
+  <h3 class="admin-parceiros__title">Parceiros</h3>
+
+  <!-- Formulário criar/editar -->
+  <form class="admin-parceiros__form" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+    <h4>{{ editandoId() ? 'Editar parceiro' : 'Novo parceiro' }}</h4>
+
+    <div class="admin-parceiros__grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="nome" />
+        @if (form.controls.nome.invalid && form.controls.nome.touched) {
+          <mat-error>Informe o nome (mín. 2 caracteres)</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>URL (com https://)</mat-label>
+        <input matInput formControlName="url" placeholder="https://..." />
+        @if (form.controls.url.invalid && form.controls.url.touched) {
+          <mat-error>Informe a URL</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Descrição (opcional)</mat-label>
+        <input matInput formControlName="descricao" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>URL do logo (opcional)</mat-label>
+        <input matInput formControlName="logoUrl" placeholder="https://..." />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Ordem</mat-label>
+        <input matInput type="number" formControlName="ordem" min="0" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="ativo" color="primary">Ativo (visível no site)</mat-checkbox>
+    </div>
+
+    <div class="admin-parceiros__form-actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+        @if (salvando()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          {{ editandoId() ? 'Salvar alterações' : 'Adicionar parceiro' }}
+        }
+      </button>
+      @if (editandoId()) {
+        <button mat-stroked-button type="button" (click)="cancelarEdicao()">Cancelar</button>
+      }
+    </div>
+  </form>
+
+  <!-- Lista -->
+  @if (loading()) {
+    <div class="admin-parceiros__loading"><mat-spinner diameter="32" /></div>
+  } @else if (parceiros().length === 0) {
+    <p class="admin-parceiros__empty">Nenhum parceiro cadastrado ainda.</p>
+  } @else {
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Ordem</th>
+            <th>Nome</th>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Cliques</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of parceiros(); track p.id) {
+            <tr [class.admin-parceiros__row--inativo]="!p.ativo">
+              <td>{{ p.ordem }}</td>
+              <td>{{ p.nome }}</td>
+              <td class="admin-parceiros__url">
+                <a [href]="p.url" target="_blank" rel="noopener">{{ p.url }}</a>
+              </td>
+              <td>
+                @if (p.ativo) {
+                  <span class="badge badge--done">Ativo</span>
+                } @else {
+                  <span class="badge badge--inativo">Inativo</span>
+                }
+              </td>
+              <td>{{ p.cliques }}</td>
+              <td class="admin-parceiros__acoes">
+                <button mat-icon-button type="button" (click)="editar(p)" aria-label="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button type="button" (click)="remover(p)" aria-label="Remover">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
