@@ -120,6 +120,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([isApoiadorAtivo])
   @@map("users")
 }
 
@@ -195,6 +196,7 @@ model Campeonato {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status, createdAt])
   @@map("campeonatos")
 }
 
@@ -229,7 +231,7 @@ model Inscricao {
   updatedAt DateTime @updatedAt
 
   @@unique([campeonatoId, userId])
-  @@index([campeonatoId])
+  @@index([campeonatoId, ativo])
   @@index([userId])
   @@index([email])
   @@index([preconId])
@@ -332,6 +334,7 @@ model Mesa {
   updatedAt DateTime @updatedAt
 
   @@index([criadorUserId])
+  @@index([finalizada, dataHora])
   @@map("mesas")
 }
 
@@ -464,7 +467,7 @@ model Ponto {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([userId, createdAt])
   @@map("pontos")
 }
 
@@ -488,5 +491,6 @@ model Notificacao {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, lida])
+  @@index([createdAt])
   @@map("notificacoes")
 }

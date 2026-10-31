@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { BannerStorage } from './banner-storage';
 import { CAMPEONATO_STATUS_LABEL } from './constants/status-labels';
 import { parseDateOnly, toDateOnly } from './date-only';
@@ -42,7 +41,6 @@ export class CampeonatoAdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bannerStorage: BannerStorage,
-    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async list(): Promise<CampeonatoAdminResponseDto[]> {

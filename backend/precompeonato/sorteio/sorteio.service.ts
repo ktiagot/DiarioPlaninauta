@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Campeonato, CampeonatoStatus, Prisma, Rodada } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotificacoesService } from '../../notificacoes/notificacoes.service';
+import { hojeRangeUtc } from '../../common/date-range.util';
 import { CreateRodadaDto } from '../dto/create-rodada.dto';
 import {
   AbrirRodadaContextDto,
@@ -60,30 +60,11 @@ function formatDataRodada(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-// Fuso fixo do projeto: UTC-3 (America/Sao_Paulo, sem horário de verão).
-const TZ_OFFSET_MIN = -180;
-
-/** Intervalo [início, fim] do dia de hoje em UTC-3, em instantes UTC. */
-function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
-  const local = new Date(now.getTime() + TZ_OFFSET_MIN * 60 * 1000);
-  const inicioLocalUtcMs = Date.UTC(
-    local.getUTCFullYear(),
-    local.getUTCMonth(),
-    local.getUTCDate(),
-  );
-  const inicio = new Date(inicioLocalUtcMs - TZ_OFFSET_MIN * 60 * 1000);
-  const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000 - 1);
-  return { inicio, fim };
-}
-
 @Injectable()
 export class SorteioService {
   private readonly logger = new Logger(SorteioService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly notificacoes: NotificacoesService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getSnapshot(): Promise<SorteioSnapshotDto> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
@@ -646,25 +627,33 @@ export class SorteioService {
         throw new ConflictException('Esta rodada já foi finalizada.');
       }
 
-      for (const [inscricaoId, delta] of pontosDelta) {
-        if (delta <= 0) continue;
-        await tx.inscricao.update({
-          where: { id: inscricaoId },
-          data: { pontos: { increment: delta } },
-        });
-      }
+      // Incrementos de pontos em paralelo (ordem entre si é irrelevante).
+      await Promise.all(
+        [...pontosDelta.entries()]
+          .filter(([, delta]) => delta > 0)
+          .map(([inscricaoId, delta]) =>
+            tx.inscricao.update({
+              where: { id: inscricaoId },
+              data: { pontos: { increment: delta } },
+            }),
+          ),
+      );
 
+      // Reordena o ranking só depois de todos os pontos somados.
       const inscricoes = await tx.inscricao.findMany({
         where: { campeonatoId: rodada.campeonatoId, ativo: true },
         orderBy: [{ pontos: 'desc' }, { updatedAt: 'asc' }, { id: 'asc' }],
+        select: { id: true },
       });
 
-      for (let i = 0; i < inscricoes.length; i++) {
-        await tx.inscricao.update({
-          where: { id: inscricoes[i].id },
-          data: { posicao: i + 1 },
-        });
-      }
+      await Promise.all(
+        inscricoes.map((insc, i) =>
+          tx.inscricao.update({
+            where: { id: insc.id },
+            data: { posicao: i + 1 },
+          }),
+        ),
+      );
     });
 
     await this.notifyResultadoPublicado(rodada.id, rodada.numero);

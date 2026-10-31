@@ -1,22 +1,27 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { JogadorAdminResponseDto } from './dto/jogador-admin-response.dto';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
 import { ContatoResponseDto } from './dto/contato-response.dto';
 import { VerificarApoiaResponseDto } from './dto/verificar-apoia-response.dto';
 
+/** Limite defensivo para listagens que podem crescer sem bound. */
+const MAX_LISTAGEM = 500;
+
 @Injectable()
 export class ComunidadeService {
+  private readonly logger = new Logger(ComunidadeService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly apoiaseService: ApoiaSeService,
-    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async listarJogadores(filtros: {
@@ -25,7 +30,7 @@ export class ComunidadeService {
     formato?: string;
     disponibilidade?: string;
   }): Promise<JogadorComunidadeResponseDto[]> {
-    const where: Record<string, unknown> = {
+    const where: Prisma.UserWhereInput = {
       isApoiadorAtivo: true,
     };
 
@@ -65,6 +70,7 @@ export class ComunidadeService {
         apoiandoDesde: true,
       },
       orderBy: { nick: 'asc' },
+      take: MAX_LISTAGEM,
     });
 
     return users;
@@ -167,7 +173,13 @@ export class ComunidadeService {
     });
 
     if (alvoFavoritou) {
-      await this.notificarFavoritoMutuo(deUserId, alvo.nick, paraUserId);
+      // Best-effort: o favorito mútuo já está persistido; falha na notificação
+      // não deve desfazer nem derrubar a ação de favoritar.
+      try {
+        await this.notificarFavoritoMutuo(deUserId, alvo.nick, paraUserId);
+      } catch (err) {
+        this.logger.error('Falha ao notificar favorito mútuo.', err as Error);
+      }
     }
   }
 
@@ -220,6 +232,7 @@ export class ComunidadeService {
         monthlyContribution: true,
       },
       orderBy: { nome: 'asc' },
+      take: MAX_LISTAGEM,
     });
   }
 
@@ -252,7 +265,7 @@ export class ComunidadeService {
 
     const ativo = backer.isBacker && backer.isPaidThisMonth;
 
-    const updateData: Record<string, unknown> = {
+    const updateData: Prisma.UserUpdateInput = {
       isApoiadorAtivo: ativo,
       isExApoiador: !backer.isBacker,
       lastValidationAt: new Date(),

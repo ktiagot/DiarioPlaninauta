@@ -2,7 +2,6 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { BannerStorage } from './banner-storage';
 import { CampeonatoAdminService } from './campeonato-admin.service';
 
@@ -22,7 +21,6 @@ function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
 }
 
 const bannerStorageMock = { save: jest.fn() };
-const notificacoesMock = { criar: jest.fn() };
 
 function createTestingModule(prisma: object) {
   return Test.createTestingModule({
@@ -30,7 +28,6 @@ function createTestingModule(prisma: object) {
       CampeonatoAdminService,
       { provide: PrismaService, useValue: prisma },
       { provide: BannerStorage, useValue: bannerStorageMock },
-      { provide: NotificacoesService, useValue: notificacoesMock },
     ],
   }).compile();
 }
@@ -64,7 +61,6 @@ describe('CampeonatoAdminService create/list', () => {
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
-    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
@@ -154,7 +150,6 @@ describe('CampeonatoAdminService update/updateStatus', () => {
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
-    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });
@@ -277,7 +272,6 @@ describe('CampeonatoAdminService updateBanner', () => {
       notificacao: { createMany: jest.fn() },
     };
     bannerStorageMock.save.mockReset();
-    notificacoesMock.criar.mockReset();
     const module = await createTestingModule(prisma);
     service = module.get(CampeonatoAdminService);
   });

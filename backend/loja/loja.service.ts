@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
@@ -83,6 +84,7 @@ export class LojaService {
     const pontos = await this.prisma.ponto.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      take: 200,
     });
     return pontos.map(this.toPontoResponse);
   }
@@ -117,21 +119,29 @@ export class LojaService {
       throw new NotFoundException('Produto não encontrado ou inativo.');
     }
 
-    const saldo = await this.calcularSaldo(userId);
-
-    if (saldo < produto.precoPontos) {
-      throw new BadRequestException(
-        `Saldo insuficiente. Você tem ${saldo} pontos, mas o produto custa ${produto.precoPontos}.`,
-      );
-    }
-
-    if (produto.estoque !== null && produto.estoque <= 0) {
-      throw new BadRequestException('Produto sem estoque disponível.');
-    }
-
-    // Transação: cria resgate + debita pontos + decrementa estoque
+    // Tudo dentro da transação: recalcula o saldo, debita e decrementa estoque
+    // de forma atômica. Evita que dois resgates simultâneos passem na checagem
+    // de saldo/estoque e gastem além do disponível.
     const [ponto] = await this.prisma.$transaction(async (tx) => {
-      // Criar o resgate
+      const saldo = await this.calcularSaldo(userId, tx);
+      if (saldo < produto.precoPontos) {
+        throw new BadRequestException(
+          `Saldo insuficiente. Você tem ${saldo} pontos, mas o produto custa ${produto.precoPontos}.`,
+        );
+      }
+
+      // Decrementa estoque condicionalmente (nunca abaixo de zero). Quando há
+      // controle de estoque, só prossegue se o update afetar 1 linha.
+      if (produto.estoque !== null) {
+        const estoqueUpdate = await tx.produto.updateMany({
+          where: { id: produto.id, estoque: { gt: 0 } },
+          data: { estoque: { decrement: 1 } },
+        });
+        if (estoqueUpdate.count !== 1) {
+          throw new BadRequestException('Produto sem estoque disponível.');
+        }
+      }
+
       await tx.resgate.create({
         data: {
           userId,
@@ -141,7 +151,6 @@ export class LojaService {
         },
       });
 
-      // Debitar pontos
       const pontoDebito = await tx.ponto.create({
         data: {
           userId,
@@ -153,14 +162,6 @@ export class LojaService {
         },
       });
 
-      // Decrementar estoque se aplicável
-      if (produto.estoque !== null) {
-        await tx.produto.update({
-          where: { id: produto.id },
-          data: { estoque: { decrement: 1 } },
-        });
-      }
-
       return [pontoDebito];
     });
 
@@ -169,15 +170,26 @@ export class LojaService {
 
   // ─── HELPERS ──────────────────────────────────────────────
 
-  private async calcularSaldo(userId: string): Promise<number> {
-    const pontos = await this.prisma.ponto.findMany({
+  /**
+   * Saldo = soma de créditos − soma de débitos, agregado no banco.
+   * Aceita um client transacional para cálculo consistente dentro de uma tx.
+   */
+  private async calcularSaldo(
+    userId: string,
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<number> {
+    const agregados = await client.ponto.groupBy({
+      by: ['tipo'],
       where: { userId },
-      select: { tipo: true, quantidade: true },
+      _sum: { quantidade: true },
     });
 
-    return pontos.reduce((acc, p) => {
-      return p.tipo === 'credito' ? acc + p.quantidade : acc - p.quantidade;
-    }, 0);
+    let saldo = 0;
+    for (const grupo of agregados) {
+      const soma = grupo._sum.quantidade ?? 0;
+      saldo += grupo.tipo === 'credito' ? soma : -soma;
+    }
+    return saldo;
   }
 
   private toProdutoResponse(produto: {

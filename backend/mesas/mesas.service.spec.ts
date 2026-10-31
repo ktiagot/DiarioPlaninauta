@@ -6,7 +6,6 @@ import {
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
-import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { MesasService } from './mesas.service';
 
 /* ------------------------------------------------------------------ */
@@ -61,7 +60,6 @@ describe('MesasService', () => {
     $transaction: jest.Mock;
   };
   let precons: { validateOptionalForMesa: jest.Mock };
-  const notificacoes = { criar: jest.fn() };
 
   beforeEach(async () => {
     prisma = {
@@ -83,7 +81,7 @@ describe('MesasService', () => {
         create: jest.fn(),
         update: jest.fn(),
       },
-      $transaction: jest.fn(),
+      $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
     };
 
     precons = {
@@ -98,7 +96,6 @@ describe('MesasService', () => {
         MesasService,
         { provide: PrismaService, useValue: prisma },
         { provide: PreconsService, useValue: precons },
-        { provide: NotificacoesService, useValue: notificacoes },
       ],
     }).compile();
 

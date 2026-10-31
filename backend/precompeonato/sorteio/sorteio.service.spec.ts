@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { SorteioService } from './sorteio.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotificacoesService } from '../../notificacoes/notificacoes.service';
 
 const RESULTADO_DTO = {
   jogadores: [
@@ -102,7 +101,6 @@ describe('SorteioService', () => {
       providers: [
         SorteioService,
         { provide: PrismaService, useValue: prisma },
-        { provide: NotificacoesService, useValue: { criar: jest.fn() } },
       ],
     }).compile();
 

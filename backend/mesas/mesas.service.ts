@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
-import { NotificacoesService } from '../notificacoes/notificacoes.service';
 import { mesaJogadorPreconInclude } from '../precons/mappers/to-precon-response';
+import { hojeRangeUtc } from '../common/date-range.util';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { MesaResponseDto } from './dto/mesa-response.dto';
 import { SubmitMesaResultadoDto } from './dto/submit-mesa-resultado.dto';
@@ -36,37 +36,18 @@ const mesaInclude = {
 /** Capacidade máxima de uma mesa casual (contando o dono). */
 const MAX_JOGADORES = 4;
 
-// Fuso fixo do projeto: UTC-3 (America/Sao_Paulo, sem horário de verão).
-const TZ_OFFSET_MIN = -180;
-
-/**
- * Intervalo [início, fim] do dia de hoje em UTC-3, expresso em instantes UTC.
- * Ex.: hoje 00:00:00 (UTC-3) e hoje 23:59:59.999 (UTC-3).
- */
-export function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date } {
-  const localMs = now.getTime() + TZ_OFFSET_MIN * 60 * 1000;
-  const local = new Date(localMs);
-  const y = local.getUTCFullYear();
-  const m = local.getUTCMonth();
-  const d = local.getUTCDate();
-  const inicioLocalUtcMs = Date.UTC(y, m, d, 0, 0, 0, 0);
-  const inicio = new Date(inicioLocalUtcMs - TZ_OFFSET_MIN * 60 * 1000);
-  const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000 - 1);
-  return { inicio, fim };
-}
-
 @Injectable()
 export class MesasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly preconsService: PreconsService,
-    private readonly notificacoes: NotificacoesService,
   ) {}
 
   async findAll(viewerUserId?: string): Promise<MesaResponseDto[]> {
     const mesas = await this.prisma.mesa.findMany({
       include: mesaInclude,
       orderBy: { createdAt: 'asc' },
+      take: 300,
     });
 
     return mesas.map((m) => toMesaResponse(m, viewerUserId));
@@ -149,19 +130,22 @@ export class MesasService {
     });
     const nickConvidador = convidador?.nick ?? 'Alguém';
 
-    const convite = await this.prisma.conviteMesa.create({
-      data: { mesaId, deUserId, paraUserId },
-    });
+    // Convite + notificação são atômicos: nunca gera convite sem aviso.
+    await this.prisma.$transaction(async (tx) => {
+      const convite = await tx.conviteMesa.create({
+        data: { mesaId, deUserId, paraUserId },
+      });
 
-    await this.prisma.notificacao.create({
-      data: {
-        userId: paraUserId,
-        tipo: 'convite_mesa',
-        titulo: 'Convite para uma mesa',
-        mensagem: `${nickConvidador} convidou você para a mesa "${mesa.nome}".`,
-        referenciaTipo: 'convite_mesa',
-        referenciaId: convite.id,
-      },
+      await tx.notificacao.create({
+        data: {
+          userId: paraUserId,
+          tipo: 'convite_mesa',
+          titulo: 'Convite para uma mesa',
+          mensagem: `${nickConvidador} convidou você para a mesa "${mesa.nome}".`,
+          referenciaTipo: 'convite_mesa',
+          referenciaId: convite.id,
+        },
+      });
     });
   }
 
