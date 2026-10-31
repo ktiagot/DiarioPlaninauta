@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { ApoiaSeService } from '../apoiase/apoiase.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -122,7 +123,7 @@ export class AuthService {
     }
 
     // Reativar caso tenha voltado a apoiar
-    const updateData: Record<string, unknown> = {
+    const updateData: Prisma.UserUpdateInput = {
       monthlyContribution: backer.thisMonthPaidValue ?? null,
       isApoiadorAtivo: true,
       isExApoiador: false,

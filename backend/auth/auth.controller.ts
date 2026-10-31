@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RequestLoginDto } from './dto/request-login.dto';
 import { LoginDto } from './dto/login.dto';
@@ -26,6 +27,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('request-login')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @HttpCode(200)
   @ApiOperation({
     summary: 'Login via APOIA.se',
@@ -46,6 +48,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @HttpCode(200)
   @ApiOperation({
     summary: 'Login com e-mail e senha',
@@ -65,6 +68,7 @@ export class AuthController {
   }
 
   @Post('verify-backer')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @HttpCode(200)
   @ApiOperation({
     summary: 'Verificar apoiador no APOIA.se',

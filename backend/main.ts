@@ -1,12 +1,14 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
@@ -27,6 +29,8 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalFilters(new AllExceptionsFilter());
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Diário Planinauta — API')
     .setDescription('API do portal exclusivo para apoiadores do Diário Planinauta')
@@ -42,8 +46,8 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT) || 3000;
   await app.listen(port);
-  console.log(`Backend rodando em http://localhost:${port}/api`);
-  console.log(`Swagger disponível em http://localhost:${port}/docs`);
+  logger.log(`Backend rodando em http://localhost:${port}/api`);
+  logger.log(`Swagger disponível em http://localhost:${port}/docs`);
 }
 
 bootstrap();
