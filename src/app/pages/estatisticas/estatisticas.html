@@ -48,7 +48,8 @@
                   <div class="metagame-card-inner">
                     <img
                       class="metagame-art"
-                      [src]="'https://api.scryfall.com/cards/named?exact=' + encodeURIComponent(deck.comandante) + '&format=image&version=art_crop'"
+                      loading="lazy"
+                      [src]="artUrl(deck.comandante)"
                       [alt]="deck.comandante"
                       (error)="$any($event.target).style.display='none'"
                     />

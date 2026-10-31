@@ -52,7 +52,7 @@
           <div class="produto-card">
             @if (produto.imagemUrl) {
               <div class="produto-imagem">
-                <img [src]="produto.imagemUrl" [alt]="produto.nome" />
+                <img [src]="produto.imagemUrl" [alt]="produto.nome" loading="lazy" />
               </div>
             } @else {
               <div class="produto-imagem placeholder">

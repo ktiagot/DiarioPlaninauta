@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -38,6 +39,7 @@ export class ComunidadeComponent implements OnInit {
   private readonly mesasService = inject(MesasService);
   private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly buscaSubject = new Subject<string>();
 
   private readonly meuUserId = this.session.getUserId();
@@ -75,11 +77,20 @@ export class ComunidadeComponent implements OnInit {
   readonly jogadoresFiltrados = computed(() => {
     // Não faz sentido aparecer a si mesmo na comunidade (favoritar/convidar).
     let lista = this.jogadores().filter((j) => j.id !== this.meuUserId);
+    const termo = this.termoBusca().trim().toLowerCase();
     const cidade = this.filtroCidade();
     const formato = this.filtroFormato();
     const disponibilidade = this.filtroDisponibilidade();
     const favs = this.favoritos();
 
+    if (termo) {
+      lista = lista.filter(
+        (j) =>
+          j.nome.toLowerCase().includes(termo) ||
+          (j.nick?.toLowerCase().includes(termo) ?? false) ||
+          j.cidade.toLowerCase().includes(termo),
+      );
+    }
     if (this.soFavoritos()) {
       lista = lista.filter((j) => favs.has(j.id));
     }
@@ -103,33 +114,16 @@ export class ComunidadeComponent implements OnInit {
   ngOnInit(): void {
     this.carregarDados();
 
+    // Busca é 100% client-side (a lista já vem completa do servidor). O debounce
+    // apenas suaviza a digitação; nenhuma chamada HTTP por tecla.
     this.buscaSubject
-      .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe((termo) => {
-        this.termoBusca.set(termo);
-        this.buscar();
-      });
+      .pipe(debounceTime(250), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((termo) => this.termoBusca.set(termo));
   }
 
   onBuscaInput(evento: Event): void {
     const valor = (evento.target as HTMLInputElement).value;
     this.buscaSubject.next(valor);
-  }
-
-  buscar(): void {
-    this.loading.set(true);
-    this.comunidadeService
-      .listarJogadores({ busca: this.termoBusca() })
-      .subscribe({
-        next: (jogadores) => {
-          this.jogadores.set(jogadores);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.snackBar.open('Erro ao buscar jogadores.', 'OK', { duration: 3000 });
-          this.loading.set(false);
-        },
-      });
   }
 
   toggleFavorito(userId: string): void {

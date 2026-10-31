@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   ElementRef,
@@ -27,6 +28,7 @@ const POLLING_INTERVAL_MS = 25_000;
   imports: [MatBadgeModule, MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './notificacoes-sino.html',
   styleUrl: './notificacoes-sino.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificacoesSinoComponent implements OnInit {
   private readonly notificacoesService = inject(NotificacoesService);
@@ -228,12 +230,27 @@ export class NotificacoesSinoComponent implements OnInit {
   }
 
   private iniciarPolling(): void {
-    this.pollingId = setInterval(() => this.buscarContagem(true), POLLING_INTERVAL_MS);
+    const tick = () => {
+      // Não consulta enquanto a aba está em segundo plano (economiza tráfego).
+      if (document.visibilityState === 'visible') {
+        this.buscarContagem(true);
+      }
+    };
+    this.pollingId = setInterval(tick, POLLING_INTERVAL_MS);
+
+    // Ao voltar o foco para a aba, atualiza imediatamente.
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        this.buscarContagem(true);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     this.destroyRef.onDestroy(() => {
       if (this.pollingId !== null) {
         clearInterval(this.pollingId);
       }
+      document.removeEventListener('visibilitychange', onVisibility);
     });
   }
 }

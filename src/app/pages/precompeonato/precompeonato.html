@@ -117,7 +117,13 @@
   </section>
 
   @if (viewMode() === 'mesas') {
-    <app-mesas />
+    @defer (on immediate) {
+      <app-mesas />
+    } @placeholder {
+      <div class="flex flex-1 items-center justify-center py-24">
+        <mat-spinner diameter="48" />
+      </div>
+    }
   } @else if (viewMode() === 'tabela') {
     @if (loading()) {
       <div class="flex flex-1 items-center justify-center py-24">
@@ -129,7 +135,13 @@
         <button mat-flat-button color="primary" (click)="carregarJogadores()">Tentar novamente</button>
       </div>
     } @else {
-      <app-precompeonato-tabela [jogadores]="jogadores()" />
+      @defer (on immediate) {
+        <app-precompeonato-tabela [jogadores]="jogadores()" />
+      } @placeholder {
+        <div class="flex flex-1 items-center justify-center py-24">
+          <mat-spinner diameter="48" />
+        </div>
+      }
     }
   } @else if (loading()) {
     <div class="flex flex-1 items-center justify-center py-24">
@@ -201,7 +213,9 @@
   }
 
   @if (inscricaoAberta()) {
-    <app-inscricao-form (closed)="fecharInscricao()" (submitted)="onInscricaoEnviada()" />
+    @defer (on immediate) {
+      <app-inscricao-form (closed)="fecharInscricao()" (submitted)="onInscricaoEnviada()" />
+    }
   }
 
 </main>

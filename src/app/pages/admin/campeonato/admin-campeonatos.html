@@ -98,7 +98,7 @@
           </div>
 
           @if (bannerSrc(c.bannerUrl); as src) {
-            <img class="campeonato-card__banner" [src]="src" [alt]="c.nome" />
+            <img class="campeonato-card__banner" [src]="src" [alt]="c.nome" loading="lazy" />
           }
 
           @if (c.statusCode === 'ENCERRADO') {

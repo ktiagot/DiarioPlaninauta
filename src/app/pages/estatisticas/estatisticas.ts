@@ -41,7 +41,10 @@ export class EstatisticasComponent implements OnInit {
     return killers.length > 0 ? killers[0].totalKills : 1;
   });
 
-  encodeURIComponent = encodeURIComponent;
+  /** URL da arte do comandante no Scryfall (art_crop). */
+  protected artUrl(comandante: string): string {
+    return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(comandante)}&format=image&version=art_crop`;
+  }
 
   ngOnInit(): void {
     const userId = this.session.getUserId() ?? undefined;

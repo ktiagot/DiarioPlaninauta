@@ -201,16 +201,20 @@
   color: rgba(255, 255, 255, 0.4);
 }
 
-.mesa-card__empate-toggle {
-  flex-shrink: 0;
-  --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.7);
+%toggle-vars {
   --mat-slide-toggle-selected-track-color: var(--sys-color-primary);
   --mat-slide-toggle-selected-handle-color: #fff;
   --mat-slide-toggle-selected-hover-handle-color: #fff;
   --mat-slide-toggle-selected-focus-handle-color: #fff;
   --mat-slide-toggle-selected-pressed-handle-color: #fff;
-  font-size: 0.8125rem;
   font-weight: 600;
+}
+
+.mesa-card__empate-toggle {
+  @extend %toggle-vars;
+  flex-shrink: 0;
+  --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8125rem;
 }
 
 .mesa-jogadores {
@@ -249,16 +253,11 @@
 }
 
 .mesa-jogador__empatou-toggle {
+  @extend %toggle-vars;
   flex-shrink: 0;
   margin-left: auto;
   --mat-slide-toggle-label-text-color: rgba(255, 255, 255, 0.65);
-  --mat-slide-toggle-selected-track-color: var(--sys-color-primary);
-  --mat-slide-toggle-selected-handle-color: #fff;
-  --mat-slide-toggle-selected-hover-handle-color: #fff;
-  --mat-slide-toggle-selected-focus-handle-color: #fff;
-  --mat-slide-toggle-selected-pressed-handle-color: #fff;
   font-size: 0.75rem;
-  font-weight: 600;
   white-space: nowrap;
 }
 

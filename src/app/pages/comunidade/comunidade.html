@@ -84,7 +84,7 @@
             <!-- Avatar -->
             <div class="player-avatar">
               @if (jogador.foto) {
-                <img [src]="jogador.foto" [alt]="jogador.nick" />
+                <img [src]="jogador.foto" [alt]="jogador.nick" loading="lazy" />
               } @else {
                 <span class="initials">{{ getIniciais(jogador.nome) }}</span>
               }
