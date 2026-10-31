@@ -10,7 +10,10 @@ import { ChartConfiguration, ChartData } from 'chart.js';
 import '../../../core/config/chart.config';
 
 import { API_URL } from '../../../core/config/api.config';
-import { AdminService } from '../../../core/admin/admin.service';
+import {
+  AdminService,
+  SincronizarMembrosYoutubeResponse,
+} from '../../../core/admin/admin.service';
 import { JogadorAdmin, VerificarApoiaResponse } from '../../../core/admin/admin.models';
 
 interface ComunidadeMetricas {
@@ -52,6 +55,11 @@ export class AdminComunidadeComponent implements OnInit {
   readonly verifyingEmail = signal<string | null>(null);
   readonly verifyingTodos = signal(false);
   readonly verifyTodosProgress = signal('');
+
+  // Import de membros do YouTube por CSV (sincronização total).
+  readonly ytSincronizando = signal(false);
+  readonly ytResultado = signal<SincronizarMembrosYoutubeResponse | null>(null);
+  readonly ytErro = signal<string | null>(null);
 
   readonly cidadesChartData = signal<ChartData<'bar'>>({ labels: [], datasets: [] });
   readonly formatosChartData = signal<ChartData<'doughnut'>>({ labels: [], datasets: [] });
@@ -217,6 +225,60 @@ export class AdminComunidadeComponent implements OnInit {
     this.verifyTodosProgress.set('Verificação concluída');
     this.verifyingTodos.set(false);
     this.carregarJogadores();
+  }
+
+  /** Lê o CSV selecionado, extrai os e-mails e sincroniza os membros do YouTube. */
+  onYoutubeCsvSelecionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.ytErro.set(null);
+    this.ytResultado.set(null);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const texto = String(reader.result ?? '');
+      const emails = this.extrairEmailsDoCsv(texto);
+
+      if (emails.length === 0) {
+        this.ytErro.set('Nenhum e-mail válido encontrado no arquivo.');
+        input.value = '';
+        return;
+      }
+
+      this.ytSincronizando.set(true);
+      this.adminService.sincronizarMembrosYoutube(emails).subscribe({
+        next: (res) => {
+          this.ytResultado.set(res);
+          this.ytSincronizando.set(false);
+          this.carregarJogadores();
+        },
+        error: () => {
+          this.ytErro.set('Falha ao sincronizar. Tente novamente.');
+          this.ytSincronizando.set(false);
+        },
+      });
+      input.value = '';
+    };
+    reader.onerror = () => {
+      this.ytErro.set('Não foi possível ler o arquivo.');
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  /** Extrai e-mails de um CSV: 1 coluna por linha, tolera aspas, cabeçalho e ';' ','. */
+  private extrairEmailsDoCsv(texto: string): string[] {
+    const emails = new Set<string>();
+    for (const linha of texto.split(/\r?\n/)) {
+      // Pega o primeiro campo da linha (separador , ou ;) e limpa aspas/espaços.
+      const campo = linha.split(/[;,]/)[0]?.replace(/["']/g, '').trim().toLowerCase();
+      if (campo && campo.includes('@')) {
+        emails.add(campo);
+      }
+    }
+    return [...emails];
   }
 
   private applyVerifyResult(email: string, result: VerificarApoiaResponse): void {

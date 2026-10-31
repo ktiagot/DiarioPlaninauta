@@ -329,6 +329,73 @@ export class ComunidadeService {
     return { total: users.length, ativos, inativados, falhas };
   }
 
+  /**
+   * Sincronização TOTAL de membros do YouTube a partir de uma lista de e-mails
+   * (extraída de um CSV no admin). Quem está na lista vira membro; quem não
+   * está deixa de ser. Casa por e-mail normalizado (trim + lowercase).
+   */
+  async sincronizarMembrosYoutube(emails: string[]): Promise<{
+    recebidos: number;
+    marcadosMembro: number;
+    removidosMembro: number;
+    semCadastro: number;
+  }> {
+    const normalizados = [
+      ...new Set(
+        emails
+          .map((e) => e.trim().toLowerCase())
+          .filter((e) => e.length > 0 && e.includes('@')),
+      ),
+    ];
+
+    const agora = new Date();
+
+    const resultado = await this.prisma.$transaction(async (tx) => {
+      // Usuários que batem com a lista do CSV.
+      const encontrados = await tx.user.findMany({
+        where: { email: { in: normalizados } },
+        select: { id: true, email: true, membroYoutubeDesde: true },
+      });
+
+      const idsMembros = encontrados.map((u) => u.id);
+
+      // Marca como membro quem está na lista. membroYoutubeDesde só na 1ª vez.
+      const semDesde = encontrados
+        .filter((u) => u.membroYoutubeDesde === null)
+        .map((u) => u.id);
+
+      if (idsMembros.length > 0) {
+        await tx.user.updateMany({
+          where: { id: { in: idsMembros } },
+          data: { isMembroYoutube: true, membroYoutubeValidadoEm: agora },
+        });
+      }
+      if (semDesde.length > 0) {
+        await tx.user.updateMany({
+          where: { id: { in: semDesde } },
+          data: { membroYoutubeDesde: agora },
+        });
+      }
+
+      // Remove o status de quem era membro mas não está mais na lista.
+      const removidos = await tx.user.updateMany({
+        where: {
+          isMembroYoutube: true,
+          id: { notIn: idsMembros.length > 0 ? idsMembros : ['__none__'] },
+        },
+        data: { isMembroYoutube: false, membroYoutubeValidadoEm: agora },
+      });
+
+      return {
+        marcadosMembro: idsMembros.length,
+        removidosMembro: removidos.count,
+        semCadastro: normalizados.length - encontrados.length,
+      };
+    });
+
+    return { recebidos: normalizados.length, ...resultado };
+  }
+
   async getMetricas() {
     const [totalMembros, apoiadoresAtivos, exApoiadores, totalFavoritos] =
       await Promise.all([

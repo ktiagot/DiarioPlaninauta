@@ -95,6 +95,11 @@ model User {
   lastValidationAt    DateTime?
   apoiandoDesde       DateTime?
 
+  // --- membro YouTube (validado por import de CSV no admin) ---
+  isMembroYoutube         Boolean   @default(false)
+  membroYoutubeDesde      DateTime?
+  membroYoutubeValidadoEm DateTime?
+
   // --- comunidade / favoritos ---
   favoritosDe   Favorito[] @relation("FavoritoDe")
   favoritosPara Favorito[] @relation("FavoritoPara")
@@ -121,6 +126,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([isApoiadorAtivo])
+  @@index([isMembroYoutube])
   @@map("users")
 }
 

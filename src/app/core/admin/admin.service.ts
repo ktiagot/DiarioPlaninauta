@@ -142,4 +142,21 @@ export class AdminService {
       {},
     );
   }
+
+  /** Sincroniza (total) os membros do YouTube a partir da lista de e-mails do CSV. */
+  sincronizarMembrosYoutube(
+    emails: string[],
+  ): Observable<SincronizarMembrosYoutubeResponse> {
+    return this.http.post<SincronizarMembrosYoutubeResponse>(
+      `${API_URL}/comunidade/admin/youtube/sincronizar`,
+      { emails },
+    );
+  }
+}
+
+export interface SincronizarMembrosYoutubeResponse {
+  recebidos: number;
+  marcadosMembro: number;
+  removidosMembro: number;
+  semCadastro: number;
 }

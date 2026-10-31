@@ -27,6 +27,7 @@ describe('AuthService', () => {
     isAdmin: false,
     isApoiadorAtivo: true,
     isExApoiador: false,
+    isMembroYoutube: false,
     apoiandoDesde: new Date('2026-01-01'),
     nome: 'João',
     nick: 'joao',
@@ -138,6 +139,39 @@ describe('AuthService', () => {
         expect.objectContaining({
           data: expect.objectContaining({ isApoiadorAtivo: true, isExApoiador: false }),
         }),
+      );
+    });
+
+    it('libera membro do YouTube mesmo sem ser apoiador no APOIA.se', async () => {
+      apoiase.verify.mockResolvedValue({ isBacker: false, isPaidThisMonth: false });
+      prisma.user.findUnique.mockResolvedValue({
+        ...baseUser,
+        isApoiadorAtivo: false,
+        isMembroYoutube: true,
+      });
+      prisma.user.update.mockResolvedValue({ ...baseUser, isMembroYoutube: true });
+
+      const res = await service.requestLogin(baseUser.email);
+
+      expect(res.accessToken).toBe('token-abc');
+      // Flags de apoiador refletem o APOIA.se (não é apoiador), mas o login passa.
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ isApoiadorAtivo: false }),
+        }),
+      );
+    });
+
+    it('bloqueia quem não é apoiador nem membro do YouTube', async () => {
+      apoiase.verify.mockResolvedValue({ isBacker: false, isPaidThisMonth: false });
+      prisma.user.findUnique.mockResolvedValue({
+        ...baseUser,
+        isApoiadorAtivo: false,
+        isMembroYoutube: false,
+      });
+
+      await expect(service.requestLogin(baseUser.email)).rejects.toThrow(
+        UnauthorizedException,
       );
     });
   });

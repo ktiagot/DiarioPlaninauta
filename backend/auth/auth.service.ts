@@ -92,29 +92,32 @@ export class AuthService {
 
   async requestLogin(email: string) {
     const backer = await this.apoiaseService.verify(email);
+    const apoiadorOk = backer.isBacker && backer.isPaidThisMonth;
 
-    if (!backer.isBacker) {
-      // Se o usuário existe no banco, marcar como ex-apoiador
-      const existingUser = await this.prisma.user.findUnique({ where: { email } });
-      if (existingUser && existingUser.isApoiadorAtivo) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    // Acesso liberado para apoiador ativo e pago OU membro do YouTube (validado
+    // por import de CSV no admin). Mantém a flag de apoiador sincronizada.
+    const ehMembroYoutube = !!user?.isMembroYoutube;
+
+    if (!apoiadorOk && !ehMembroYoutube) {
+      // Não é apoiador e não é membro YT: mantém flags de apoiador coerentes.
+      if (user && !backer.isBacker && user.isApoiadorAtivo) {
         await this.prisma.user.update({
           where: { email },
           data: { isApoiadorAtivo: false, isExApoiador: true },
         });
       }
 
-      throw new UnauthorizedException(
-        'Você precisa ser apoiador ativo no APOIA.se para acessar o portal.',
-      );
-    }
-
-    if (!backer.isPaidThisMonth) {
+      if (!backer.isBacker) {
+        throw new UnauthorizedException(
+          'Você precisa ser apoiador ativo no APOIA.se ou membro do canal no YouTube para acessar o portal.',
+        );
+      }
       throw new UnauthorizedException(
         'Seu apoio deste mês ainda não foi processado. Tente novamente em breve.',
       );
     }
-
-    const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       throw new UnauthorizedException(
@@ -122,15 +125,16 @@ export class AuthService {
       );
     }
 
-    // Reativar caso tenha voltado a apoiar
+    // Sincroniza as flags de apoiador conforme o resultado do APOIA.se. O acesso
+    // de membro YT não depende disso; só reflete o estado real do apoio.
     const updateData: Prisma.UserUpdateInput = {
       monthlyContribution: backer.thisMonthPaidValue ?? null,
-      isApoiadorAtivo: true,
-      isExApoiador: false,
+      isApoiadorAtivo: apoiadorOk,
+      isExApoiador: !backer.isBacker,
       lastValidationAt: new Date(),
     };
 
-    if (!user.apoiandoDesde) {
+    if (apoiadorOk && !user.apoiandoDesde) {
       updateData.apoiandoDesde = new Date();
     }
 
@@ -139,22 +143,34 @@ export class AuthService {
       data: updateData,
     });
 
+    return this.buildLoginResponse(updated);
+  }
+
+  private async buildLoginResponse(user: {
+    id: string;
+    email: string;
+    role: string;
+    monthlyContribution: number | null;
+    isAdmin: boolean;
+    nome: string;
+    nick: string;
+  }) {
     const accessToken = await this.jwtService.signAsync({
-      sub: updated.id,
-      email: updated.email,
-      role: updated.role,
+      sub: user.id,
+      email: user.email,
+      role: user.role,
     });
 
     return {
       accessToken,
       user: {
-        id: updated.id,
-        email: updated.email,
-        role: updated.role,
-        monthlyContribution: updated.monthlyContribution,
-        isAdmin: updated.isAdmin,
-        nome: updated.nome,
-        nick: updated.nick,
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        monthlyContribution: user.monthlyContribution,
+        isAdmin: user.isAdmin,
+        nome: user.nome,
+        nick: user.nick,
       },
     };
   }

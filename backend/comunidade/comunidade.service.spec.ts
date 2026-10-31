@@ -48,7 +48,9 @@ describe('ComunidadeService admin jogadores / APOIA.se', () => {
       findMany: jest.Mock;
       findUnique: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
     };
+    $transaction: jest.Mock;
   };
   let apoiase: { verify: jest.Mock };
 
@@ -58,7 +60,9 @@ describe('ComunidadeService admin jogadores / APOIA.se', () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       },
+      $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
     };
     apoiase = { verify: jest.fn() };
 
@@ -209,6 +213,65 @@ describe('ComunidadeService admin jogadores / APOIA.se', () => {
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.not.objectContaining({ apoiandoDesde: expect.any(Date) }),
+        }),
+      );
+    });
+  });
+
+  describe('sincronizarMembrosYoutube', () => {
+    it('marca membros da lista e remove quem não está (sincronização total)', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 'u1', email: 'a@email.com', membroYoutubeDesde: null },
+        { id: 'u2', email: 'b@email.com', membroYoutubeDesde: new Date('2026-01-01') },
+      ]);
+      prisma.user.updateMany.mockResolvedValue({ count: 3 });
+
+      const res = await service.sincronizarMembrosYoutube([
+        'A@email.com',
+        ' b@email.com ',
+        'a@email.com', // duplicado + case/espaço: deve normalizar/dedup
+        'semcadastro@email.com',
+      ]);
+
+      expect(res.recebidos).toBe(3); // a, b, semcadastro
+      expect(res.marcadosMembro).toBe(2); // u1, u2
+      expect(res.semCadastro).toBe(1); // semcadastro@email.com
+      // Marca os encontrados como membro
+      expect(prisma.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: { in: ['u1', 'u2'] } },
+          data: expect.objectContaining({ isMembroYoutube: true }),
+        }),
+      );
+      // Define membroYoutubeDesde só para quem não tinha (u1)
+      expect(prisma.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: { in: ['u1'] } },
+          data: { membroYoutubeDesde: expect.any(Date) },
+        }),
+      );
+      // Remove status de quem é membro mas não está na lista
+      expect(prisma.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isMembroYoutube: true, id: { notIn: ['u1', 'u2'] } },
+          data: expect.objectContaining({ isMembroYoutube: false }),
+        }),
+      );
+    });
+
+    it('lista vazia remove todos os membros', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+      prisma.user.updateMany.mockResolvedValue({ count: 7 });
+
+      const res = await service.sincronizarMembrosYoutube([]);
+
+      expect(res.recebidos).toBe(0);
+      expect(res.marcadosMembro).toBe(0);
+      expect(res.removidosMembro).toBe(7);
+      expect(prisma.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isMembroYoutube: true, id: { notIn: ['__none__'] } },
+          data: expect.objectContaining({ isMembroYoutube: false }),
         }),
       );
     });

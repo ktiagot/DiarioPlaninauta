@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -27,6 +28,10 @@ import { JogadorAdminResponseDto } from './dto/jogador-admin-response.dto';
 import { JogadorComunidadeResponseDto } from './dto/jogador-comunidade-response.dto';
 import { ContatoResponseDto } from './dto/contato-response.dto';
 import { VerificarApoiaResponseDto } from './dto/verificar-apoia-response.dto';
+import {
+  SincronizarMembrosYoutubeDto,
+  SincronizarMembrosYoutubeResponseDto,
+} from './dto/sincronizar-membros-youtube.dto';
 
 interface AuthenticatedRequest {
   user: AuthUser;
@@ -195,5 +200,26 @@ export class ComunidadeController {
     falhas: number;
   }> {
     return this.comunidadeService.sincronizarTodosApoiadores();
+  }
+
+  @Post('admin/youtube/sincronizar')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Sincronizar membros do YouTube por CSV (admin)',
+    description:
+      'Recebe a lista COMPLETA de e-mails dos membros atuais do YouTube e sincroniza ' +
+      'a flag isMembroYoutube: quem está na lista vira membro, quem não está deixa de ser. ' +
+      'Membros do YouTube têm login liberado no portal, assim como apoiadores do APOIA.se.',
+  })
+  @ApiOkResponse({
+    description: 'Resumo da sincronização.',
+    type: SincronizarMembrosYoutubeResponseDto,
+  })
+  sincronizarMembrosYoutube(
+    @Body() dto: SincronizarMembrosYoutubeDto,
+  ): Promise<SincronizarMembrosYoutubeResponseDto> {
+    return this.comunidadeService.sincronizarMembrosYoutube(dto.emails);
   }
 }

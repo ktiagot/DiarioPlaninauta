@@ -50,6 +50,53 @@
     </div>
   </div>
 
+  <!-- Membros do YouTube (import de CSV) -->
+  <section class="comunidade-admin__youtube">
+    <h4>Membros do YouTube</h4>
+    <p class="comunidade-admin__youtube-hint">
+      Suba o CSV com a lista <strong>completa</strong> de e-mails dos membros atuais do
+      canal. A sincronização é total: quem está na lista passa a ter login liberado
+      (como os apoiadores do APOIA.se); quem não está deixa de ser membro.
+      O arquivo deve ter um e-mail por linha.
+    </p>
+
+    <div class="comunidade-admin__youtube-actions">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        [disabled]="ytSincronizando()"
+        (click)="ytCsvInput.click()"
+      >
+        @if (ytSincronizando()) {
+          <mat-spinner diameter="18" />
+          Sincronizando...
+        } @else {
+          <mat-icon>upload_file</mat-icon>
+          Importar CSV de membros
+        }
+      </button>
+      <input
+        #ytCsvInput
+        type="file"
+        accept=".csv,text/csv,text/plain"
+        hidden
+        (change)="onYoutubeCsvSelecionado($event)"
+      />
+    </div>
+
+    @if (ytErro()) {
+      <p class="comunidade-admin__youtube-erro">{{ ytErro() }}</p>
+    }
+    @if (ytResultado(); as r) {
+      <p class="comunidade-admin__youtube-ok">
+        Sincronizado: {{ r.marcadosMembro }} membro(s) ativo(s),
+        {{ r.removidosMembro }} removido(s),
+        {{ r.semCadastro }} e-mail(s) do CSV sem conta no portal.
+      </p>
+    }
+  </section>
+
   <!-- Jogadores / APOIA.se -->
   <section class="comunidade-admin__jogadores">
     <div class="comunidade-admin__jogadores-header">
