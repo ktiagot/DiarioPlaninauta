@@ -19,12 +19,22 @@ export interface DeckFilterOption {
   count: number;
 }
 
-/** Shape retornado pela API legacy (snake_case). */
+/**
+ * Shape retornado pela API. Inclui os campos atuais do backend NestJS
+ * (`nomeJogador`, `nick`, `deckNome`, `deckUrl`, `comandante`) e mantém os
+ * nomes legados (snake_case) como opcionais para compatibilidade.
+ */
 export interface InscricaoApi {
   id: number;
-  nome: string;
-  nickname?: string;
+  // Campos atuais do backend (JogadorPrecompeonatoResponseDto)
+  nomeJogador?: string;
+  nick?: string;
   comandante?: string;
+  deckNome?: string;
+  deckUrl?: string | null;
+  // Campos legados (compatibilidade)
+  nome?: string;
+  nickname?: string;
   comandante_principal?: string;
   deck_nome?: string;
   deck_url?: string;

@@ -14,10 +14,11 @@ export class JogadorCardComponent {
   @Input({ required: true }) jogador!: JogadorInscrito;
 
   protected nomeExibicao(): string {
-    const nome = this.jogador.nome.toUpperCase();
-    if (this.jogador.nickname) {
-      return `${nome} (${this.jogador.nickname.toUpperCase()})`;
+    const nome = (this.jogador.nome ?? '').toUpperCase();
+    const nickname = this.jogador.nickname?.toUpperCase();
+    if (nickname) {
+      return nome ? `${nome} (${nickname})` : nickname;
     }
-    return nome;
+    return nome || 'Jogador';
   }
 }

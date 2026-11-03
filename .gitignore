@@ -29,6 +29,9 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
+# Kiro — configs locais com credenciais (MCP) não vão para o git
+.kiro/settings/
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

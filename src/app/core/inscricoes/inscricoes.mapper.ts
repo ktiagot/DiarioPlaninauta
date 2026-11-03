@@ -9,11 +9,12 @@ export function mapInscricao(i: InscricaoApi): Omit<
   return {
     id: i.id,
     rankingBase: i.ranking_campeonato ?? i.ranking ?? i.pontos ?? 0,
-    nome: i.nome,
-    nickname: i.nickname,
+    // Backend atual envia `nomeJogador`/`nick`; mantém fallback legado.
+    nome: i.nomeJogador ?? i.nome ?? '',
+    nickname: i.nick ?? i.nickname,
     comandante: i.comandante ?? i.comandante_principal ?? '',
-    deckNome: i.deck_nome ?? '',
-    deckUrl: i.deck_url,
+    deckNome: i.deckNome ?? i.deck_nome ?? '',
+    deckUrl: i.deckUrl ?? i.deck_url ?? undefined,
     exercito: i.exercito ?? null,
     pontos: i.pontos ?? 0,
   };
