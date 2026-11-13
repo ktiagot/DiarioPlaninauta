@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -62,6 +62,7 @@ export class AdminCampeonatoComponent implements OnInit {
   readonly togglingCheckInId = signal<string | null>(null);
   readonly checkingInTodos = signal(false);
   readonly togglingInscricaoId = signal<string | null>(null);
+  readonly recalculandoRanking = signal(false);
   readonly campeonatoEncerrado = signal(false);
   readonly finalizandoRodada = signal(false);
   readonly editandoInscrito = signal<InscritoResumo | null>(null);
@@ -332,6 +333,22 @@ export class AdminCampeonatoComponent implements OnInit {
   recarregarInscritos(): void {
     this.adminService.getInscritosAdmin().subscribe({ next: (list) => this.inscritos.set(list) });
     this.adminService.getSorteio().subscribe({ next: (snap) => this.snapshot.set(snap) });
+  }
+
+  /** Reaplica pontos e critérios de desempate (pontos, eliminações, força dos adversários). */
+  recalcularRanking(): void {
+    if (this.recalculandoRanking()) return;
+    this.recalculandoRanking.set(true);
+    this.adminService
+      .recalcularRanking()
+      .pipe(finalize(() => this.recalculandoRanking.set(false)))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Ranking recalculado.', 'OK', { duration: 3000 });
+          this.recarregarInscritos();
+        },
+        error: (err) => this.mostrarErro(err),
+      });
   }
 
   ajustarPontosInscrito(inscrito: InscritoResumo): void {

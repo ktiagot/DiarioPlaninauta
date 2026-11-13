@@ -165,21 +165,6 @@ export class AdminGerenciarComponent implements OnInit {
       });
   }
 
-  recalcularRanking(): void {
-    if (this.busy()) return;
-    this.busy.set(true);
-    this.adminService
-      .recalcularRanking()
-      .pipe(finalize(() => this.busy.set(false)))
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Ranking recalculado.', 'OK', { duration: 3000 });
-          this.alterado.emit();
-        },
-        error: (err) => this.erro(err),
-      });
-  }
-
   novaMesa(): void {
     const r = this.detalhe();
     if (r) this.executar(this.adminService.criarMesa(r.id), 'Mesa criada.');

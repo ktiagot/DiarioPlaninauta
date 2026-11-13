@@ -46,6 +46,8 @@ html {
   --sys-color-white: #{$sys-color-white};
   --sys-color-black: #{$sys-color-black};
   --sys-bg-image: url(#{$sys-bg-image});
+  // Camada preta sobre a imagem de fundo (mais contraste para o conteúdo).
+  --sys-bg-overlay: rgba(0, 0, 0, 0.5);
 
   // Alinha tokens do Angular Material à identidade visual (usam as vars de tema)
   --mat-sys-primary: var(--sys-color-primary);
@@ -130,7 +132,7 @@ body {
   color-scheme: dark;
 
   background-color: var(--sys-color-bg);
-  background-image: var(--sys-bg-image);
+  background-image: linear-gradient(var(--sys-bg-overlay), var(--sys-bg-overlay)), var(--sys-bg-image);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;

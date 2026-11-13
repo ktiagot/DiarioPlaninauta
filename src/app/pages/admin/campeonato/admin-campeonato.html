@@ -358,10 +358,25 @@
     <mat-tab label="Inscritos">
       <div class="admin-tab-content">
         <div class="admin-section">
-          <h4>
-            Inscritos no campeonato
-            ({{ inscritosAtivosCount() }} ativos · {{ inscritosSuspensosCount() }} suspensos)
-          </h4>
+          <div class="inscritos-header">
+            <h4>
+              Inscritos no campeonato
+              ({{ inscritosAtivosCount() }} ativos · {{ inscritosSuspensosCount() }} suspensos)
+            </h4>
+            <button
+              mat-stroked-button
+              [disabled]="recalculandoRanking()"
+              (click)="recalcularRanking()"
+              title="Reaplica pontos e critérios de desempate (pontos, eliminações, força dos adversários)"
+            >
+              @if (recalculandoRanking()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>leaderboard</mat-icon>
+              }
+              Recalcular ranking
+            </button>
+          </div>
           <div class="admin-table-wrapper">
             <table class="admin-table">
               <thead>
@@ -408,6 +423,7 @@
                       }
                     </td>
                     <td>
+                      <div class="inscrito-acoes">
                       @if (inscrito.ativo) {
                         <button
                           mat-stroked-button
@@ -457,6 +473,7 @@
                       >
                         Remover
                       </button>
+                      </div>
                     </td>
                   </tr>
                 }

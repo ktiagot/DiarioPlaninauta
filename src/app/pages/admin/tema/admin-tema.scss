@@ -147,7 +147,7 @@
 .tema-preview__palco {
   position: relative;
   background-color: var(--sys-color-bg);
-  background-image: var(--sys-bg-image);
+  background-image: linear-gradient(var(--sys-bg-overlay), var(--sys-bg-overlay)), var(--sys-bg-image);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
