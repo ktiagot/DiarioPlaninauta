@@ -15,7 +15,8 @@ export class ParceirosService {
       where: { ativo: true },
       orderBy: [{ ordem: 'asc' }, { nome: 'asc' }],
     });
-    return parceiros.map(toResponse);
+    // Sem nome utilizável (nem fallback), o cadastro não aparece no site.
+    return parceiros.map(toResponse).filter((p) => p.nome !== SEM_NOME);
   }
 
   /** Lista admin: todos (ativos e inativos). */
@@ -79,10 +80,28 @@ export class ParceirosService {
   }
 }
 
+/** Texto mostrado no admin quando o cadastro não tem nome nem fallback possível. */
+export const SEM_NOME = '(sem nome)';
+
+/** Nome para exibição: nome, senão a descrição, senão o domínio da URL. */
+export function nomeParaExibir(p: Pick<Parceiro, 'nome' | 'descricao' | 'url'>): string {
+  const nome = p.nome?.trim();
+  if (nome) return nome;
+  const descricao = p.descricao?.trim();
+  if (descricao) return descricao;
+  try {
+    const host = new URL(p.url).hostname.replace(/^www\./, '');
+    if (host) return host;
+  } catch {
+    // URL inválida: sem fallback
+  }
+  return SEM_NOME;
+}
+
 function toResponse(p: Parceiro): ParceiroResponseDto {
   return {
     id: p.id,
-    nome: p.nome,
+    nome: nomeParaExibir(p),
     descricao: p.descricao,
     logoUrl: p.logoUrl,
     url: p.url,

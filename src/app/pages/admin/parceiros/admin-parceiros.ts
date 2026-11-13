@@ -68,7 +68,7 @@ export class AdminParceirosComponent implements OnInit {
   editar(p: Parceiro): void {
     this.editandoId.set(p.id);
     this.form.setValue({
-      nome: p.nome,
+      nome: p.nome === '(sem nome)' ? '' : p.nome, // placeholder do servidor não vira nome real
       url: p.url,
       descricao: p.descricao ?? '',
       logoUrl: p.logoUrl ?? '',

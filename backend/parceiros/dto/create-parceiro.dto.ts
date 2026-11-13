@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -11,6 +12,7 @@ import {
 
 export class CreateParceiroDto {
   @ApiProperty({ example: 'Liga Magic' })
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @MinLength(2, { message: 'O nome deve ter ao menos 2 caracteres.' })
   nome: string;
@@ -26,6 +28,7 @@ export class CreateParceiroDto {
   logoUrl?: string;
 
   @ApiProperty({ example: 'https://ligamagic.com.br' })
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsUrl({ require_protocol: true }, { message: 'Informe uma URL válida (com http/https).' })
   url: string;
 
