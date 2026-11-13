@@ -39,6 +39,19 @@ import {
 export class GestaoController {
   constructor(private readonly gestao: GestaoService) {}
 
+  // ---- Ranking ----
+
+  @Post('atual/ranking/recalcular')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Recalcular ranking do campeonato atual',
+    description:
+      'Reaplica pontos e critérios de desempate (pontos, eliminações, força dos adversários) sem alterar resultados.',
+  })
+  async recalcularRanking(): Promise<void> {
+    await this.gestao.recalcularRanking();
+  }
+
   // ---- Rodadas ----
 
   @Patch('rodadas/:rodadaId')

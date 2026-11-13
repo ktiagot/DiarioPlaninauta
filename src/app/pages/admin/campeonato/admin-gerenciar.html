@@ -1,8 +1,18 @@
-﻿@if (loading()) {
+@if (loading()) {
   <div class="admin-page__loading"><mat-spinner diameter="36" /></div>
 } @else {
   <div class="admin-section">
-    <h4>Rodadas ({{ rodadas().length }})</h4>
+    <div class="gerenciar-toolbar">
+      <h4>Rodadas ({{ rodadas().length }})</h4>
+      <button
+        mat-stroked-button
+        [disabled]="busy()"
+        (click)="recalcularRanking()"
+        title="Reaplica pontos e critérios de desempate (pontos, eliminações, força dos adversários)"
+      >
+        <mat-icon>leaderboard</mat-icon> Recalcular ranking
+      </button>
+    </div>
     @if (rodadas().length === 0) {
       <p class="admin-empty">Nenhuma rodada criada ainda.</p>
     } @else {

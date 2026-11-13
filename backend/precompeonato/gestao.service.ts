@@ -33,6 +33,16 @@ export class GestaoService {
     private readonly preconsService: PreconsService,
   ) {}
 
+  // ---------- Ranking ----------
+
+  /** Recalcula pontos e posições (aplica os critérios de desempate) sem alterar resultados. */
+  async recalcularRanking(): Promise<void> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+    await this.prisma.$transaction(async (tx) => {
+      await recalcularRanking(tx, campeonato.id);
+    });
+  }
+
   // ---------- Rodadas ----------
 
   async atualizarRodada(rodadaId: string, dto: UpdateRodadaDto): Promise<RodadaAtualDto> {

@@ -1,10 +1,10 @@
-import { pontosDaMesa, recalcularRanking } from './ranking';
+import { calcularRanking, pontosDaMesa, recalcularRanking } from './ranking';
 
 describe('pontosDaMesa', () => {
   const jogadores = [
-    { inscricaoId: 'a', posicaoFinal: 1 },
-    { inscricaoId: 'b', posicaoFinal: 2 },
-    { inscricaoId: 'c', posicaoFinal: 3 },
+    { inscricaoId: 'a', posicaoFinal: 1, kills: 0 },
+    { inscricaoId: 'b', posicaoFinal: 2, kills: 0 },
+    { inscricaoId: 'c', posicaoFinal: 3, kills: 0 },
     { inscricaoId: 'd', posicaoFinal: 4 },
   ];
 
@@ -44,7 +44,7 @@ describe('recalcularRanking', () => {
     mesas: Array<{
       empate: boolean;
       empatadosInscricaoIds: string[];
-      jogadores: { inscricaoId: string; posicaoFinal: number | null }[];
+      jogadores: { inscricaoId: string; posicaoFinal: number | null; kills: number }[];
     }>,
   ) {
     const update = jest.fn();
@@ -67,9 +67,9 @@ describe('recalcularRanking', () => {
           empate: false,
           empatadosInscricaoIds: [],
           jogadores: [
-            { inscricaoId: 'a', posicaoFinal: 1 },
-            { inscricaoId: 'b', posicaoFinal: 2 },
-            { inscricaoId: 'c', posicaoFinal: 3 },
+            { inscricaoId: 'a', posicaoFinal: 1, kills: 0 },
+            { inscricaoId: 'b', posicaoFinal: 2, kills: 0 },
+            { inscricaoId: 'c', posicaoFinal: 3, kills: 0 },
           ],
         },
       ],
@@ -92,12 +92,91 @@ describe('recalcularRanking', () => {
         {
           empate: false,
           empatadosInscricaoIds: [],
-          jogadores: [{ inscricaoId: 'a', posicaoFinal: 1 }],
+          jogadores: [{ inscricaoId: 'a', posicaoFinal: 1, kills: 0 }],
         },
       ],
     );
 
     await recalcularRanking(tx, 'camp');
     expect(update).not.toHaveBeenCalled();
+  });
+});
+
+describe('calcularRanking (desempate)', () => {
+  const d = (n: number) => new Date(2026, 0, n);
+  const insc = (id: string, over: Partial<{ pontosAjuste: number; ativo: boolean; updatedAt: Date }> = {}) => ({
+    id,
+    pontosAjuste: 0,
+    ativo: true,
+    updatedAt: d(1),
+    ...over,
+  });
+  const mesa = (
+    jogadores: Array<[string, number | null, number]>,
+    over: { empate?: boolean; empatados?: string[] } = {},
+  ) => ({
+    empate: over.empate ?? false,
+    empatadosInscricaoIds: over.empatados ?? [],
+    jogadores: jogadores.map(([inscricaoId, posicaoFinal, kills]) => ({ inscricaoId, posicaoFinal, kills })),
+  });
+  const pos = (r: Map<string, { posicao: number | null }>, id: string) => r.get(id)?.posicao;
+
+  it('empate em pontos: quem tem mais eliminações fica na frente', () => {
+    // a e b: 1 ponto cada (2º lugar em mesas diferentes); b eliminou mais.
+    const r = calcularRanking(
+      [insc('a'), insc('b'), insc('x'), insc('y')],
+      [mesa([['x', 1, 2], ['a', 2, 0]]), mesa([['y', 1, 2], ['b', 2, 1]])],
+    );
+    expect(r.get('a')?.pontos).toBe(1);
+    expect(r.get('b')?.pontos).toBe(1);
+    expect(pos(r, 'b')).toBeLessThan(pos(r, 'a') as number);
+  });
+
+  it('empate em pontos e eliminações: maior força de adversários vence', () => {
+    // a e b: 1 ponto, 0 eliminações. a enfrentou o líder (x, 3 pts); b enfrentou quem fez 1 ponto.
+    const r = calcularRanking(
+      [insc('a'), insc('b'), insc('x'), insc('y'), insc('z')],
+      [mesa([['x', 1, 0], ['a', 2, 0]]), mesa([['y', 2, 0], ['b', 2, 0], ['z', 1, 0]])],
+    );
+    expect(r.get('a')?.pontos).toBe(1);
+    expect(r.get('b')?.pontos).toBe(1);
+    expect(r.get('a')?.forcaAdversarios).toBe(3);
+    expect(r.get('b')?.forcaAdversarios).toBe(4);
+    expect(pos(r, 'b')).toBeLessThan(pos(r, 'a') as number);
+  });
+
+  it('pontos têm prioridade sobre eliminações', () => {
+    const r = calcularRanking(
+      [insc('a'), insc('b')],
+      [mesa([['a', 1, 0], ['b', 3, 5]])],
+    );
+    expect(pos(r, 'a')).toBe(1);
+    expect(pos(r, 'b')).toBe(2);
+  });
+
+  it('ajuste manual conta nos pontos mas não altera a força dos adversários', () => {
+    const r = calcularRanking(
+      [insc('a', { pontosAjuste: 10 }), insc('b')],
+      [mesa([['a', 1, 0], ['b', 2, 0]])],
+    );
+    expect(r.get('a')?.pontos).toBe(13);
+    expect(r.get('b')?.forcaAdversarios).toBe(3);
+  });
+
+  it('inativos não recebem posição, mas contam como adversários', () => {
+    const r = calcularRanking(
+      [insc('a'), insc('b', { ativo: false })],
+      [mesa([['a', 2, 0], ['b', 1, 0]])],
+    );
+    expect(pos(r, 'b')).toBeNull();
+    expect(pos(r, 'a')).toBe(1);
+    expect(r.get('a')?.forcaAdversarios).toBe(3);
+  });
+
+  it('empate total desempata de forma estável por updatedAt e id', () => {
+    const r = calcularRanking([insc('b', { updatedAt: d(2) }), insc('a', { updatedAt: d(2) }), insc('c', { updatedAt: d(1) })], []);
+    expect(pos(r, 'c')).toBe(1);
+    expect(pos(r, 'a')).toBe(2);
+    expect(pos(r, 'b')).toBe(3);
   });
 });

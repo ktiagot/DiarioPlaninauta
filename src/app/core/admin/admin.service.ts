@@ -1,4 +1,4 @@
-﻿import { Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { API_URL } from '../config/api.config';
@@ -107,6 +107,10 @@ export class AdminService {
   }
 
   private mapRodada = map((r: RodadaAtualApi) => mapRodadaAtual(r));
+
+  recalcularRanking(): Observable<void> {
+    return this.http.post<void>(this.rodadaUrl('atual/ranking/recalcular'), {});
+  }
 
   atualizarRodada(id: string, payload: UpdateRodadaPayload): Observable<Rodada> {
     return this.http.patch<RodadaAtualApi>(this.rodadaUrl(`rodadas/${id}`), payload).pipe(this.mapRodada);
