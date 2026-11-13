@@ -9,7 +9,7 @@ function players(n: number): SorteioPlayer[] {
     id: `p${i + 1}`,
     pontos: 0,
     deckNome: `Deck ${(i % 4) + 1}`,
-    exercito: null,
+    grupo: null,
   }));
 }
 
@@ -77,29 +77,29 @@ describe('swiss-pairing', () => {
     }
   });
 
-  it('rodada 1: não repete exército na mesa quando há distribuição viável', () => {
-    // 8 jogadores, 5 exércitos: cada mesa de 4 pode ter exércitos distintos.
+  it('rodada 1: não repete grupo na mesa quando usaGrupos e há distribuição viável', () => {
+    // 8 jogadores, 4 grupos: cada mesa de 4 pode ter grupos distintos.
     const armies = ['Anãos', 'Humanos', 'Elfos', 'Wargs'];
     const list: SorteioPlayer[] = players(8).map((p, i) => ({
       ...p,
-      exercito: armies[i % 4],
+      grupo: armies[i % 4],
     }));
-    const mesas = sortearMesasSuico(list, 1, new Set());
+    const mesas = sortearMesasSuico(list, 1, new Set(), { usaGrupos: true });
     expect(mesas).toHaveLength(2);
     const byId = new Map(list.map((p) => [p.id, p]));
     for (const mesa of mesas) {
-      const exercitos = mesa.jogadorIds.map((id) => byId.get(id)!.exercito);
-      expect(new Set(exercitos).size).toBe(exercitos.length);
+      const grupos = mesa.jogadorIds.map((id) => byId.get(id)!.grupo);
+      expect(new Set(grupos).size).toBe(grupos.length);
     }
   });
 
-  it('rodada 1: nunca trava o sorteio mesmo sem exércitos suficientes', () => {
-    // Todos do mesmo exército: fallback deve permitir montar as mesas.
+  it('rodada 1: nunca trava o sorteio mesmo sem grupos suficientes', () => {
+    // Todos do mesmo grupo: fallback deve permitir montar as mesas.
     const list: SorteioPlayer[] = players(8).map((p) => ({
       ...p,
-      exercito: 'Anãos',
+      grupo: 'Anãos',
     }));
-    const mesas = sortearMesasSuico(list, 1, new Set());
+    const mesas = sortearMesasSuico(list, 1, new Set(), { usaGrupos: true });
     const seated = mesas.flatMap((m) => m.jogadorIds);
     expect(seated).toHaveLength(8);
   });

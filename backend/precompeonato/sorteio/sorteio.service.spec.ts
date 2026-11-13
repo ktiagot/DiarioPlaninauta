@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+﻿import { Test, TestingModule } from '@nestjs/testing';
 import {
   ConflictException,
   ForbiddenException,
@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { SorteioService } from './sorteio.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { recalcularRanking } from './ranking';
+
+jest.mock('./ranking', () => ({ recalcularRanking: jest.fn() }));
 
 const RESULTADO_DTO = {
   jogadores: [
@@ -23,7 +26,14 @@ function mesaBase(overrides: Record<string, unknown> = {}) {
     empate: false,
     empatadosInscricaoIds: [] as string[],
     linkPartida: null,
-    rodada: { id: 'r-1', finalizada: false },
+    rodada: {
+      id: 'r-1',
+      campeonatoId: 'camp-1',
+      numero: 1,
+      dataRodada: new Date('2026-08-26T12:00:00.000Z'),
+      ativa: true,
+      finalizada: false,
+    },
     jogadores: [
       { inscricaoId: 'ins-1', posicaoFinal: null, inscricao: { userId: 'user-1' } },
       { inscricaoId: 'ins-2', posicaoFinal: null, inscricao: { userId: 'user-2' } },
@@ -105,6 +115,7 @@ describe('SorteioService', () => {
     }).compile();
 
     service = module.get(SorteioService);
+    (recalcularRanking as jest.Mock).mockClear();
   });
 
   function stubGetRodadaAtual(validada: boolean) {
@@ -345,208 +356,68 @@ describe('SorteioService', () => {
     await expect(service.finalizarRodada('r-1')).rejects.toThrow(ConflictException);
   });
 
-  // Coleta os deltas de pontos aplicados via tx.inscricao.update({ increment }).
-  function capturarPontos(): Map<string, number> {
-    const deltas = new Map<string, number>();
-    for (const call of prisma.inscricao.update.mock.calls) {
-      const arg = call[0] as {
-        where: { id: string };
-        data: { pontos?: { increment?: number }; posicao?: number };
-      };
-      if (arg.data?.pontos?.increment !== undefined) {
-        deltas.set(arg.where.id, arg.data.pontos.increment);
-      }
-    }
-    return deltas;
-  }
-
-  it('finalizarRodada soma 3 ao 1º, 1 ao 2º e nada ao 3º/4º', async () => {
-    prisma.rodada.findUnique.mockResolvedValue({
-      id: 'r-1',
-      campeonatoId: 'camp-1',
-      numero: 1,
-      finalizada: false,
-      mesas: [
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: false,
-          empatadosInscricaoIds: [],
-          jogadores: [
-            { inscricaoId: 'ins-1', posicaoFinal: 1 },
-            { inscricaoId: 'ins-2', posicaoFinal: 2 },
-            { inscricaoId: 'ins-3', posicaoFinal: 3 },
-            { inscricaoId: 'ins-4', posicaoFinal: 4 },
-          ],
-        },
-      ],
-    });
-    prisma.inscricao.findMany.mockResolvedValue([]);
-    stubGetRodadaAtual(true);
-
-    await service.finalizarRodada('r-1');
-
-    const deltas = capturarPontos();
-    expect(deltas.get('ins-1')).toBe(3);
-    expect(deltas.get('ins-2')).toBe(1);
-    // 3º e 4º não recebem update de pontos (delta 0 é pulado).
-    expect(deltas.has('ins-3')).toBe(false);
-    expect(deltas.has('ins-4')).toBe(false);
+  const rodadaFinalizavel = (numero = 1) => ({
+    id: 'r-1',
+    campeonatoId: 'camp-1',
+    numero,
+    finalizada: false,
+    mesas: [
+      {
+        validada: true,
+        validadaEm: new Date(),
+        empate: false,
+        empatadosInscricaoIds: [],
+        jogadores: [
+          { inscricaoId: 'ins-1', posicaoFinal: 1 },
+          { inscricaoId: 'ins-2', posicaoFinal: 2 },
+        ],
+      },
+    ],
   });
 
-  it('finalizarRodada em empate soma 1 a cada empatado e ignora posições', async () => {
-    prisma.rodada.findUnique.mockResolvedValue({
-      id: 'r-1',
-      campeonatoId: 'camp-1',
-      numero: 1,
-      finalizada: false,
-      mesas: [
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: true,
-          empatadosInscricaoIds: ['ins-1', 'ins-2'],
-          jogadores: [
-            { inscricaoId: 'ins-1', posicaoFinal: 1 },
-            { inscricaoId: 'ins-2', posicaoFinal: 1 },
-            { inscricaoId: 'ins-3', posicaoFinal: 3 },
-          ],
-        },
-      ],
-    });
-    prisma.inscricao.findMany.mockResolvedValue([]);
+  it('finalizarRodada marca finalizada de forma atômica e recalcula o ranking', async () => {
+    prisma.rodada.findUnique.mockResolvedValue(rodadaFinalizavel());
     stubGetRodadaAtual(true);
 
     await service.finalizarRodada('r-1');
 
-    const deltas = capturarPontos();
-    expect(deltas.get('ins-1')).toBe(1);
-    expect(deltas.get('ins-2')).toBe(1);
-    expect(deltas.has('ins-3')).toBe(false);
-    // Ninguém recebe +3 num empate.
-    expect([...deltas.values()]).not.toContain(3);
-  });
-
-  it('finalizarRodada acumula pontos de várias mesas por inscrição', async () => {
-    prisma.rodada.findUnique.mockResolvedValue({
-      id: 'r-1',
-      campeonatoId: 'camp-1',
-      numero: 2,
-      finalizada: false,
-      mesas: [
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: false,
-          empatadosInscricaoIds: [],
-          jogadores: [
-            { inscricaoId: 'ins-1', posicaoFinal: 1 },
-            { inscricaoId: 'ins-2', posicaoFinal: 2 },
-          ],
-        },
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: false,
-          empatadosInscricaoIds: [],
-          jogadores: [
-            { inscricaoId: 'ins-2', posicaoFinal: 1 },
-            { inscricaoId: 'ins-3', posicaoFinal: 2 },
-          ],
-        },
-      ],
-    });
-    prisma.inscricao.findMany.mockResolvedValue([]);
-    stubGetRodadaAtual(true);
-
-    await service.finalizarRodada('r-1');
-
-    const deltas = capturarPontos();
-    // ins-1: 1º na mesa 1 = 3. ins-2: 2º (mesa 1, +1) + 1º (mesa 2, +3) = 4.
-    // ins-3: 2º na mesa 2 = 1.
-    expect(deltas.get('ins-1')).toBe(3);
-    expect(deltas.get('ins-2')).toBe(4);
-    expect(deltas.get('ins-3')).toBe(1);
-  });
-
-  it('finalizarRodada recalcula posições por pontos desc e marca finalizada', async () => {
-    prisma.rodada.findUnique.mockResolvedValue({
-      id: 'r-1',
-      campeonatoId: 'camp-1',
-      numero: 1,
-      finalizada: false,
-      mesas: [
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: false,
-          empatadosInscricaoIds: [],
-          jogadores: [
-            { inscricaoId: 'ins-1', posicaoFinal: 1 },
-            { inscricaoId: 'ins-2', posicaoFinal: 2 },
-          ],
-        },
-      ],
-    });
-    // Já ordenado por pontos desc (como o service consulta).
-    prisma.inscricao.findMany.mockResolvedValue([
-      { id: 'ins-1' },
-      { id: 'ins-2' },
-      { id: 'ins-3' },
-    ]);
-    stubGetRodadaAtual(true);
-
-    await service.finalizarRodada('r-1');
-
-    // posicao = índice + 1 na ordem retornada.
-    const posicoes = new Map<string, number>();
-    for (const call of prisma.inscricao.update.mock.calls) {
-      const arg = call[0] as { where: { id: string }; data: { posicao?: number } };
-      if (arg.data?.posicao !== undefined) posicoes.set(arg.where.id, arg.data.posicao);
-    }
-    expect(posicoes.get('ins-1')).toBe(1);
-    expect(posicoes.get('ins-2')).toBe(2);
-    expect(posicoes.get('ins-3')).toBe(3);
-
-    // A finalização agora é atômica: updateMany condicional (finalizada:false).
     expect(prisma.rodada.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'r-1', finalizada: false },
         data: expect.objectContaining({ finalizada: true, ativa: false }),
       }),
     );
+    expect(recalcularRanking).toHaveBeenCalledWith(prisma, 'camp-1');
   });
 
-  it('finalizarRodada é atômica: não soma pontos se a trava já foi tomada', async () => {
-    prisma.rodada.findUnique.mockResolvedValue({
-      id: 'r-1',
-      campeonatoId: 'camp-1',
-      numero: 1,
-      finalizada: false,
-      mesas: [
-        {
-          validada: true,
-          validadaEm: new Date(),
-          empate: false,
-          empatadosInscricaoIds: [],
-          jogadores: [
-            { inscricaoId: 'ins-1', posicaoFinal: 1 },
-            { inscricaoId: 'ins-2', posicaoFinal: 2 },
-          ],
-        },
-      ],
-    });
-    // Outra finalização concorrente já marcou finalizada: updateMany não afeta linhas.
+  it('finalizarRodada é atômica: não recalcula se a trava já foi tomada', async () => {
+    prisma.rodada.findUnique.mockResolvedValue(rodadaFinalizavel());
     prisma.rodada.updateMany.mockResolvedValueOnce({ count: 0 });
 
     await expect(service.finalizarRodada('r-1')).rejects.toThrow(ConflictException);
+    expect(recalcularRanking).not.toHaveBeenCalled();
+  });
 
-    // Nenhum incremento de pontos deve ter ocorrido.
-    const somouPontos = prisma.inscricao.update.mock.calls.some((call) => {
-      const arg = call[0] as { data?: { pontos?: unknown } };
-      return arg.data?.pontos !== undefined;
-    });
-    expect(somouPontos).toBe(false);
+  it('admin corrige resultado de rodada finalizada e o ranking é recalculado', async () => {
+    prisma.mesaTorneio.findUnique.mockResolvedValue(
+      mesaBase({ validada: true, rodada: { id: 'r-1', campeonatoId: 'camp-1', numero: 1, dataRodada: new Date('2026-08-26T12:00:00.000Z'), ativa: false, finalizada: true } }),
+    );
+    stubGetRodadaAtual(true);
+
+    await service.submitMesaResultado('m-1', RESULTADO_DTO, { id: 'admin-1', isAdmin: true });
+
+    expect(recalcularRanking).toHaveBeenCalledWith(prisma, 'camp-1');
+  });
+
+  it('jogador não edita resultado de rodada finalizada', async () => {
+    prisma.mesaTorneio.findUnique.mockResolvedValue(
+      mesaBase({ rodada: { id: 'r-1', campeonatoId: 'camp-1', numero: 1, dataRodada: new Date('2026-08-26T12:00:00.000Z'), ativa: false, finalizada: true } }),
+    );
+
+    await expect(
+      service.submitMesaResultado('m-1', RESULTADO_DTO, { id: 'u-1', isAdmin: false }),
+    ).rejects.toThrow(ConflictException);
+    expect(recalcularRanking).not.toHaveBeenCalled();
   });
 
   it('abrirRodada bloqueia se a anterior tiver mesa não validada', async () => {

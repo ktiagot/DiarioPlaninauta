@@ -26,7 +26,7 @@ export class InscritoAdminResponseDto {
   comandante: string;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 
   @ApiProperty({ example: 6 })
   pontos: number;

@@ -1,0 +1,80 @@
+﻿<div class="inscrito-editar">
+  <h4>Editar inscrição: {{ inscrito().nome }}</h4>
+  <p class="inscrito-editar__hint">Campos em branco permanecem como estão.</p>
+
+  <div class="inscrito-editar__grid">
+    <label>
+      Grupo (atual: {{ inscrito().grupo ?? '—' }})
+      <select [(ngModel)]="grupoId">
+        <option value="">Manter</option>
+        <option value="__none__">Sem grupo</option>
+        @for (g of grupos(); track g.id) {
+          <option [value]="g.id">{{ g.nome }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Discord
+      <input type="text" [(ngModel)]="discordNick" placeholder="Novo nick do Discord" />
+    </label>
+
+    <label class="inscrito-editar__wide">
+      Link do deck (atual: {{ inscrito().deckUrl ?? '—' }})
+      <input type="url" [(ngModel)]="deckUrl" placeholder="https://..." />
+    </label>
+
+    <label class="inscrito-editar__wide">
+      Precon (atual: {{ inscrito().deckNome }} / {{ inscrito().comandante }})
+      <select [ngModel]="preconId" (ngModelChange)="onPreconChange($event)">
+        <option value="">Manter</option>
+        @for (p of precons(); track p.id) {
+          <option [value]="p.id">{{ p.nome }} ({{ p.setNome }}){{ p.banido ? ' - banido' : '' }}</option>
+        }
+      </select>
+    </label>
+
+    @if (preconId) {
+      <label>
+        Comandante
+        <select [(ngModel)]="comandanteId">
+          <option value="">Selecione</option>
+          @for (c of comandantes(); track c.id) {
+            <option [value]="c.id">{{ c.comandante }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        2º comandante (partner)
+        <select [(ngModel)]="comandante2Id">
+          <option value="">Nenhum</option>
+          @for (c of comandantes(); track c.id) {
+            @if (c.isPartner && c.id !== comandanteId) {
+              <option [value]="c.id">{{ c.comandante }}</option>
+            }
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  <div class="inscrito-editar__acoes">
+    <button mat-flat-button color="primary" [disabled]="saving()" (click)="salvar()">Salvar</button>
+    <button mat-stroked-button [disabled]="saving()" (click)="fechar.emit()">Fechar</button>
+  </div>
+
+  <h5>Histórico de ajustes de pontos</h5>
+  @if (ajustes().length === 0) {
+    <p class="inscrito-editar__hint">Nenhum ajuste manual.</p>
+  } @else {
+    <ul class="inscrito-editar__ajustes">
+      @for (a of ajustes(); track a.id) {
+        <li>
+          <strong>{{ a.delta > 0 ? '+' : '' }}{{ a.delta }}</strong>
+          {{ a.motivo }}
+          <small>{{ a.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </li>
+      }
+    </ul>
+  }
+</div>

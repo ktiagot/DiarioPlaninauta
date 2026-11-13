@@ -5,7 +5,7 @@ export interface SorteioJogador {
   discordNick: string;
   deckNome: string;
   comandante: string;
-  exercito?: string | null;
+  grupo?: string | null;
   deckUrl: string | null;
   pontos: number;
   posicao: number | null;
@@ -20,7 +20,7 @@ export interface SorteioMesaJogador {
   discordNick: string;
   deckNome: string;
   comandante: string;
-  exercito?: string | null;
+  grupo?: string | null;
   pontos: number;
 }
 
@@ -63,7 +63,7 @@ export interface RodadaListMesaJogador {
   inscricaoId: string;
   nick: string;
   comandante: string;
-  exercito?: string | null;
+  grupo?: string | null;
 }
 
 export interface RodadaListMesa {

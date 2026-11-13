@@ -23,6 +23,9 @@ export class CampeonatoAdminResponseDto {
   })
   bannerUrl: string | null;
 
+  @ApiProperty({ example: false })
+  usaGrupos: boolean;
+
   @ApiProperty({ example: 'Inscrições abertas' })
   status: string;
 

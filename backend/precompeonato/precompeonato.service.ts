@@ -12,10 +12,10 @@ import { PreconsService } from '../precons/precons.service';
 import {
   comandanteFromInscricao,
   deckNomeFromInscricao,
+  grupoNomeFromInscricao,
   inscricaoPreconInclude,
   inscricaoWithPreconInclude,
 } from '../precons/mappers/to-precon-response';
-import { exercitoLabel } from './constants/exercito-labels';
 import { toDateOnly } from './date-only';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
@@ -147,6 +147,21 @@ export class PrecompeonatoService {
       throw new ConflictException('Você já está inscrito neste precompeonato.');
     }
 
+    // Grupo: obrigatório e válido quando o campeonato usa grupos; proibido quando não usa.
+    let grupoId: string | null = null;
+    if (campeonato.usaGrupos) {
+      if (!dto.grupoId) {
+        throw new BadRequestException('Selecione um grupo para se inscrever.');
+      }
+      const grupo = await this.prisma.grupoCampeonato.findFirst({
+        where: { id: dto.grupoId, campeonatoId: campeonato.id },
+      });
+      if (!grupo) {
+        throw new BadRequestException('Grupo inválido para este campeonato.');
+      }
+      grupoId = grupo.id;
+    }
+
     await this.preconsService.validateForInscricao(
       dto.preconId,
       dto.preconComandanteId,
@@ -165,7 +180,7 @@ export class PrecompeonatoService {
           preconId: dto.preconId,
           preconComandanteId: dto.preconComandanteId,
           preconComandante2Id: dto.preconComandante2Id ?? null,
-          exercito: dto.exercito,
+          grupoId,
           aceiteTermos: true,
           aceiteTermosEm,
           aceitePrivacidade: true,
@@ -293,7 +308,7 @@ export class PrecompeonatoService {
         campeaoNick: campeao?.user.nick ?? null,
         comandante: campeao ? comandanteFromInscricao(campeao) : null,
         deckNome: campeao ? deckNomeFromInscricao(campeao) : null,
-        exercito: campeao ? exercitoLabel(campeao.exercito) : null,
+        grupo: campeao ? grupoNomeFromInscricao(campeao) : null,
         pontos: campeao?.pontos ?? null,
       };
     });
@@ -344,7 +359,7 @@ export class PrecompeonatoService {
       deckUrl: null,
       deckNome: '',
       comandante: '',
-      exercito: null,
+      grupo: null,
       nomeJogador: l.nome,
       nick: l.nick,
       discordNick: '',

@@ -46,6 +46,7 @@ export const inscricaoPreconInclude = {
   precon: { select: { id: true, nome: true, setNome: true } },
   preconComandante: { select: { id: true, comandante: true } },
   preconComandante2: { select: { id: true, comandante: true } },
+  grupo: { select: { id: true, nome: true } },
 } as const;
 
 export const inscricaoWithPreconInclude = {
@@ -57,6 +58,13 @@ export function deckNomeFromInscricao(inscricao: {
   precon: { nome: string };
 }): string {
   return inscricao.precon.nome;
+}
+
+/** Nome do grupo da inscrição (ou null quando não há grupo). */
+export function grupoNomeFromInscricao(inscricao: {
+  grupo?: { nome: string } | null;
+}): string | null {
+  return inscricao.grupo?.nome ?? null;
 }
 
 /** Nome do comandante da inscrição. Para partner, retorna "A // B". */

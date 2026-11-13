@@ -125,7 +125,7 @@
                       <th>#</th>
                       <th>Jogador</th>
                       <th>Comandante</th>
-                      <th>Exército</th>
+                      <th>Grupo</th>
                       <th>Pontos</th>
                       <th>Check-in</th>
                     </tr>
@@ -136,7 +136,7 @@
                         <td>{{ jogador.posicao ?? '-' }}</td>
                         <td>{{ jogador.nick }}</td>
                         <td>{{ jogador.comandante }}</td>
-                        <td>{{ jogador.exercito ?? '-' }}</td>
+                        <td>{{ jogador.grupo ?? '-' }}</td>
                         <td>{{ jogador.pontos }}</td>
                         <td>
                           <button
@@ -349,6 +349,12 @@
       </div>
     </mat-tab>
 
+    <mat-tab label="Gerenciar">
+      <div class="admin-tab-content">
+        <app-admin-gerenciar (alterado)="recarregarListas()" />
+      </div>
+    </mat-tab>
+
     <mat-tab label="Inscritos">
       <div class="admin-tab-content">
         <div class="admin-section">
@@ -364,7 +370,7 @@
                   <th>Nome</th>
                   <th>E-mail</th>
                   <th>Deck</th>
-                  <th>Exército</th>
+                  <th>Grupo</th>
                   <th>Pontos</th>
                   <th>Vitórias</th>
                   <th>Status</th>
@@ -391,7 +397,7 @@
                         {{ inscrito.deckNome }}
                       }
                     </td>
-                    <td>{{ inscrito.exercito ?? '-' }}</td>
+                    <td>{{ inscrito.grupo ?? '-' }}</td>
                     <td>{{ inscrito.pontos }}</td>
                     <td>{{ inscrito.vitorias }}</td>
                     <td>
@@ -429,12 +435,42 @@
                           }
                         </button>
                       }
+                      <button
+                        mat-stroked-button
+                        [disabled]="campeonatoEncerrado()"
+                        (click)="ajustarPontosInscrito(inscrito)"
+                      >
+                        Pontos
+                      </button>
+                      <button
+                        mat-stroked-button
+                        [disabled]="campeonatoEncerrado()"
+                        (click)="editandoInscrito.set(inscrito)"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        mat-stroked-button
+                        color="warn"
+                        [disabled]="campeonatoEncerrado()"
+                        (click)="removerInscricao(inscrito)"
+                      >
+                        Remover
+                      </button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
+
+          @if (editandoInscrito(); as editando) {
+            <app-admin-inscrito-editar
+              [inscrito]="editando"
+              (salvo)="onInscricaoEditada()"
+              (fechar)="editandoInscrito.set(null)"
+            />
+          }
         </div>
       </div>
     </mat-tab>

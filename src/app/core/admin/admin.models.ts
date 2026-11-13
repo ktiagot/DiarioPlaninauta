@@ -61,6 +61,7 @@ export interface CampeonatoAdmin {
   dataInicio: string;
   descricao: string | null;
   bannerUrl: string | null;
+  usaGrupos: boolean;
   status: string;
   statusCode: CampeonatoStatusCode;
   createdAt: string;
@@ -71,6 +72,24 @@ export interface CreateCampeonatoPayload {
   edicao: string;
   dataInicio: string;
   descricao?: string;
+  usaGrupos?: boolean;
+}
+
+export interface GrupoAdmin {
+  id: string;
+  nome: string;
+  ordem: number;
+  totalInscritos: number;
+}
+
+export interface CreateGrupoPayload {
+  nome: string;
+  ordem?: number;
+}
+
+export interface UpdateGrupoPayload {
+  nome?: string;
+  ordem?: number;
 }
 
 export interface InscritoResumo {
@@ -81,11 +100,38 @@ export interface InscritoResumo {
   deckUrl: string | null;
   deckNome: string;
   comandante: string;
-  exercito?: string | null;
+  grupo?: string | null;
   pontos: number;
   vitorias: number;
   posicao: number | null;
   ativo: boolean;
+}
+
+export interface UpdateRodadaPayload {
+  numero?: number;
+  dataRodada?: string;
+}
+
+export interface AjustePontosPayload {
+  delta: number;
+  motivo: string;
+}
+
+export interface AjustePontos {
+  id: string;
+  delta: number;
+  motivo: string;
+  adminUserId: string;
+  createdAt: string;
+}
+
+export interface UpdateInscricaoPayload {
+  grupoId?: string | null;
+  discordNick?: string;
+  deckUrl?: string | null;
+  preconId?: string;
+  preconComandanteId?: string;
+  preconComandante2Id?: string | null;
 }
 
 export interface JogadorAdmin {

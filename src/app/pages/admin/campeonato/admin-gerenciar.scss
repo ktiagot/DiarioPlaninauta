@@ -1,0 +1,107 @@
+@import '../admin.scss';
+
+.gerenciar-rodadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+
+    &--ativa {
+      border-color: #f58220;
+      background: rgba(245, 130, 32, 0.12);
+    }
+  }
+
+  &__status {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+}
+
+.gerenciar-aviso {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  color: #fbbf24;
+}
+
+.gerenciar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  input {
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+  }
+}
+
+.gerenciar-mesa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &__acoes,
+  &__add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  &__jogadores {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      span {
+        flex: 1;
+      }
+    }
+  }
+
+  select {
+    padding: 0.35rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #1a1a1a;
+    color: inherit;
+  }
+}

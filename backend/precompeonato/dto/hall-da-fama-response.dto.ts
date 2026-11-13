@@ -26,7 +26,7 @@ export class HallDaFamaEntryDto {
   deckNome: string | null;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 
   @ApiPropertyOptional({ example: 18, nullable: true })
   pontos: number | null;

@@ -6,7 +6,7 @@ export interface JogadorInscrito {
   comandante: string;
   deckNome: string;
   deckUrl?: string;
-  exercito?: string | null;
+  grupo?: string | null;
   meta: number;
   pontos: number;
   eliminacoes: number;
@@ -42,14 +42,14 @@ export interface InscricaoApi {
   ranking_campeonato?: number;
   pontos?: number;
   ativo?: boolean;
-  exercito?: string | null;
+  grupo?: string | null;
 }
 
 export interface CreateInscricaoPayload {
   preconId: string;
   preconComandanteId: string;
   preconComandante2Id?: string;
-  exercito: string;
+  grupoId?: string;
   aceiteTermos: boolean;
   aceitePrivacidade: boolean;
   entrouDiscord: boolean;
@@ -63,7 +63,15 @@ export interface CreateInscricaoResponse {
   deckUrl: string | null;
   deckNome: string;
   comandante: string;
-  exercito: string | null;
+  grupo: string | null;
   nome: string;
   nick: string;
+}
+
+/** Grupo do campeonato atual (formulário de inscrição). */
+export interface GrupoCampeonato {
+  id: string;
+  nome: string;
+  ordem: number;
+  totalInscritos: number;
 }

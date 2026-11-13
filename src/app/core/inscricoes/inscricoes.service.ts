@@ -10,6 +10,7 @@ import { INSCRICOES_MOCK } from './inscricoes.mock';
 import {
   CreateInscricaoPayload,
   CreateInscricaoResponse,
+  GrupoCampeonato,
   InscricaoApi,
   JogadorInscrito,
 } from './inscricoes.models';
@@ -53,7 +54,7 @@ export class InscricoesService {
               comandante: base.comandante,
               deckNome: base.deckNome,
               deckUrl: base.deckUrl,
-              exercito: base.exercito,
+              grupo: base.grupo,
               meta: 0,
               pontos: base.pontos,
               eliminacoes: eliminacoesMap.get(String(i.id)) ?? 0,
@@ -72,6 +73,13 @@ export class InscricoesService {
         return throwError(() => new Error('Não foi possível carregar os jogadores inscritos.'));
       }),
     );
+  }
+
+  /** Grupos do campeonato atual (vazio se o campeonato não usa grupos). */
+  getGruposAtual(): Observable<GrupoCampeonato[]> {
+    return this.http
+      .get<GrupoCampeonato[]>(`${API_URL}/precompeonato/atual/grupos`)
+      .pipe(catchError(() => of([])));
   }
 
   createInscricao(payload: CreateInscricaoPayload): Observable<CreateInscricaoResponse> {

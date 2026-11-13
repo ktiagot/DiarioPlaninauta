@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateCampeonatoDto {
   @ApiProperty({ example: 'Precompeonato #1' })
@@ -20,4 +26,9 @@ export class CreateCampeonatoDto {
   @IsOptional()
   @IsString()
   descricao?: string;
+
+  @ApiPropertyOptional({ example: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  usaGrupos?: boolean;
 }

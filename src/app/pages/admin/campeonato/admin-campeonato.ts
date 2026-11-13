@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+﻿import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,6 +21,8 @@ import { AdminDashboardComponent } from '../dashboard/admin-dashboard';
 import { AdminCampeonatosComponent } from './admin-campeonatos';
 import { AdminPreconsComponent } from './admin-precons';
 import { MesaCardComponent } from '../../mesas/mesa-card/mesa-card';
+import { AdminGerenciarComponent } from './admin-gerenciar';
+import { AdminInscritoEditarComponent } from './admin-inscrito-editar';
 
 @Component({
   selector: 'app-admin-campeonato',
@@ -36,6 +38,8 @@ import { MesaCardComponent } from '../../mesas/mesa-card/mesa-card';
     AdminCampeonatosComponent,
     AdminPreconsComponent,
     MesaCardComponent,
+    AdminGerenciarComponent,
+    AdminInscritoEditarComponent,
   ],
   templateUrl: './admin-campeonato.html',
   styleUrl: './admin-campeonato.scss',
@@ -60,6 +64,7 @@ export class AdminCampeonatoComponent implements OnInit {
   readonly togglingInscricaoId = signal<string | null>(null);
   readonly campeonatoEncerrado = signal(false);
   readonly finalizandoRodada = signal(false);
+  readonly editandoInscrito = signal<InscritoResumo | null>(null);
 
   readonly rodadaNumero = signal(1);
   readonly rodadaData = signal('');
@@ -324,6 +329,64 @@ export class AdminCampeonatoComponent implements OnInit {
     });
   }
 
+  recarregarInscritos(): void {
+    this.adminService.getInscritosAdmin().subscribe({ next: (list) => this.inscritos.set(list) });
+    this.adminService.getSorteio().subscribe({ next: (snap) => this.snapshot.set(snap) });
+  }
+
+  ajustarPontosInscrito(inscrito: InscritoResumo): void {
+    const entrada = window.prompt(
+      `Ajuste de pontos para ${inscrito.nome} (atual: ${inscrito.pontos}).\nUse número positivo ou negativo:`,
+    );
+    if (entrada === null) return;
+    const delta = Number.parseInt(entrada, 10);
+    if (!Number.isInteger(delta) || delta === 0) {
+      this.snackBar.open('Informe um número inteiro diferente de zero.', 'Fechar', { duration: 4000 });
+      return;
+    }
+    const motivo = window.prompt('Motivo do ajuste (obrigatório):')?.trim();
+    if (!motivo || motivo.length < 3) {
+      this.snackBar.open('Informe o motivo do ajuste.', 'Fechar', { duration: 4000 });
+      return;
+    }
+
+    this.adminService.ajustarPontos(inscrito.id, { delta, motivo }).subscribe({
+      next: () => {
+        this.snackBar.open('Pontos ajustados.', 'OK', { duration: 3000 });
+        this.recarregarInscritos();
+      },
+      error: (err) => this.mostrarErro(err),
+    });
+  }
+
+  removerInscricao(inscrito: InscritoResumo): void {
+    if (
+      !window.confirm(
+        `Remover a inscrição de ${inscrito.nome}? Só é possível se o jogador nunca participou de mesas.`,
+      )
+    ) {
+      return;
+    }
+    this.adminService.removerInscricao(inscrito.id).subscribe({
+      next: () => {
+        this.snackBar.open('Inscrição removida.', 'OK', { duration: 3000 });
+        if (this.editandoInscrito()?.id === inscrito.id) this.editandoInscrito.set(null);
+        this.recarregarInscritos();
+      },
+      error: (err) => this.mostrarErro(err),
+    });
+  }
+
+  onInscricaoEditada(): void {
+    this.editandoInscrito.set(null);
+    this.recarregarInscritos();
+  }
+
+  private mostrarErro(err: { error?: { message?: string | string[] } }): void {
+    const m = err?.error?.message;
+    this.snackBar.open((Array.isArray(m) ? m[0] : m) || 'Erro.', 'Fechar', { duration: 5000 });
+  }
+
   private carregarRodadaAtual(): void {
     this.rodadasService.getRodadaAtual().subscribe({
       next: (rodada) => this.rodadaAtual.set(rodada),
@@ -380,7 +443,7 @@ export class AdminCampeonatoComponent implements OnInit {
       });
   }
 
-  private recarregarListas(): void {
+  recarregarListas(): void {
     this.adminService.listRodadas().subscribe({
       next: (res) => {
         this.rodadas.set(res.rodadas);

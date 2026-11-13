@@ -118,25 +118,27 @@
             }
           </div>
 
-          <div class="field-group">
-            <label for="exercito">Exército</label>
-            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-              <mat-select
-                id="exercito"
-                formControlName="exercito"
-                placeholder="Selecione"
-                panelClass="inscricao-select-panel"
-              >
-                @for (ex of exercitos; track ex.value) {
-                  <mat-option [value]="ex.value">{{ ex.label }}</mat-option>
+          @if (usaGrupos()) {
+            <div class="field-group">
+              <label for="grupoId">Grupo</label>
+              <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                <mat-select
+                  id="grupoId"
+                  formControlName="grupoId"
+                  placeholder="Selecione"
+                  panelClass="inscricao-select-panel"
+                >
+                  @for (g of grupos(); track g.id) {
+                    <mat-option [value]="g.id">{{ g.nome }}</mat-option>
+                  }
+                </mat-select>
+                @if (form.controls.grupoId.invalid && form.controls.grupoId.touched) {
+                  <mat-error>Selecione o grupo</mat-error>
                 }
-              </mat-select>
-              @if (form.controls.exercito.invalid && form.controls.exercito.touched) {
-                <mat-error>Selecione o exército</mat-error>
-              }
-            </mat-form-field>
-            <p class="field-hint">Seu exército neste campeonato.</p>
-          </div>
+              </mat-form-field>
+              <p class="field-hint">Seu grupo neste campeonato.</p>
+            </div>
+          }
         </div>
 
         <div class="inscricao-form__checks" role="group" aria-label="Aceites obrigatórios">

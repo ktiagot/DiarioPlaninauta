@@ -2,7 +2,7 @@ export type SorteioPlayer = {
   id: string;
   pontos: number;
   deckNome: string;
-  exercito: string | null;
+  grupo: string | null;
 };
 
 export type SorteioMesa = {
@@ -95,12 +95,12 @@ function sameDeckCount(table: SorteioPlayer[]): number {
   return dupes;
 }
 
-/** Quantidade de jogadores repetindo exército na mesa (ignora sem exército). */
-function sameExercitoCount(table: SorteioPlayer[]): number {
+/** Quantidade de jogadores repetindo grupo na mesa (ignora sem grupo). */
+function sameGrupoCount(table: SorteioPlayer[]): number {
   const counts = new Map<string, number>();
   for (const p of table) {
-    if (!p.exercito) continue;
-    const key = p.exercito.trim().toLowerCase();
+    if (!p.grupo) continue;
+    const key = p.grupo.trim().toLowerCase();
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   let dupes = 0;
@@ -118,7 +118,7 @@ function pickBestCandidate(
     hardAvoidRematch: boolean;
     softAvoidRematch: boolean;
     avoidSameDeck: boolean;
-    hardAvoidSameExercito?: boolean;
+    hardAvoidSameGrupo?: boolean;
   },
 ): SorteioPlayer | null {
   if (pool.length === 0) return null;
@@ -131,7 +131,7 @@ function pickBestCandidate(
     const rematches = rematchCount(trial, opponents);
 
     if (opts.hardAvoidRematch && rematches > 0) continue;
-    if (opts.hardAvoidSameExercito && sameExercitoCount(trial) > 0) continue;
+    if (opts.hardAvoidSameGrupo && sameGrupoCount(trial) > 0) continue;
 
     let score = 0;
     if (opts.softAvoidRematch) score += rematches * 100;
@@ -148,12 +148,12 @@ function pickBestCandidate(
     }
   }
 
-  // Fallback: relaxa a restrição de exército antes da de rematch (R1 não tem
-  // rematch, mas pode não haver exército disponível suficiente na mesa).
-  if (!best && opts.hardAvoidSameExercito) {
+  // Fallback: relaxa a restrição de grupo antes da de rematch (R1 não tem
+  // rematch, mas pode não haver grupo disponível suficiente na mesa).
+  if (!best && opts.hardAvoidSameGrupo) {
     return pickBestCandidate(table, pool, opponents, {
       ...opts,
-      hardAvoidSameExercito: false,
+      hardAvoidSameGrupo: false,
     });
   }
 
@@ -177,7 +177,7 @@ function seatPlayers(
     hardAvoidRematch: boolean;
     softAvoidRematch: boolean;
     avoidSameDeck: boolean;
-    hardAvoidSameExercito?: boolean;
+    hardAvoidSameGrupo?: boolean;
   },
 ): SorteioMesa[] {
   const pool = [...orderedPool];
@@ -213,42 +213,48 @@ function seatPlayers(
 /**
  * Suíço multiplayer adaptado (mesas de 4, resto 3).
  * Rodada 1: diversidade de deck. 2+: score + rematches conforme regra.
+ * Quando o campeonato usa grupos (`usaGrupos`), a R1 também evita repetir
+ * grupo na mesma mesa.
  */
 export function sortearMesasSuico(
   players: SorteioPlayer[],
   rodadaNumero: number,
   opponents: Set<OpponentPairKey>,
+  opts: { usaGrupos?: boolean } = {},
 ): SorteioMesa[] {
+  const { usaGrupos = false } = opts;
   const sizes = buildTableSizes(players.length);
   if (sizes.length === 0) return [];
 
   if (rodadaNumero <= 1) {
-    // R1: regra dura — não repetir exército na mesa (com fallback se não houver
-    // exércitos suficientes) e diversidade de deck como critério secundário.
-    // Greedy pode assentar mal dependendo da ordem; várias tentativas e escolhe
-    // a montagem com MENOS repetições de exército (para em zero).
+    // R1: quando usa grupos, regra dura — não repetir grupo na mesa (com
+    // fallback se não houver grupos suficientes) e diversidade de deck como
+    // critério secundário. Greedy pode assentar mal dependendo da ordem;
+    // várias tentativas e escolhe a montagem com MENOS repetições de grupo
+    // (para em zero).
     const TENTATIVAS_R1 = 40;
     let melhorR1: SorteioMesa[] = [];
     let melhorDupes = Number.POSITIVE_INFINITY;
 
     for (let t = 0; t < TENTATIVAS_R1; t++) {
-      // Semeia espalhando os exércitos (round-robin dos maiores grupos) para
+      // Semeia espalhando os grupos (round-robin dos maiores grupos) para
       // reduzir colisões antes do preenchimento guloso.
-      const byExercito = new Map<string, SorteioPlayer[]>();
+      const byGrupo = new Map<string, SorteioPlayer[]>();
       for (const p of shuffle(players)) {
-        const key = p.exercito ? p.exercito.trim().toLowerCase() : `__sem__${p.id}`;
-        const list = byExercito.get(key) ?? [];
+        const key =
+          usaGrupos && p.grupo ? p.grupo.trim().toLowerCase() : `__sem__${p.id}`;
+        const list = byGrupo.get(key) ?? [];
         list.push(p);
-        byExercito.set(key, list);
+        byGrupo.set(key, list);
       }
-      const exercitoOrder = [...byExercito.entries()].sort(
+      const grupoOrder = [...byGrupo.entries()].sort(
         (a, b) => b[1].length - a[1].length,
       );
       const ordered: SorteioPlayer[] = [];
       let added = true;
       while (added) {
         added = false;
-        for (const [, list] of exercitoOrder) {
+        for (const [, list] of grupoOrder) {
           if (list.length) {
             ordered.push(list.shift()!);
             added = true;
@@ -260,7 +266,7 @@ export function sortearMesasSuico(
         hardAvoidRematch: false,
         softAvoidRematch: false,
         avoidSameDeck: true,
-        hardAvoidSameExercito: true,
+        hardAvoidSameGrupo: usaGrupos,
       });
 
       const byId = new Map(players.map((p) => [p.id, p]));
@@ -269,7 +275,7 @@ export function sortearMesasSuico(
         const table = mesa.jogadorIds
           .map((id) => byId.get(id))
           .filter((p): p is SorteioPlayer => !!p);
-        dupes += sameExercitoCount(table);
+        dupes += usaGrupos ? sameGrupoCount(table) : 0;
       }
 
       if (dupes < melhorDupes) {

@@ -13,6 +13,7 @@ function camp(over: Partial<{ id: string; status: CampeonatoStatus }> = {}) {
     dataInicio: new Date('2026-09-01T00:00:00.000Z'),
     descricao: null,
     bannerUrl: null,
+    usaGrupos: false,
     status: over.status ?? CampeonatoStatus.INSCRICOES_ABERTAS,
     inscricoesAbertasAte: null,
     createdAt: new Date('2026-08-01T00:00:00.000Z'),
@@ -81,6 +82,7 @@ describe('CampeonatoAdminService create/list', () => {
         edicao: '#1',
         dataInicio: new Date('2026-09-01T00:00:00.000Z'),
         descricao: null,
+        usaGrupos: false,
         status: CampeonatoStatus.RASCUNHO,
       },
     });

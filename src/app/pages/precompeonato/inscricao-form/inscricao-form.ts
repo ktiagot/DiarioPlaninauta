@@ -28,11 +28,11 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { map, startWith } from 'rxjs';
 
 import { InscricoesService } from '../../../core/inscricoes/inscricoes.service';
+import { GrupoCampeonato } from '../../../core/inscricoes/inscricoes.models';
 import { PreconComandante, PreconListItem } from '../../../core/precons/precons.models';
 import { PreconsService } from '../../../core/precons/precons.service';
 import {
   DISCORD_URL,
-  EXERCITOS,
   PRECON_HELP_URL,
   PRIVACIDADE_URL,
   REGRAS_URL,
@@ -72,10 +72,11 @@ export class InscricaoFormComponent implements OnInit {
   protected readonly regrasUrl = REGRAS_URL;
   protected readonly privacidadeUrl = PRIVACIDADE_URL;
   protected readonly discordUrl = DISCORD_URL;
-  protected readonly exercitos = EXERCITOS;
 
   protected readonly submitting = signal(false);
   protected readonly loadingPrecons = signal(true);
+  protected readonly grupos = signal<GrupoCampeonato[]>([]);
+  protected readonly usaGrupos = computed(() => this.grupos().length > 0);
   protected readonly precons = signal<PreconListItem[]>([]);
   protected readonly comandantes = signal<PreconComandante[]>([]);
   protected readonly preconSearch = signal('');
@@ -85,7 +86,7 @@ export class InscricaoFormComponent implements OnInit {
     preconId: ['', [Validators.required]],
     preconComandanteId: [{ value: '', disabled: true }, [Validators.required]],
     preconComandante2Id: [{ value: '', disabled: true }],
-    exercito: ['', [Validators.required]],
+    grupoId: [''],
     aceiteTermos: [false, [requiredTrue]],
     aceitePrivacidade: [false, [requiredTrue]],
     entrouDiscord: [false, [requiredTrue]],
@@ -135,6 +136,17 @@ export class InscricaoFormComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.inscricoesService.getGruposAtual().subscribe((grupos) => {
+      this.grupos.set(grupos);
+      const ctrl = this.form.controls.grupoId;
+      if (grupos.length > 0) {
+        ctrl.addValidators(Validators.required);
+      } else {
+        ctrl.clearValidators();
+      }
+      ctrl.updateValueAndValidity();
+    });
+
     this.preconsService.search().subscribe({
       next: (list) => {
         this.precons.set(list);
@@ -238,7 +250,7 @@ export class InscricaoFormComponent implements OnInit {
         preconId: raw.preconId,
         preconComandanteId: raw.preconComandanteId,
         ...(raw.preconComandante2Id ? { preconComandante2Id: raw.preconComandante2Id } : {}),
-        exercito: raw.exercito,
+        ...(raw.grupoId ? { grupoId: raw.grupoId } : {}),
         aceiteTermos: raw.aceiteTermos,
         aceitePrivacidade: raw.aceitePrivacidade,
         entrouDiscord: raw.entrouDiscord,

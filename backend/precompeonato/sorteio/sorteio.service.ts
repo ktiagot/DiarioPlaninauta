@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -28,13 +28,14 @@ import {
   sortearMesasSuico,
   SorteioPlayer,
 } from './swiss-pairing';
+import { recalcularRanking } from './ranking';
 import {
   comandanteFromInscricao,
   deckNomeFromInscricao,
+  grupoNomeFromInscricao,
   inscricaoPreconInclude,
   inscricaoWithPreconInclude,
 } from '../../precons/mappers/to-precon-response';
-import { exercitoLabel } from '../constants/exercito-labels';
 
 type InscricaoComUser = Prisma.InscricaoGetPayload<{
   include: typeof inscricaoWithPreconInclude;
@@ -133,7 +134,7 @@ export class SorteioService {
         discordNick: i.discordNick,
         deckNome: deckNomeFromInscricao(i),
         comandante: comandanteFromInscricao(i),
-        exercito: exercitoLabel(i.exercito),
+        grupo: grupoNomeFromInscricao(i),
         deckUrl: i.deckUrl,
         pontos: i.pontos,
         posicao: i.posicao ?? index + 1,
@@ -409,6 +410,22 @@ export class SorteioService {
       return null;
     }
 
+    return this.buildRodadaDto(rodada);
+  }
+
+  /** Detalhe completo de qualquer rodada do campeonato atual (admin). */
+  async getRodadaDetalhe(rodadaId: string): Promise<RodadaAtualDto> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+    const rodada = await this.prisma.rodada.findFirst({
+      where: { id: rodadaId, campeonatoId: campeonato.id },
+    });
+    if (!rodada) {
+      throw new NotFoundException('Rodada não encontrada.');
+    }
+    return this.buildRodadaDto(rodada);
+  }
+
+  private async buildRodadaDto(rodada: Rodada): Promise<RodadaAtualDto> {
     const mesas = await this.prisma.mesaTorneio.findMany({
       where: { rodadaId: rodada.id },
       orderBy: { numeroMesa: 'asc' },
@@ -449,7 +466,7 @@ export class SorteioService {
           comandante: comandanteFromInscricao(j.inscricao),
           deckNome: deckNomeFromInscricao(j.inscricao),
           deckUrl: j.inscricao.deckUrl,
-          exercito: exercitoLabel(j.inscricao.exercito),
+          grupo: grupoNomeFromInscricao(j.inscricao),
           rankingCampeonato: j.inscricao.posicao,
           posicaoFinal: j.posicaoFinal,
           kills: j.kills,
@@ -477,7 +494,8 @@ export class SorteioService {
       throw new NotFoundException('Mesa não encontrada.');
     }
 
-    if (mesa.rodada.finalizada) {
+    // Rodada finalizada só pode ser corrigida por admin (ranking é recalculado).
+    if (mesa.rodada.finalizada && !actor.isAdmin) {
       throw new ConflictException('A rodada já foi finalizada.');
     }
 
@@ -551,13 +569,13 @@ export class SorteioService {
             : {}),
         },
       });
+
+      if (mesa.rodada.finalizada) {
+        await recalcularRanking(tx, mesa.rodada.campeonatoId);
+      }
     });
 
-    const rodadaAtual = await this.getRodadaAtual();
-    if (!rodadaAtual) {
-      throw new NotFoundException('Rodada não encontrada após salvar resultado.');
-    }
-    return rodadaAtual;
+    return this.buildRodadaDto(mesa.rodada);
   }
 
   async finalizarRodada(rodadaId: string): Promise<RodadaAtualDto> {
@@ -588,37 +606,8 @@ export class SorteioService {
       );
     }
 
-    const pontosDelta = new Map<string, number>();
-
-    for (const mesa of rodada.mesas) {
-      if (mesa.empate && mesa.empatadosInscricaoIds.length > 0) {
-        for (const inscricaoId of mesa.empatadosInscricaoIds) {
-          pontosDelta.set(
-            inscricaoId,
-            (pontosDelta.get(inscricaoId) ?? 0) + 1,
-          );
-        }
-        continue;
-      }
-
-      for (const jogador of mesa.jogadores) {
-        if (jogador.posicaoFinal === 1) {
-          pontosDelta.set(
-            jogador.inscricaoId,
-            (pontosDelta.get(jogador.inscricaoId) ?? 0) + 3,
-          );
-        } else if (jogador.posicaoFinal === 2) {
-          pontosDelta.set(
-            jogador.inscricaoId,
-            (pontosDelta.get(jogador.inscricaoId) ?? 0) + 1,
-          );
-        }
-      }
-    }
-
     await this.prisma.$transaction(async (tx) => {
       // Trava atômica: só a primeira transação a marcar `finalizada` prossegue.
-      // Evita que duas finalizações concorrentes somem os pontos duas vezes.
       const lock = await tx.rodada.updateMany({
         where: { id: rodadaId, finalizada: false },
         data: { finalizada: true, ativa: false },
@@ -627,33 +616,8 @@ export class SorteioService {
         throw new ConflictException('Esta rodada já foi finalizada.');
       }
 
-      // Incrementos de pontos em paralelo (ordem entre si é irrelevante).
-      await Promise.all(
-        [...pontosDelta.entries()]
-          .filter(([, delta]) => delta > 0)
-          .map(([inscricaoId, delta]) =>
-            tx.inscricao.update({
-              where: { id: inscricaoId },
-              data: { pontos: { increment: delta } },
-            }),
-          ),
-      );
-
-      // Reordena o ranking só depois de todos os pontos somados.
-      const inscricoes = await tx.inscricao.findMany({
-        where: { campeonatoId: rodada.campeonatoId, ativo: true },
-        orderBy: [{ pontos: 'desc' }, { updatedAt: 'asc' }, { id: 'asc' }],
-        select: { id: true },
-      });
-
-      await Promise.all(
-        inscricoes.map((insc, i) =>
-          tx.inscricao.update({
-            where: { id: insc.id },
-            data: { posicao: i + 1 },
-          }),
-        ),
-      );
+      // Pontos e posições derivados das mesas (idempotente).
+      await recalcularRanking(tx, rodada.campeonatoId);
     });
 
     await this.notifyResultadoPublicado(rodada.id, rodada.numero);
@@ -872,11 +836,13 @@ export class SorteioService {
       id: c.inscricaoId,
       pontos: c.inscricao.pontos,
       deckNome: deckNomeFromInscricao(c.inscricao),
-      exercito: exercitoLabel(c.inscricao.exercito),
+      grupo: grupoNomeFromInscricao(c.inscricao),
     }));
 
     const opponents = await this.buildOpponentSet(campeonato.id, rodada.numero);
-    const mesasPlan = sortearMesasSuico(players, rodada.numero, opponents);
+    const mesasPlan = sortearMesasSuico(players, rodada.numero, opponents, {
+      usaGrupos: campeonato.usaGrupos,
+    });
 
     if (mesasPlan.length === 0) {
       throw new BadRequestException(
@@ -1198,7 +1164,7 @@ export class SorteioService {
         discordNick: j.inscricao.discordNick,
         deckNome: deckNomeFromInscricao(j.inscricao),
         comandante: comandanteFromInscricao(j.inscricao),
-        exercito: exercitoLabel(j.inscricao.exercito),
+        grupo: grupoNomeFromInscricao(j.inscricao),
         pontos: j.inscricao.pontos,
       })),
     }));

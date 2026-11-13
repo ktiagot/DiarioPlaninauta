@@ -7,7 +7,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize, of, switchMap } from 'rxjs';
 
 import { AdminService } from '../../../core/admin/admin.service';
-import { CampeonatoAdmin, CreateCampeonatoPayload } from '../../../core/admin/admin.models';
+import {
+  CampeonatoAdmin,
+  CreateCampeonatoPayload,
+  GrupoAdmin,
+} from '../../../core/admin/admin.models';
 import { bannerSrc } from '../../../core/config/api.config';
 
 interface CampeonatoDraft {
@@ -15,6 +19,7 @@ interface CampeonatoDraft {
   edicao: string;
   dataInicio: string;
   descricao: string;
+  usaGrupos: boolean;
 }
 
 @Component({
@@ -44,9 +49,17 @@ export class AdminCampeonatosComponent implements OnInit {
   readonly formEdicao = signal('');
   readonly formDataInicio = signal('');
   readonly formDescricao = signal('');
+  readonly formUsaGrupos = signal(false);
   readonly formBannerFile = signal<File | null>(null);
 
   readonly editDrafts = signal<Record<string, CampeonatoDraft>>({});
+
+  /** Grupos por campeonatoId (carregados sob demanda ao expandir o painel). */
+  readonly grupos = signal<Record<string, GrupoAdmin[]>>({});
+  readonly gruposAbertos = signal<Record<string, boolean>>({});
+  readonly gruposLoading = signal<Record<string, boolean>>({});
+  readonly novoGrupoNome = signal<Record<string, string>>({});
+  readonly grupoBusyId = signal<string | null>(null);
 
   readonly podeCriar = computed(
     () => !this.campeonatos().some((c) => c.statusCode !== 'ENCERRADO'),
@@ -74,29 +87,34 @@ export class AdminCampeonatosComponent implements OnInit {
   }
 
   draftFor(c: CampeonatoAdmin): CampeonatoDraft {
-    return (
-      this.editDrafts()[c.id] ?? {
-        nome: c.nome,
-        edicao: c.edicao,
-        dataInicio: c.dataInicio,
-        descricao: c.descricao ?? '',
-      }
-    );
+    return this.editDrafts()[c.id] ?? this.draftFromCampeonato(c);
   }
 
   updateDraft(c: CampeonatoAdmin, field: keyof CampeonatoDraft, value: string): void {
     this.editDrafts.update((drafts) => {
-      const current = drafts[c.id] ?? {
-        nome: c.nome,
-        edicao: c.edicao,
-        dataInicio: c.dataInicio,
-        descricao: c.descricao ?? '',
-      };
+      const current = drafts[c.id] ?? this.draftFromCampeonato(c);
       return {
         ...drafts,
         [c.id]: { ...current, [field]: value },
       };
     });
+  }
+
+  updateDraftUsaGrupos(c: CampeonatoAdmin, value: boolean): void {
+    this.editDrafts.update((drafts) => {
+      const current = drafts[c.id] ?? this.draftFromCampeonato(c);
+      return { ...drafts, [c.id]: { ...current, usaGrupos: value } };
+    });
+  }
+
+  private draftFromCampeonato(c: CampeonatoAdmin): CampeonatoDraft {
+    return {
+      nome: c.nome,
+      edicao: c.edicao,
+      dataInicio: c.dataInicio,
+      descricao: c.descricao ?? '',
+      usaGrupos: c.usaGrupos,
+    };
   }
 
   onCreateBannerSelected(event: Event): void {
@@ -134,7 +152,12 @@ export class AdminCampeonatosComponent implements OnInit {
       return;
     }
 
-    const payload: CreateCampeonatoPayload = { nome, edicao, dataInicio };
+    const payload: CreateCampeonatoPayload = {
+      nome,
+      edicao,
+      dataInicio,
+      usaGrupos: this.formUsaGrupos(),
+    };
     if (descricao) payload.descricao = descricao;
 
     this.saving.set(true);
@@ -169,6 +192,7 @@ export class AdminCampeonatosComponent implements OnInit {
       edicao: draft.edicao.trim(),
       dataInicio: draft.dataInicio.trim(),
       descricao: draft.descricao.trim() || undefined,
+      usaGrupos: draft.usaGrupos,
     };
 
     if (!payload.nome || !payload.edicao || !payload.dataInicio) {
@@ -246,12 +270,7 @@ export class AdminCampeonatosComponent implements OnInit {
     const drafts: Record<string, CampeonatoDraft> = {};
     for (const c of list) {
       if (c.statusCode !== 'ENCERRADO') {
-        drafts[c.id] = {
-          nome: c.nome,
-          edicao: c.edicao,
-          dataInicio: c.dataInicio,
-          descricao: c.descricao ?? '',
-        };
+        drafts[c.id] = this.draftFromCampeonato(c);
       }
     }
     this.editDrafts.set(drafts);
@@ -262,7 +281,95 @@ export class AdminCampeonatosComponent implements OnInit {
     this.formEdicao.set('');
     this.formDataInicio.set('');
     this.formDescricao.set('');
+    this.formUsaGrupos.set(false);
     this.formBannerFile.set(null);
+  }
+
+  // ---- Grupos ----
+
+  grupoNomeDe(campeonatoId: string): string {
+    return this.novoGrupoNome()[campeonatoId] ?? '';
+  }
+
+  setGrupoNome(campeonatoId: string, value: string): void {
+    this.novoGrupoNome.update((m) => ({ ...m, [campeonatoId]: value }));
+  }
+
+  gruposDe(campeonatoId: string): GrupoAdmin[] {
+    return this.grupos()[campeonatoId] ?? [];
+  }
+
+  toggleGrupos(c: CampeonatoAdmin): void {
+    const aberto = !this.gruposAbertos()[c.id];
+    this.gruposAbertos.update((m) => ({ ...m, [c.id]: aberto }));
+    if (aberto && !this.grupos()[c.id]) {
+      this.carregarGrupos(c.id);
+    }
+  }
+
+  private carregarGrupos(campeonatoId: string): void {
+    this.gruposLoading.update((m) => ({ ...m, [campeonatoId]: true }));
+    this.adminService
+      .listGrupos(campeonatoId)
+      .pipe(finalize(() => this.gruposLoading.update((m) => ({ ...m, [campeonatoId]: false }))))
+      .subscribe({
+        next: (list) => this.grupos.update((m) => ({ ...m, [campeonatoId]: list })),
+        error: (err) => this.handleError(err),
+      });
+  }
+
+  adicionarGrupo(c: CampeonatoAdmin): void {
+    const nome = this.grupoNomeDe(c.id).trim();
+    if (!nome || this.grupoBusyId()) return;
+
+    const ordem = this.gruposDe(c.id).length + 1;
+    this.grupoBusyId.set(`new-${c.id}`);
+    this.adminService
+      .createGrupo(c.id, { nome, ordem })
+      .pipe(finalize(() => this.grupoBusyId.set(null)))
+      .subscribe({
+        next: () => {
+          this.setGrupoNome(c.id, '');
+          this.carregarGrupos(c.id);
+        },
+        error: (err) => this.handleError(err),
+      });
+  }
+
+  renomearGrupo(campeonatoId: string, g: GrupoAdmin, nome: string): void {
+    const novo = nome.trim();
+    if (!novo || novo === g.nome || this.grupoBusyId()) return;
+
+    this.grupoBusyId.set(g.id);
+    this.adminService
+      .updateGrupo(g.id, { nome: novo })
+      .pipe(finalize(() => this.grupoBusyId.set(null)))
+      .subscribe({
+        next: () => this.carregarGrupos(campeonatoId),
+        error: (err) => this.handleError(err),
+      });
+  }
+
+  removerGrupo(campeonatoId: string, g: GrupoAdmin): void {
+    if (this.grupoBusyId()) return;
+    if (g.totalInscritos > 0) {
+      this.snackBar.open(
+        'Não é possível remover um grupo com inscritos.',
+        'Fechar',
+        { duration: 4000 },
+      );
+      return;
+    }
+    if (!window.confirm(`Remover o grupo "${g.nome}"?`)) return;
+
+    this.grupoBusyId.set(g.id);
+    this.adminService
+      .deleteGrupo(g.id)
+      .pipe(finalize(() => this.grupoBusyId.set(null)))
+      .subscribe({
+        next: () => this.carregarGrupos(campeonatoId),
+        error: (err) => this.handleError(err),
+      });
   }
 
   private handleError(err: { status?: number; error?: { message?: string } }): void {

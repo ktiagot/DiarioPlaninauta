@@ -21,7 +21,7 @@ export class InscricaoResumoDto {
   comandante: string;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 }
 
 export class CampeonatoAtualResponseDto {
@@ -45,6 +45,9 @@ export class CampeonatoAtualResponseDto {
 
   @ApiProperty({ example: '2026-01-01' })
   dataInicio: string;
+
+  @ApiProperty({ example: false })
+  usaGrupos: boolean;
 
   @ApiPropertyOptional({ example: 'Temporada 1', nullable: true })
   descricao: string | null;

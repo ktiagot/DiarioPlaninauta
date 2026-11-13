@@ -17,7 +17,7 @@ export class JogadorPrecompeonatoResponseDto {
   comandante: string;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 
   @ApiProperty({ example: 'João' })
   nomeJogador: string;

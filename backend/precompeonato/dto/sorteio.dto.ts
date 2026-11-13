@@ -20,7 +20,7 @@ export class SorteioJogadorDto {
   comandante: string;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   deckUrl: string | null;
@@ -58,7 +58,7 @@ export class SorteioMesaJogadorDto {
   comandante: string;
 
   @ApiPropertyOptional({ example: 'Anãos', nullable: true })
-  exercito: string | null;
+  grupo: string | null;
 
   @ApiProperty()
   pontos: number;

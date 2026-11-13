@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -185,6 +185,7 @@ export class PreconsService {
     preconId: string,
     preconComandanteId: string,
     preconComandante2Id?: string | null,
+    permitirBanido = false,
   ): Promise<{ preconId: string; preconComandanteId: string; preconComandante2Id: string | null }> {
     const precon = await this.prisma.precon.findUnique({
       where: { id: preconId },
@@ -195,7 +196,7 @@ export class PreconsService {
       throw new BadRequestException('Precon inválido.');
     }
 
-    if (precon.banido) {
+    if (precon.banido && !permitirBanido) {
       throw new BadRequestException('Este precon não está disponível para inscrição.');
     }
 

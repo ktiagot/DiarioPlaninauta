@@ -342,6 +342,21 @@ export class PrecompeonatoController {
     return this.sorteioService.listRodadas();
   }
 
+  @Get('rodadas/:rodadaId')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Detalhe de uma rodada com mesas e resultados (admin)',
+  })
+  @ApiParam({ name: 'rodadaId', description: 'UUID da Rodada' })
+  @ApiOkResponse({ type: RodadaAtualDto })
+  @ApiNotFoundResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  getRodadaDetalhe(@Param('rodadaId') rodadaId: string): Promise<RodadaAtualDto> {
+    return this.sorteioService.getRodadaDetalhe(rodadaId);
+  }
+
   @Post('atual/rodadas')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()

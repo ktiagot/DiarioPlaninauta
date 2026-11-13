@@ -1,11 +1,9 @@
 import {
   IsBoolean,
-  IsEnum,
   IsOptional,
   IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exercito } from '@prisma/client';
 
 // email e discordNick não são mais enviados: vêm do usuário autenticado
 // (email = user.email; discordNick = user.nick, que é o nick do Discord).
@@ -26,13 +24,14 @@ export class CreateInscricaoDto {
   @IsUUID()
   preconComandante2Id?: string;
 
-  @ApiProperty({
-    enum: Exercito,
-    example: Exercito.ANAOS,
-    description: 'Exército do jogador neste campeonato',
+  @ApiPropertyOptional({
+    example: 'g0000001-0000-4000-8000-000000000001',
+    description:
+      'ID do grupo escolhido. Obrigatório quando o campeonato usa grupos; ignorado caso contrário.',
   })
-  @IsEnum(Exercito)
-  exercito: Exercito;
+  @IsOptional()
+  @IsUUID()
+  grupoId?: string;
 
   @ApiProperty({
     example: true,

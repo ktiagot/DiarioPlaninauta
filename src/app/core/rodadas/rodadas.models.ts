@@ -62,7 +62,7 @@ export interface MesaJogador {
 
   deckUrl?: string;
 
-  exercito?: string | null;
+  grupo?: string | null;
 
   rankingCampeonato?: number;
 
@@ -166,7 +166,7 @@ export interface MesaJogadorAtualApi {
 
   deckUrl?: string | null;
 
-  exercito?: string | null;
+  grupo?: string | null;
 
   rankingCampeonato?: number | null;
 

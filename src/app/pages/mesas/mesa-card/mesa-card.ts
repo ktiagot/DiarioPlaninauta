@@ -51,6 +51,8 @@ export class MesaCardComponent {
   readonly mesa = input.required<Mesa>();
   readonly modoAdmin = input(false);
   readonly rodadaFinalizada = input(false);
+  /** Quando definido, pede confirmação antes de salvar (ex.: corrigir rodada já finalizada). */
+  readonly avisoAntesDeSalvar = input<string | null>(null);
   readonly mesaAtualizada = output<Mesa>();
   readonly rodadaAtualizada = output<Rodada>();
 
@@ -278,6 +280,9 @@ export class MesaCardComponent {
 
   protected confirmarPosicoes(): void {
     if (!this.podeConfirmar()) return;
+
+    const aviso = this.avisoAntesDeSalvar();
+    if (aviso && !window.confirm(aviso)) return;
 
     const mesa = this.mesa();
     const link = this.linkPartidaSalvo() || undefined;

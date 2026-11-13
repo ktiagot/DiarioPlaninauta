@@ -28,6 +28,7 @@ export function toAdminResponse(c: Campeonato): CampeonatoAdminResponseDto {
     dataInicio: toDateOnly(c.dataInicio),
     descricao: c.descricao ?? null,
     bannerUrl: c.bannerUrl ?? null,
+    usaGrupos: c.usaGrupos,
     status: CAMPEONATO_STATUS_LABEL[c.status],
     statusCode: c.status,
     createdAt: c.createdAt.toISOString(),
@@ -67,6 +68,7 @@ export class CampeonatoAdminService {
         edicao: dto.edicao,
         dataInicio: parseDateOnly(dto.dataInicio),
         descricao: dto.descricao ?? null,
+        usaGrupos: dto.usaGrupos ?? false,
         status: CampeonatoStatus.RASCUNHO,
       },
     });
@@ -94,6 +96,7 @@ export class CampeonatoAdminService {
     if (dto.edicao !== undefined) data.edicao = dto.edicao;
     if (dto.dataInicio !== undefined) data.dataInicio = parseDateOnly(dto.dataInicio);
     if (dto.descricao !== undefined) data.descricao = dto.descricao;
+    if (dto.usaGrupos !== undefined) data.usaGrupos = dto.usaGrupos;
 
     const updated = await this.prisma.campeonato.update({ where: { id }, data });
     return toAdminResponse(updated);

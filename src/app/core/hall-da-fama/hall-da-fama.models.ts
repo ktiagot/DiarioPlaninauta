@@ -7,6 +7,6 @@ export interface HallDaFamaEntry {
   campeaoNick: string | null;
   comandante: string | null;
   deckNome: string | null;
-  exercito: string | null;
+  grupo: string | null;
   pontos: number | null;
 }

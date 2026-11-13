@@ -51,6 +51,20 @@
           [disabled]="!podeCriar() || saving()"
         ></textarea>
       </label>
+      <label class="campeonato-form__wide campeonato-form__check">
+        <input
+          type="checkbox"
+          [ngModel]="formUsaGrupos()"
+          (ngModelChange)="formUsaGrupos.set($event)"
+          [disabled]="!podeCriar() || saving()"
+        />
+        Usar grupos neste campeonato
+        <small class="campeonato-form__hint">
+          Quando ativo, os inscritos escolhem um grupo e o pareamento da 1ª
+          rodada evita juntar jogadores do mesmo grupo. Cadastre os grupos no
+          próprio campeonato depois de criá-lo.
+        </small>
+      </label>
       <label class="campeonato-form__wide">
         Banner
         <input
@@ -143,6 +157,15 @@
                   [disabled]="savingId() === c.id"
                 ></textarea>
               </label>
+              <label class="campeonato-form__wide campeonato-form__check">
+                <input
+                  type="checkbox"
+                  [ngModel]="draftFor(c).usaGrupos"
+                  (ngModelChange)="updateDraftUsaGrupos(c, $event)"
+                  [disabled]="savingId() === c.id"
+                />
+                Usar grupos neste campeonato
+              </label>
               <label class="campeonato-form__wide">
                 Trocar banner
                 <input
@@ -215,6 +238,75 @@
                 Finalizar
               </button>
             </div>
+
+            @if (draftFor(c).usaGrupos) {
+              <div class="campeonato-grupos">
+                <button
+                  type="button"
+                  class="campeonato-grupos__toggle"
+                  (click)="toggleGrupos(c)"
+                >
+                  <mat-icon>{{ gruposAbertos()[c.id] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  Grupos
+                </button>
+
+                @if (gruposAbertos()[c.id]) {
+                  @if (gruposLoading()[c.id]) {
+                    <div class="campeonato-grupos__loading"><mat-spinner diameter="22" /></div>
+                  } @else {
+                    @if (gruposDe(c.id).length === 0) {
+                      <p class="admin-empty">Nenhum grupo cadastrado ainda.</p>
+                    } @else {
+                      <ul class="campeonato-grupos__list">
+                        @for (g of gruposDe(c.id); track g.id) {
+                          <li class="campeonato-grupos__item">
+                            <input
+                              type="text"
+                              [ngModel]="g.nome"
+                              (ngModelChange)="g.nome = $event"
+                              (blur)="renomearGrupo(c.id, g, g.nome)"
+                              [disabled]="grupoBusyId() === g.id"
+                            />
+                            <span class="campeonato-grupos__count">
+                              {{ g.totalInscritos }} inscrito(s)
+                            </span>
+                            <button
+                              mat-icon-button
+                              color="warn"
+                              [disabled]="grupoBusyId() === g.id || g.totalInscritos > 0"
+                              (click)="removerGrupo(c.id, g)"
+                              title="Remover grupo"
+                            >
+                              <mat-icon>delete</mat-icon>
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    }
+
+                    <div class="campeonato-grupos__add">
+                      <input
+                        type="text"
+                        placeholder="Nome do novo grupo"
+                        [ngModel]="grupoNomeDe(c.id)"
+                        (ngModelChange)="setGrupoNome(c.id, $event)"
+                        (keyup.enter)="adicionarGrupo(c)"
+                        [disabled]="grupoBusyId() === ('new-' + c.id)"
+                      />
+                      <button
+                        mat-stroked-button
+                        color="primary"
+                        [disabled]="grupoBusyId() === ('new-' + c.id) || !grupoNomeDe(c.id).trim()"
+                        (click)="adicionarGrupo(c)"
+                      >
+                        <mat-icon>add</mat-icon>
+                        Adicionar
+                      </button>
+                    </div>
+                  }
+                }
+              </div>
+            }
           }
         </div>
       }

@@ -141,14 +141,6 @@ enum CampeonatoStatus {
   ENCERRADO
 }
 
-enum Exercito {
-  ANAOS
-  HUMANOS
-  ELFOS
-  WARGS
-  ORCS
-}
-
 model Precon {
   id            String  @id @default(uuid())
   nome          String
@@ -199,15 +191,38 @@ model Campeonato {
   bannerUrl            String?
   status               CampeonatoStatus @default(RASCUNHO)
   inscricoesAbertasAte DateTime?
+  // Quando true, a edição organiza os jogadores em grupos (ex.: exércitos,
+  // casas, facções) e a rodada 1 evita repetir grupo na mesma mesa.
+  usaGrupos            Boolean          @default(false)
 
   inscricoes Inscricao[]
   rodadas    Rodada[]
+  grupos     GrupoCampeonato[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@map("campeonatos")
+}
+
+/// Grupo configurável por edição (ex.: "Anãos", "Humanos", "Casa X").
+/// Cada campeonato define seus próprios grupos.
+model GrupoCampeonato {
+  id           String @id @default(uuid())
+  campeonatoId String
+  nome         String
+  ordem        Int    @default(0)
+
+  campeonato Campeonato  @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  inscricoes Inscricao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campeonatoId, nome])
+  @@index([campeonatoId])
+  @@map("grupos_campeonato")
 }
 
 model Inscricao {
@@ -220,13 +235,15 @@ model Inscricao {
   preconId            String
   preconComandanteId  String
   preconComandante2Id String?
-  exercito            Exercito?
+  grupoId             String?
   aceiteTermos        Boolean
   aceiteTermosEm    DateTime
   aceitePrivacidade Boolean
   entrouDiscord     Boolean
   ativo             Boolean   @default(true)
   pontos            Int       @default(0)
+  /// Ajuste manual de pontos (admin). pontos = derivado das mesas finalizadas + pontosAjuste.
+  pontosAjuste      Int       @default(0)
   posicao           Int?
 
   campeonato       Campeonato       @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
@@ -234,8 +251,10 @@ model Inscricao {
   precon            Precon            @relation(fields: [preconId], references: [id], onDelete: Restrict)
   preconComandante  PreconComandante  @relation("InscricaoComandante", fields: [preconComandanteId], references: [id], onDelete: Restrict)
   preconComandante2 PreconComandante? @relation("InscricaoComandante2", fields: [preconComandante2Id], references: [id], onDelete: Restrict)
+  grupo             GrupoCampeonato?  @relation(fields: [grupoId], references: [id], onDelete: SetNull)
   mesas             MesaTorneioJogador[]
   checkIns          CheckInRodada[]
+  ajustes           AjustePontos[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -247,7 +266,23 @@ model Inscricao {
   @@index([preconId])
   @@index([preconComandanteId])
   @@index([preconComandante2Id])
+  @@index([grupoId])
   @@map("inscricoes")
+}
+
+/// Log de auditoria dos ajustes manuais de pontos feitos por admin.
+model AjustePontos {
+  id          String   @id @default(uuid())
+  inscricaoId String
+  delta       Int
+  motivo      String
+  adminUserId String
+  createdAt   DateTime @default(now())
+
+  inscricao Inscricao @relation(fields: [inscricaoId], references: [id], onDelete: Cascade)
+
+  @@index([inscricaoId])
+  @@map("ajustes_pontos")
 }
 
 model Rodada {

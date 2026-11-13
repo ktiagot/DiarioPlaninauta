@@ -1,19 +1,28 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { API_URL } from '../config/api.config';
+import { mapRodadaAtual } from '../rodadas/rodadas.mapper';
+import { Rodada, RodadaAtualApi } from '../rodadas/rodadas.models';
 import {
   CreateRodadaPayload,
   RodadasListResponse,
   SorteioSnapshot,
 } from '../sorteio/sorteio.models';
 import {
+  AjustePontos,
+  AjustePontosPayload,
   CampeonatoAdmin,
   CreateCampeonatoPayload,
+  CreateGrupoPayload,
+  GrupoAdmin,
   InscritoResumo,
   JogadorAdmin,
   RodadaAtual,
   SubmitResultadoPayload,
+  UpdateGrupoPayload,
+  UpdateInscricaoPayload,
+  UpdateRodadaPayload,
   VerificarApoiaResponse,
 } from './admin.models';
 
@@ -84,6 +93,79 @@ export class AdminService {
     });
   }
 
+  /** Detalhe completo (mesas + resultados) de qualquer rodada do campeonato atual. */
+  getRodadaDetalhe(rodadaId: string): Observable<Rodada> {
+    return this.http
+      .get<RodadaAtualApi>(`${API_URL}/precompeonato/rodadas/${rodadaId}`)
+      .pipe(map((r) => mapRodadaAtual(r)));
+  }
+
+  // ---- Gestão manual ----
+
+  private rodadaUrl(path: string): string {
+    return `${API_URL}/precompeonato/${path}`;
+  }
+
+  private mapRodada = map((r: RodadaAtualApi) => mapRodadaAtual(r));
+
+  atualizarRodada(id: string, payload: UpdateRodadaPayload): Observable<Rodada> {
+    return this.http.patch<RodadaAtualApi>(this.rodadaUrl(`rodadas/${id}`), payload).pipe(this.mapRodada);
+  }
+
+  reabrirRodada(id: string): Observable<Rodada> {
+    return this.http.post<RodadaAtualApi>(this.rodadaUrl(`rodadas/${id}/reabrir`), {}).pipe(this.mapRodada);
+  }
+
+  excluirRodada(id: string): Observable<void> {
+    return this.http.delete<void>(this.rodadaUrl(`rodadas/${id}`));
+  }
+
+  criarMesa(rodadaId: string): Observable<Rodada> {
+    return this.http.post<RodadaAtualApi>(this.rodadaUrl(`rodadas/${rodadaId}/mesas`), {}).pipe(this.mapRodada);
+  }
+
+  excluirMesa(mesaId: string): Observable<Rodada> {
+    return this.http.delete<RodadaAtualApi>(this.rodadaUrl(`mesas/${mesaId}`)).pipe(this.mapRodada);
+  }
+
+  colocarJogador(mesaId: string, inscricaoId: string): Observable<Rodada> {
+    return this.http
+      .post<RodadaAtualApi>(this.rodadaUrl(`mesas/${mesaId}/jogadores`), { inscricaoId })
+      .pipe(this.mapRodada);
+  }
+
+  removerJogadorMesa(mesaId: string, inscricaoId: string): Observable<Rodada> {
+    return this.http
+      .delete<RodadaAtualApi>(this.rodadaUrl(`mesas/${mesaId}/jogadores/${inscricaoId}`))
+      .pipe(this.mapRodada);
+  }
+
+  invalidarMesa(mesaId: string): Observable<Rodada> {
+    return this.http.post<RodadaAtualApi>(this.rodadaUrl(`mesas/${mesaId}/invalidar`), {}).pipe(this.mapRodada);
+  }
+
+  limparResultadoMesa(mesaId: string): Observable<Rodada> {
+    return this.http
+      .post<RodadaAtualApi>(this.rodadaUrl(`mesas/${mesaId}/limpar-resultado`), {})
+      .pipe(this.mapRodada);
+  }
+
+  ajustarPontos(inscricaoId: string, payload: AjustePontosPayload): Observable<AjustePontos> {
+    return this.http.post<AjustePontos>(this.rodadaUrl(`inscricoes/${inscricaoId}/ajustes`), payload);
+  }
+
+  listarAjustes(inscricaoId: string): Observable<AjustePontos[]> {
+    return this.http.get<AjustePontos[]>(this.rodadaUrl(`inscricoes/${inscricaoId}/ajustes`));
+  }
+
+  atualizarInscricao(id: string, payload: UpdateInscricaoPayload): Observable<void> {
+    return this.http.patch<void>(this.rodadaUrl(`inscricoes/${id}`), payload);
+  }
+
+  removerInscricao(id: string): Observable<void> {
+    return this.http.delete<void>(this.rodadaUrl(`inscricoes/${id}`));
+  }
+
   getInscritos(): Observable<InscritoResumo[]> {
     return this.http.get<InscritoResumo[]>(`${API_URL}/precompeonato/atual/jogadores`);
   }
@@ -124,6 +206,27 @@ export class AdminService {
     return this.http.patch<CampeonatoAdmin>(`${API_URL}/precompeonato/campeonatos/${id}/status`, {
       status,
     });
+  }
+
+  listGrupos(campeonatoId: string): Observable<GrupoAdmin[]> {
+    return this.http.get<GrupoAdmin[]>(
+      `${API_URL}/precompeonato/campeonatos/${campeonatoId}/grupos`,
+    );
+  }
+
+  createGrupo(campeonatoId: string, payload: CreateGrupoPayload): Observable<GrupoAdmin> {
+    return this.http.post<GrupoAdmin>(
+      `${API_URL}/precompeonato/campeonatos/${campeonatoId}/grupos`,
+      payload,
+    );
+  }
+
+  updateGrupo(id: string, payload: UpdateGrupoPayload): Observable<GrupoAdmin> {
+    return this.http.patch<GrupoAdmin>(`${API_URL}/precompeonato/grupos/${id}`, payload);
+  }
+
+  deleteGrupo(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/precompeonato/grupos/${id}`);
   }
 
   uploadCampeonatoBanner(id: string, file: File): Observable<CampeonatoAdmin> {

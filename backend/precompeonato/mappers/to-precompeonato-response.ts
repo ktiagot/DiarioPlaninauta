@@ -4,7 +4,7 @@ import { toDateOnly } from '../date-only';
 
 import { CAMPEONATO_STATUS_LABEL } from '../constants/status-labels';
 
-import { exercitoLabel } from '../constants/exercito-labels';
+
 
 import {
 
@@ -25,6 +25,8 @@ import {
 
   deckNomeFromInscricao,
 
+  grupoNomeFromInscricao,
+
 } from '../../precons/mappers/to-precon-response';
 
 
@@ -36,6 +38,8 @@ type InscricaoComPrecon = Inscricao & {
   preconComandante: Pick<PreconComandante, 'comandante'>;
 
   preconComandante2?: Pick<PreconComandante, 'comandante'> | null;
+
+  grupo?: { nome: string } | null;
 
 };
 
@@ -68,6 +72,8 @@ export function toCampeonatoAtualResponse(
     edicao: campeonato.edicao,
 
     dataInicio: toDateOnly(campeonato.dataInicio),
+
+    usaGrupos: campeonato.usaGrupos,
 
     descricao: campeonato.descricao || null,
 
@@ -105,7 +111,7 @@ export function toInscricaoResumo(inscricao: InscricaoComPrecon): InscricaoResum
 
     comandante: comandanteFromInscricao(inscricao),
 
-    exercito: exercitoLabel(inscricao.exercito),
+    grupo: grupoNomeFromInscricao(inscricao),
 
   };
 
@@ -135,7 +141,7 @@ export function toInscricaoResponse(
 
     comandante: comandanteFromInscricao(inscricao),
 
-    exercito: exercitoLabel(inscricao.exercito),
+    grupo: grupoNomeFromInscricao(inscricao),
 
     nome: inscricao.user.nome,
 
@@ -199,7 +205,7 @@ export function toJogadorResponse(
 
     comandante: comandanteFromInscricao(inscricao),
 
-    exercito: exercitoLabel(inscricao.exercito),
+    grupo: grupoNomeFromInscricao(inscricao),
 
     nomeJogador: inscricao.user.nome,
 
@@ -261,7 +267,7 @@ export function toInscritoAdminResponse(
 
     comandante: comandanteFromInscricao(inscricao),
 
-    exercito: exercitoLabel(inscricao.exercito),
+    grupo: grupoNomeFromInscricao(inscricao),
 
     pontos: inscricao.pontos,
 

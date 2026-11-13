@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateCampeonatoDto {
   @ApiPropertyOptional({ example: 'Precompeonato #1' })
@@ -23,4 +29,9 @@ export class UpdateCampeonatoDto {
   @IsOptional()
   @IsString()
   descricao?: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  usaGrupos?: boolean;
 }

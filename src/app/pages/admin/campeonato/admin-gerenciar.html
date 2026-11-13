@@ -1,0 +1,168 @@
+﻿@if (loading()) {
+  <div class="admin-page__loading"><mat-spinner diameter="36" /></div>
+} @else {
+  <div class="admin-section">
+    <h4>Rodadas ({{ rodadas().length }})</h4>
+    @if (rodadas().length === 0) {
+      <p class="admin-empty">Nenhuma rodada criada ainda.</p>
+    } @else {
+      <div class="gerenciar-rodadas">
+        @for (r of rodadas(); track r.id) {
+          <button
+            type="button"
+            class="gerenciar-rodadas__item"
+            [class.gerenciar-rodadas__item--ativa]="selecionadaId() === r.id"
+            (click)="selecionar(r)"
+          >
+            <strong>Rodada {{ r.numero }}</strong>
+            <span>{{ formatDate(r.dataRodada) }}</span>
+            <span class="gerenciar-rodadas__status">{{ statusLabel(r.status) }}</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (loadingDetalhe()) {
+    <div class="admin-page__loading"><mat-spinner diameter="28" /></div>
+  } @else if (detalhe(); as rodada) {
+    <div class="admin-section">
+      <h4>Rodada {{ rodada.numero }}</h4>
+
+      @if (rodada.finalizada) {
+        <div class="gerenciar-aviso">
+          <mat-icon>warning</mat-icon>
+          Rodada finalizada. Corrigir um resultado recalcula pontos e classificação. Para mexer nas
+          mesas (mover jogador, criar/excluir mesa), reabra a rodada.
+        </div>
+      }
+
+      <div class="gerenciar-toolbar">
+        <label>
+          Número
+          <input
+            type="number"
+            min="1"
+            [ngModel]="editNumero()"
+            (ngModelChange)="editNumero.set($event)"
+            [disabled]="busy()"
+          />
+        </label>
+        <label>
+          Data
+          <input
+            type="date"
+            [ngModel]="editData()"
+            (ngModelChange)="editData.set($event)"
+            [disabled]="busy()"
+          />
+        </label>
+        <button mat-stroked-button color="primary" [disabled]="busy()" (click)="salvarRodada()">
+          <mat-icon>save</mat-icon> Salvar rodada
+        </button>
+
+        @if (rodada.finalizada) {
+          <button mat-flat-button color="primary" [disabled]="busy()" (click)="reabrir()">
+            <mat-icon>lock_open</mat-icon> Reabrir rodada
+          </button>
+        } @else {
+          <button mat-stroked-button color="primary" [disabled]="busy()" (click)="novaMesa()">
+            <mat-icon>add</mat-icon> Nova mesa
+          </button>
+          <button mat-stroked-button color="warn" [disabled]="busy()" (click)="excluirRodada()">
+            <mat-icon>delete</mat-icon> Excluir rodada
+          </button>
+        }
+      </div>
+
+      @if (rodada.mesas.length === 0) {
+        <p class="admin-empty">Esta rodada ainda não tem mesas.</p>
+      } @else {
+        <div class="resultados-grid">
+          @for (mesa of rodada.mesas; track mesa.id) {
+            <div class="gerenciar-mesa">
+              <app-mesa-card
+                [mesa]="mesa"
+                [modoAdmin]="true"
+                [rodadaFinalizada]="false"
+                [avisoAntesDeSalvar]="avisoCorrecao()"
+                (mesaAtualizada)="onMesaAtualizada($event)"
+                (rodadaAtualizada)="onRodadaAtualizada($event)"
+              />
+
+              <div class="gerenciar-mesa__acoes">
+                <button mat-stroked-button [disabled]="busy() || !mesa.validada" (click)="invalidar(mesa)">
+                  Invalidar
+                </button>
+                <button mat-stroked-button [disabled]="busy()" (click)="limpar(mesa)">
+                  Limpar resultado
+                </button>
+                @if (!rodada.finalizada) {
+                  <button mat-stroked-button color="warn" [disabled]="busy()" (click)="excluirMesa(mesa)">
+                    Excluir mesa
+                  </button>
+                }
+              </div>
+
+              @if (!rodada.finalizada) {
+                <ul class="gerenciar-mesa__jogadores">
+                  @for (j of mesa.jogadores; track j.inscricaoId) {
+                    <li>
+                      <span>{{ j.nickname || j.nome }}</span>
+                      @if (outrasMesas(mesa).length > 0) {
+                        <select
+                          [disabled]="busy()"
+                          (change)="moverJogador(j.inscricaoId, $any($event.target).value); $any($event.target).value = ''"
+                          aria-label="Mover para outra mesa"
+                        >
+                          <option value="">Mover para…</option>
+                          @for (o of outrasMesas(mesa); track o.id) {
+                            <option [value]="o.id">Mesa {{ o.numeroMesa }}</option>
+                          }
+                        </select>
+                      }
+                      <button
+                        mat-icon-button
+                        color="warn"
+                        [disabled]="busy()"
+                        (click)="removerJogador(mesa, j.inscricaoId)"
+                        title="Remover da mesa"
+                      >
+                        <mat-icon>person_remove</mat-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+
+                <div class="gerenciar-mesa__add">
+                  <select
+                    [ngModel]="novoJogador()[mesa.id]"
+                    (ngModelChange)="setNovoJogador(mesa.id, $event)"
+                    [disabled]="busy()"
+                    aria-label="Adicionar jogador à mesa"
+                  >
+                    <option value="">Adicionar jogador…</option>
+                    @for (i of jogadoresDisponiveis(mesa); track i.id) {
+                      <option [value]="i.id">
+                        {{ i.nick || i.nome }}
+                        @if (mesaDe(i.id); as n) { (mesa {{ n }}) }
+                      </option>
+                    }
+                  </select>
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    [disabled]="busy() || !novoJogador()[mesa.id]"
+                    (click)="adicionarJogador(mesa)"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+}
