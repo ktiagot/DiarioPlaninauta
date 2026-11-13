@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { SorteioService } from './sorteio.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -494,5 +495,74 @@ describe('SorteioService', () => {
     ]);
 
     await expect(service.sortearMesas()).rejects.toThrow(BadRequestException);
+  });
+
+  describe('histórico de rodadas', () => {
+    const campeonato = { id: 'camp-1', status: 'EM_ANDAMENTO' };
+    const rodadaBase = (numero: number, finalizada: boolean) => ({
+      id: `r-${numero}`,
+      campeonatoId: 'camp-1',
+      numero,
+      ativa: false,
+      finalizada,
+      dataRodada: new Date('2026-11-05T12:00:00.000Z'),
+    });
+
+    it('listarRodadasResumo devolve só rodadas sorteadas, em ordem crescente', async () => {
+      prisma.campeonato.findFirst.mockResolvedValue(campeonato);
+      prisma.rodada.findMany.mockResolvedValue([
+        { ...rodadaBase(1, true), _count: { mesas: 12 } },
+        { ...rodadaBase(2, false), _count: { mesas: 11 } },
+      ]);
+
+      const resumo = await service.listarRodadasResumo();
+
+      expect(prisma.rodada.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { campeonatoId: 'camp-1', mesas: { some: {} } },
+          orderBy: { numero: 'asc' },
+        }),
+      );
+      expect(resumo.map((r) => [r.numero, r.finalizada, r.totalMesas])).toEqual([
+        [1, true, 12],
+        [2, false, 11],
+      ]);
+    });
+
+    it('getRodadaAtual(numero) devolve a rodada pedida do campeonato atual', async () => {
+      prisma.campeonato.findFirst.mockResolvedValue(campeonato);
+      prisma.rodada.findFirst.mockResolvedValue(rodadaBase(1, true));
+      prisma.mesaTorneio.findMany.mockResolvedValue([]);
+
+      const dto = await service.getRodadaAtual(1);
+
+      expect(prisma.rodada.findFirst).toHaveBeenCalledWith({
+        where: { campeonatoId: 'camp-1', numero: 1, mesas: { some: {} } },
+      });
+      expect(dto?.numero).toBe(1);
+      expect(dto?.finalizada).toBe(true);
+    });
+
+    it('getRodadaAtual(numero) lança 404 quando a rodada não existe', async () => {
+      prisma.campeonato.findFirst.mockResolvedValue(campeonato);
+      prisma.rodada.findFirst.mockResolvedValue(null);
+
+      await expect(service.getRodadaAtual(9)).rejects.toThrow(NotFoundException);
+    });
+
+    it('getRodadaDetalhe acha rodada de qualquer campeonato pelo id', async () => {
+      prisma.rodada.findUnique.mockResolvedValue({ ...rodadaBase(3, true), campeonatoId: 'camp-antigo' });
+      prisma.mesaTorneio.findMany.mockResolvedValue([]);
+
+      const dto = await service.getRodadaDetalhe('r-3');
+
+      expect(prisma.rodada.findUnique).toHaveBeenCalledWith({ where: { id: 'r-3' } });
+      expect(dto.numero).toBe(3);
+    });
+
+    it('getRodadaDetalhe lança 404 quando a rodada não existe', async () => {
+      prisma.rodada.findUnique.mockResolvedValue(null);
+      await expect(service.getRodadaDetalhe('nao-existe')).rejects.toThrow(NotFoundException);
+    });
   });
 });

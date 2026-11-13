@@ -53,6 +53,13 @@ export class AdminService {
     return this.http.get<SorteioSnapshot>(`${API_URL}/precompeonato/atual/sorteio`);
   }
 
+  /** Rodadas de um campeonato específico (inclui os anteriores). */
+  listRodadasDoCampeonato(campeonatoId: string): Observable<RodadasListResponse> {
+    return this.http.get<RodadasListResponse>(
+      `${API_URL}/precompeonato/campeonatos/${campeonatoId}/rodadas`,
+    );
+  }
+
   listRodadas(): Observable<RodadasListResponse> {
     return this.http.get<RodadasListResponse>(`${API_URL}/precompeonato/atual/rodadas`);
   }

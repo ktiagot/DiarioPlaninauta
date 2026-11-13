@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
 import { SessionService } from '../../core/auth/session.service';
-import { Mesa, Rodada } from '../../core/rodadas/rodadas.models';
+import { Mesa, Rodada, RodadaResumo } from '../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../core/rodadas/rodadas.service';
 import { MesaCardComponent } from './mesa-card/mesa-card';
 
@@ -25,6 +25,11 @@ export class MesasComponent implements OnInit {
   protected readonly rodada = signal<Rodada | null>(null);
   protected readonly finalizando = signal(false);
 
+  /** Rodadas já sorteadas (abas de histórico). */
+  protected readonly rodadas = signal<RodadaResumo[]>([]);
+  protected readonly numeroSelecionado = signal<number | null>(null);
+  protected readonly carregandoRodada = signal(false);
+
   protected readonly podeFinalizar = computed(() => {
     const rodada = this.rodada();
     if (!rodada || !this.session.isAdmin() || rodada.finalizada) return false;
@@ -34,6 +39,36 @@ export class MesasComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarRodada();
+    this.rodadasService.listarRodadasResumo().subscribe((lista) => this.rodadas.set(lista));
+  }
+
+  /** Mostra a rodada escolhida na aba (a última/atual é a padrão). */
+  protected selecionarRodada(numero: number): void {
+    if (numero === this.numeroSelecionado() || this.carregandoRodada()) return;
+
+    this.carregandoRodada.set(true);
+    this.rodadasService
+      .getRodadaPorNumero(numero)
+      .pipe(finalize(() => this.carregandoRodada.set(false)))
+      .subscribe({
+        next: (rodada) => {
+          if (!rodada) return;
+          this.rodada.set(rodada);
+          this.numeroSelecionado.set(rodada.numero);
+        },
+        error: (err: Error) => {
+          this.snackBar.open(err.message || 'Erro ao carregar a rodada.', 'Fechar', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  /** Mantém a aba em sincronia quando a rodada exibida é finalizada. */
+  private marcarFinalizada(numero: number, finalizada: boolean): void {
+    this.rodadas.update((lista) =>
+      lista.map((r) => (r.numero === numero ? { ...r, finalizada } : r)),
+    );
   }
 
   protected carregarRodada(): void {
@@ -43,6 +78,7 @@ export class MesasComponent implements OnInit {
     this.rodadasService.getRodadaAtual().subscribe({
       next: (rodada) => {
         this.rodada.set(rodada);
+        this.numeroSelecionado.set(rodada?.numero ?? null);
         this.loading.set(false);
       },
       error: (err: Error) => {
@@ -70,6 +106,7 @@ export class MesasComponent implements OnInit {
 
   protected onRodadaAtualizada(rodada: Rodada): void {
     this.rodada.set(rodada);
+    this.marcarFinalizada(rodada.numero, !!rodada.finalizada);
   }
 
   protected finalizarRodada(): void {
@@ -88,6 +125,7 @@ export class MesasComponent implements OnInit {
       .subscribe({
         next: (atualizada) => {
           this.rodada.set(atualizada);
+          this.marcarFinalizada(atualizada.numero, true);
           this.snackBar.open('Rodada finalizada! Pontos atualizados na classificação.', 'Fechar', {
             duration: 5000,
           });

@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   Param,
+  ParseIntPipe,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -33,6 +34,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PrecompeonatoService } from './precompeonato.service';
 import { SorteioService } from './sorteio/sorteio.service';
+import { RodadaResumoDto } from './dto/rodada-resumo.dto';
 import { CampeonatoAdminService } from './campeonato-admin.service';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CreateCampeonatoDto } from './dto/create-campeonato.dto';
@@ -245,10 +247,27 @@ export class PrecompeonatoController {
     description:
       'Retorna a rodada ativa (ou a última com mesas) do precompeonato atual, com jogadores sorteados.',
   })
+  @ApiQuery({
+    name: 'numero',
+    required: false,
+    description: 'Número da rodada (histórico). Sem valor, retorna a rodada atual.',
+  })
   @ApiOkResponse({ description: 'Rodada atual ou null.', type: RodadaAtualDto })
-  @ApiNotFoundResponse({ description: 'Nenhum precompeonato encontrado.' })
-  getRodadaAtual(): Promise<RodadaAtualDto | null> {
-    return this.sorteioService.getRodadaAtual();
+  @ApiNotFoundResponse({ description: 'Nenhum precompeonato ou rodada encontrada.' })
+  getRodadaAtual(
+    @Query('numero', new ParseIntPipe({ optional: true })) numero?: number,
+  ): Promise<RodadaAtualDto | null> {
+    return this.sorteioService.getRodadaAtual(numero);
+  }
+
+  @Get('atual/rodadas-resumo')
+  @ApiOperation({
+    summary: 'Rodadas já sorteadas do campeonato atual',
+    description: 'Lista pública (número, data, finalizada, total de mesas) para as abas de histórico.',
+  })
+  @ApiOkResponse({ type: [RodadaResumoDto] })
+  listarRodadasResumo(): Promise<RodadaResumoDto[]> {
+    return this.sorteioService.listarRodadasResumo();
   }
 
   @Get('atual/proxima-rodada')
@@ -340,6 +359,21 @@ export class PrecompeonatoController {
   @ApiForbiddenResponse()
   listRodadas(): Promise<RodadasListResponseDto> {
     return this.sorteioService.listRodadas();
+  }
+
+  @Get('campeonatos/:campeonatoId/rodadas')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar rodadas de um campeonato (inclui anteriores) (admin)' })
+  @ApiParam({ name: 'campeonatoId', description: 'UUID do Campeonato' })
+  @ApiOkResponse({ type: RodadasListResponseDto })
+  @ApiNotFoundResponse()
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  listRodadasDoCampeonato(
+    @Param('campeonatoId') campeonatoId: string,
+  ): Promise<RodadasListResponseDto> {
+    return this.sorteioService.listRodadas(campeonatoId);
   }
 
   @Get('rodadas/:rodadaId')

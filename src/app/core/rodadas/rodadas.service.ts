@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Injectable, inject } from '@angular/core';
 
-import { Observable, map, throwError } from 'rxjs';
+import { Observable, map, of, throwError } from 'rxjs';
 
 import { catchError } from 'rxjs/operators';
 
@@ -21,6 +21,7 @@ import {
   ProximaRodada,
 
   Rodada,
+  RodadaResumo,
 
   RodadaAtualApi,
 
@@ -57,6 +58,25 @@ export class RodadasService {
   }
 
 
+
+  /** Rodadas já sorteadas do campeonato atual (para as abas de histórico). */
+  listarRodadasResumo(): Observable<RodadaResumo[]> {
+    return this.http
+      .get<RodadaResumo[]>(`${API_URL}/precompeonato/atual/rodadas-resumo`)
+      .pipe(catchError(() => of([] as RodadaResumo[])));
+  }
+
+  /** Uma rodada específica (por número) do campeonato atual. */
+  getRodadaPorNumero(numero: number): Observable<Rodada | null> {
+    return this.http
+      .get<RodadaAtualApi | null>(`${API_URL}/precompeonato/atual/rodada`, {
+        params: { numero: String(numero) },
+      })
+      .pipe(
+        map((rodada) => (rodada ? mapRodadaAtual(rodada) : null)),
+        catchError(() => throwError(() => new Error('Não foi possível carregar essa rodada.'))),
+      );
+  }
 
   getProximaRodada(): Observable<ProximaRodada | null> {
 

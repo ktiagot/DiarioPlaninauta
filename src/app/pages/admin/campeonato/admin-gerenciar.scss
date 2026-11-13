@@ -105,3 +105,20 @@
     color: inherit;
   }
 }
+
+.gerenciar-campeonato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 28rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+
+  select {
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #1a1a1a;
+    color: inherit;
+  }
+}

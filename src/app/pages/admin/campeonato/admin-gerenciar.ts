@@ -7,7 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Observable, finalize } from 'rxjs';
 
 import { AdminService } from '../../../core/admin/admin.service';
-import { InscritoResumo } from '../../../core/admin/admin.models';
+import { CampeonatoAdmin, InscritoResumo } from '../../../core/admin/admin.models';
 import { RodadaListItem } from '../../../core/sorteio/sorteio.models';
 import { Mesa, Rodada } from '../../../core/rodadas/rodadas.models';
 import { MesaCardComponent } from '../../mesas/mesa-card/mesa-card';
@@ -35,6 +35,8 @@ export class AdminGerenciarComponent implements OnInit {
   /** Emitido após qualquer alteração (para o pai recarregar classificação/inscritos). */
   readonly alterado = output<void>();
 
+  readonly campeonatos = signal<CampeonatoAdmin[]>([]);
+  readonly campeonatoId = signal<string | null>(null);
   readonly rodadas = signal<RodadaListItem[]>([]);
   readonly inscritos = signal<InscritoResumo[]>([]);
   readonly loading = signal(true);
@@ -54,17 +56,50 @@ export class AdminGerenciarComponent implements OnInit {
 
   readonly ativos = computed(() => this.inscritos().filter((i) => i.ativo));
 
+  /** Campeonato "atual" (mesma regra do backend): o aberto, senão o mais recente. */
+  readonly atualId = computed(() => {
+    const lista = this.campeonatos();
+    const aberto = lista.find(
+      (c) => c.statusCode === 'INSCRICOES_ABERTAS' || c.statusCode === 'EM_ANDAMENTO',
+    );
+    return (aberto ?? lista[0])?.id ?? null;
+  });
+
+  /** Campeonatos anteriores só podem ser consultados (as ações de edição valem para o atual). */
+  readonly somenteLeitura = computed(
+    () => !!this.campeonatoId() && this.campeonatoId() !== this.atualId(),
+  );
+
   ngOnInit(): void {
-    this.carregarRodadas();
+    this.adminService.listCampeonatos().subscribe({
+      next: (lista) => {
+        this.campeonatos.set(lista);
+        this.campeonatoId.set(this.atualId());
+        this.carregarRodadas();
+      },
+      error: () => this.carregarRodadas(),
+    });
     this.adminService.getInscritosAdmin().subscribe({
       next: (l) => this.inscritos.set(l),
     });
   }
 
+  trocarCampeonato(id: string): void {
+    if (id === this.campeonatoId()) return;
+    this.campeonatoId.set(id);
+    this.selecionadaId.set(null);
+    this.detalhe.set(null);
+    this.carregarRodadas();
+  }
+
   carregarRodadas(): void {
     this.loading.set(true);
-    this.adminService
-      .listRodadas()
+    const id = this.campeonatoId();
+    const requisicao =
+      id && this.somenteLeitura()
+        ? this.adminService.listRodadasDoCampeonato(id)
+        : this.adminService.listRodadas();
+    requisicao
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (res) => this.rodadas.set(res.rodadas),

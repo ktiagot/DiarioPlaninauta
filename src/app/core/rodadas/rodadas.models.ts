@@ -251,3 +251,12 @@ export interface ProximaRodada {
   dataRodada: string;
   diasRestantes: number;
 }
+
+/** Resumo de uma rodada já sorteada (abas de histórico). */
+export interface RodadaResumo {
+  id: string;
+  numero: number;
+  dataRodada: string;
+  finalizada: boolean;
+  totalMesas: number;
+}

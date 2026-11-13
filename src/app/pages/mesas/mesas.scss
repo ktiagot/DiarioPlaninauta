@@ -114,4 +114,60 @@
 
 }
 
+// Abas de histórico de rodadas.
+.mesas-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
+.mesas-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(217, 217, 217, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(217, 217, 217, 0.18);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: var(--sys-color-white, #fff);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  &--ativa,
+  &--ativa:hover:not(:disabled) {
+    background: var(--sys-color-primary, #f58220);
+    border-color: var(--sys-color-primary, #f58220);
+    color: var(--sys-color-white, #fff);
+  }
+}
+
+.mesas-tab__badge {
+  padding: 0.05rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.mesas-grid--carregando {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}

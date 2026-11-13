@@ -29,6 +29,7 @@ import {
   SorteioPlayer,
 } from './swiss-pairing';
 import { recalcularRanking } from './ranking';
+import { RodadaResumoDto } from '../dto/rodada-resumo.dto';
 import { findCampeonatoAtual } from '../campeonato-atual';
 import {
   comandanteFromInscricao,
@@ -146,8 +147,10 @@ export class SorteioService {
     };
   }
 
-  async listRodadas(): Promise<RodadasListResponseDto> {
-    const campeonato = await this.findCampeonatoAtualOrThrow();
+  async listRodadas(campeonatoId?: string): Promise<RodadasListResponseDto> {
+    const campeonato = campeonatoId
+      ? await this.findCampeonatoOrThrow(campeonatoId)
+      : await this.findCampeonatoAtualOrThrow();
     const contexto = await this.buildAbrirRodadaContext(campeonato.id);
 
     const rodadas = await this.prisma.rodada.findMany({
@@ -389,8 +392,40 @@ export class SorteioService {
     };
   }
 
-  async getRodadaAtual(): Promise<RodadaAtualDto | null> {
+  /** Rodadas já sorteadas do campeonato atual (histórico para os inscritos). */
+  async listarRodadasResumo(): Promise<RodadaResumoDto[]> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
+    const rodadas = await this.prisma.rodada.findMany({
+      where: { campeonatoId: campeonato.id, mesas: { some: {} } },
+      orderBy: { numero: 'asc' },
+      include: { _count: { select: { mesas: true } } },
+    });
+    return rodadas.map((r) => ({
+      id: r.id,
+      numero: r.numero,
+      dataRodada: formatDataRodada(r.dataRodada),
+      finalizada: r.finalizada,
+      totalMesas: r._count.mesas,
+    }));
+  }
+
+  /**
+   * Rodada ativa (ou a última com mesas). Com `numero`, devolve aquela rodada
+   * do campeonato atual (usado nas abas de histórico).
+   */
+  async getRodadaAtual(numero?: number): Promise<RodadaAtualDto | null> {
+    const campeonato = await this.findCampeonatoAtualOrThrow();
+
+    if (numero !== undefined) {
+      const escolhida = await this.prisma.rodada.findFirst({
+        where: { campeonatoId: campeonato.id, numero, mesas: { some: {} } },
+      });
+      if (!escolhida) {
+        throw new NotFoundException('Rodada não encontrada.');
+      }
+      return this.buildRodadaDto(escolhida);
+    }
+
 
     const ativa = await this.prisma.rodada.findFirst({
       where: {
@@ -411,12 +446,9 @@ export class SorteioService {
     return this.buildRodadaDto(rodada);
   }
 
-  /** Detalhe completo de qualquer rodada do campeonato atual (admin). */
+  /** Detalhe completo de qualquer rodada, de qualquer campeonato (admin). */
   async getRodadaDetalhe(rodadaId: string): Promise<RodadaAtualDto> {
-    const campeonato = await this.findCampeonatoAtualOrThrow();
-    const rodada = await this.prisma.rodada.findFirst({
-      where: { id: rodadaId, campeonatoId: campeonato.id },
-    });
+    const rodada = await this.prisma.rodada.findUnique({ where: { id: rodadaId } });
     if (!rodada) {
       throw new NotFoundException('Rodada não encontrada.');
     }
@@ -1086,6 +1118,14 @@ export class SorteioService {
     if (campeonato.status === CampeonatoStatus.ENCERRADO) {
       throw new ConflictException('O precompeonato está encerrado.');
     }
+  }
+
+  private async findCampeonatoOrThrow(id: string): Promise<Campeonato> {
+    const campeonato = await this.prisma.campeonato.findUnique({ where: { id } });
+    if (!campeonato) {
+      throw new NotFoundException('Campeonato não encontrado.');
+    }
+    return campeonato;
   }
 
   private async findCampeonatoAtualOrThrow(): Promise<Campeonato> {

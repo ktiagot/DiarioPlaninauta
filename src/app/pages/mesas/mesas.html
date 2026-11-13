@@ -14,6 +14,27 @@
       <p class="mesas-empty__message">Nenhuma rodada disponível ainda.</p>
     </div>
   } @else {
+    @if (rodadas().length > 1) {
+      <nav class="mesas-tabs" role="tablist" aria-label="Rodadas do campeonato">
+        @for (r of rodadas(); track r.id) {
+          <button
+            type="button"
+            role="tab"
+            class="mesas-tab"
+            [class.mesas-tab--ativa]="r.numero === numeroSelecionado()"
+            [attr.aria-selected]="r.numero === numeroSelecionado()"
+            [disabled]="carregandoRodada()"
+            (click)="selecionarRodada(r.numero)"
+          >
+            Rodada {{ r.numero }}
+            @if (!r.finalizada) {
+              <span class="mesas-tab__badge">em andamento</span>
+            }
+          </button>
+        }
+      </nav>
+    }
+
     <header class="mesas-header">
       <div class="mesas-header__text">
         <h2 class="mesas-header__title">Mesas — Rodada {{ rodada()!.numero }}</h2>
@@ -43,7 +64,7 @@
       }
     </header>
 
-    <div class="mesas-grid">
+    <div class="mesas-grid" [class.mesas-grid--carregando]="carregandoRodada()">
       @for (mesa of rodada()!.mesas; track mesa.id) {
         <app-mesa-card
           [mesa]="mesa"

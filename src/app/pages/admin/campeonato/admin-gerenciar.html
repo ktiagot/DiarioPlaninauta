@@ -2,6 +2,22 @@
   <div class="admin-page__loading"><mat-spinner diameter="36" /></div>
 } @else {
   <div class="admin-section">
+    @if (campeonatos().length > 1) {
+      <label class="gerenciar-campeonato">
+        Campeonato
+        <select
+          [ngModel]="campeonatoId()"
+          (ngModelChange)="trocarCampeonato($event)"
+          aria-label="Escolher campeonato"
+        >
+          @for (c of campeonatos(); track c.id) {
+            <option [value]="c.id">
+              {{ c.nome }} — {{ c.edicao }}@if (c.id === atualId()) { (atual) }
+            </option>
+          }
+        </select>
+      </label>
+    }
     <h4>Rodadas ({{ rodadas().length }})</h4>
     @if (rodadas().length === 0) {
       <p class="admin-empty">Nenhuma rodada criada ainda.</p>
@@ -28,6 +44,23 @@
   } @else if (detalhe(); as rodada) {
     <div class="admin-section">
       <h4>Rodada {{ rodada.numero }}</h4>
+
+      @if (somenteLeitura()) {
+        <div class="gerenciar-aviso">
+          <mat-icon>history</mat-icon>
+          Campeonato anterior: visualização somente leitura.
+        </div>
+
+        @if (rodada.mesas.length === 0) {
+          <p class="admin-empty">Esta rodada não tem mesas.</p>
+        } @else {
+          <div class="resultados-grid">
+            @for (mesa of rodada.mesas; track mesa.id) {
+              <app-mesa-card [mesa]="mesa" [modoAdmin]="false" [rodadaFinalizada]="true" />
+            }
+          </div>
+        }
+      } @else {
 
       @if (rodada.finalizada) {
         <div class="gerenciar-aviso">
@@ -162,6 +195,7 @@
             </div>
           }
         </div>
+      }
       }
     </div>
   }
