@@ -14,6 +14,9 @@ import {
 } from '../../../core/admin/admin.models';
 import { bannerSrc } from '../../../core/config/api.config';
 
+/** Mesmo limite do backend (BannerStorage). */
+const BANNER_MAX_BYTES = 2 * 1024 * 1024;
+
 interface CampeonatoDraft {
   nome: string;
   edicao: string;
@@ -122,12 +125,23 @@ export class AdminCampeonatosComponent implements OnInit {
 
   onCreateBannerSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.formBannerFile.set(input.files?.[0] ?? null);
+    const file = input.files?.[0] ?? null;
+    if (file && !this.bannerTamanhoOk(file)) {
+      input.value = '';
+      this.formBannerFile.set(null);
+      return;
+    }
+    this.formBannerFile.set(file);
   }
 
   onEditBannerSelected(c: CampeonatoAdmin, event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
+    if (!this.bannerTamanhoOk(file)) {
+      input.value = '';
+      return;
+    }
 
     this.uploadingBannerId.set(c.id);
     this.adminService
@@ -375,7 +389,19 @@ export class AdminCampeonatosComponent implements OnInit {
       });
   }
 
+  private bannerTamanhoOk(file: File): boolean {
+    if (file.size <= BANNER_MAX_BYTES) return true;
+    this.snackBar.open('O banner deve ter no máximo 2 MB. Reduza a imagem e tente de novo.', 'Fechar', {
+      duration: 6000,
+    });
+    return false;
+  }
+
   private handleError(err: { status?: number; error?: { message?: string } }): void {
-    this.snackBar.open(err?.error?.message || 'Erro.', 'Fechar', { duration: 5000 });
+    const message =
+      err?.status === 413
+        ? 'Arquivo grande demais para o servidor. Use uma imagem de até 2 MB.'
+        : err?.error?.message || 'Erro.';
+    this.snackBar.open(message, 'Fechar', { duration: 5000 });
   }
 }
