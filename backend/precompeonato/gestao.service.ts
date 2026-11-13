@@ -15,6 +15,7 @@ import {
   UpdateInscricaoAdminDto,
   UpdateRodadaDto,
 } from './dto/gestao.dto';
+import { findCampeonatoAtual } from './campeonato-atual';
 import { recalcularRanking } from './sorteio/ranking';
 import { SorteioService } from './sorteio/sorteio.service';
 
@@ -376,9 +377,7 @@ export class GestaoService {
   }
 
   private async findCampeonatoAtualOrThrow(): Promise<Campeonato> {
-    const campeonato = await this.prisma.campeonato.findFirst({
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma);
     if (!campeonato) {
       throw new NotFoundException('Nenhum precompeonato encontrado.');
     }

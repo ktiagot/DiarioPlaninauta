@@ -90,21 +90,34 @@ describe('CampeonatoAdminService create/list', () => {
     expect(result.dataInicio).toBe('2026-09-01');
   });
 
-  it('create 409 se já existe INSCRICOES_ABERTAS', async () => {
-    prisma.campeonato.findFirst.mockResolvedValue(camp({ status: CampeonatoStatus.INSCRICOES_ABERTAS }));
-    await expect(
-      service.create({ nome: 'X', edicao: '#2', dataInicio: '2026-10-01' }),
-    ).rejects.toThrow(ConflictException);
-    expect(prisma.campeonato.create).not.toHaveBeenCalled();
-  });
-
-  it('create 409 se já existe EM_ANDAMENTO', async () => {
+  it('create permite novo rascunho mesmo com campeonato aberto', async () => {
     prisma.campeonato.findFirst.mockResolvedValue(camp({ status: CampeonatoStatus.EM_ANDAMENTO }));
+    prisma.campeonato.create.mockResolvedValue(camp({ id: 'c2', status: CampeonatoStatus.RASCUNHO }));
+
     await expect(
       service.create({ nome: 'X', edicao: '#2', dataInicio: '2026-10-01' }),
-    ).rejects.toThrow(ConflictException);
+    ).resolves.toMatchObject({ id: 'c2', statusCode: CampeonatoStatus.RASCUNHO });
+    expect(prisma.campeonato.create).toHaveBeenCalled();
   });
 
+  it('publicar rascunho com outro campeonato aberto → 409', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ id: 'c2', status: CampeonatoStatus.RASCUNHO }));
+    prisma.campeonato.findFirst.mockResolvedValue(camp({ id: 'c1', status: CampeonatoStatus.EM_ANDAMENTO }));
+
+    await expect(
+      service.updateStatus('c2', CampeonatoStatus.INSCRICOES_ABERTAS),
+    ).rejects.toThrow(ConflictException);
+    expect(prisma.campeonato.update).not.toHaveBeenCalled();
+  });
+
+  it('publicar rascunho sem outro aberto → ok', async () => {
+    prisma.campeonato.findUnique.mockResolvedValue(camp({ id: 'c2', status: CampeonatoStatus.RASCUNHO }));
+    prisma.campeonato.findFirst.mockResolvedValue(null);
+    prisma.campeonato.update.mockResolvedValue(camp({ id: 'c2', status: CampeonatoStatus.INSCRICOES_ABERTAS }));
+
+    const result = await service.updateStatus('c2', CampeonatoStatus.INSCRICOES_ABERTAS);
+    expect(result.statusCode).toBe(CampeonatoStatus.INSCRICOES_ABERTAS);
+  });
   it('create ok quando o único existente está ENCERRADO', async () => {
     prisma.campeonato.findFirst.mockResolvedValue(null);
     prisma.campeonato.create.mockResolvedValue(camp({ id: 'c2' }));

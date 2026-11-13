@@ -16,6 +16,7 @@ import {
   inscricaoPreconInclude,
   inscricaoWithPreconInclude,
 } from '../precons/mappers/to-precon-response';
+import { findCampeonatoAtual } from './campeonato-atual';
 import { toDateOnly } from './date-only';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
@@ -69,10 +70,7 @@ export class PrecompeonatoService {
 
   async getAtual(email?: string): Promise<CampeonatoAtualResponseDto> {
     // Público: rascunhos não aparecem até serem publicados.
-    const campeonato = await this.prisma.campeonato.findFirst({
-      where: { status: { not: CampeonatoStatus.RASCUNHO } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma, { publico: true });
 
     if (!campeonato) {
       throw new NotFoundException('Nenhum precompeonato encontrado.');
@@ -648,9 +646,7 @@ export class PrecompeonatoService {
     ]);
 
     // Evolução por rodada (campeonato atual)
-    const campeonato = await this.prisma.campeonato.findFirst({
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma);
 
     let evolucaoRodadas: { label: string; jogadores: number; mesas: number }[] = [];
     let metagameDistribuicao: { comandante: string; quantidade: number }[] = [];
@@ -775,9 +771,7 @@ export class PrecompeonatoService {
   }
 
   private async findCampeonatoAtualOrThrow(): Promise<Campeonato> {
-    const campeonato = await this.prisma.campeonato.findFirst({
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma);
 
     if (!campeonato) {
       throw new NotFoundException('Nenhum precompeonato encontrado.');

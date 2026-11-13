@@ -1,11 +1,11 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CampeonatoStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { findCampeonatoAtual } from './campeonato-atual';
 import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { UpdateGrupoDto } from './dto/update-grupo.dto';
 import { GrupoResponseDto } from './dto/grupo-response.dto';
@@ -32,10 +32,7 @@ export class GruposService {
 
   /** Grupos do campeonato atual (público — usado no formulário de inscrição). */
   async listarDoCampeonatoAtual(): Promise<GrupoResponseDto[]> {
-    const campeonato = await this.prisma.campeonato.findFirst({
-      where: { status: { not: CampeonatoStatus.RASCUNHO } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma, { publico: true });
     if (!campeonato || !campeonato.usaGrupos) return [];
     return this.listarPorCampeonato(campeonato.id);
   }

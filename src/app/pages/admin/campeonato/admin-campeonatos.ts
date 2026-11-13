@@ -61,8 +61,11 @@ export class AdminCampeonatosComponent implements OnInit {
   readonly novoGrupoNome = signal<Record<string, string>>({});
   readonly grupoBusyId = signal<string | null>(null);
 
-  readonly podeCriar = computed(
-    () => !this.campeonatos().some((c) => c.statusCode !== 'ENCERRADO'),
+  /** Campeonato aberto (inscrições abertas ou em andamento): só um pode ficar aberto por vez. */
+  readonly campeonatoAberto = computed(() =>
+    this.campeonatos().find(
+      (c) => c.statusCode === 'INSCRICOES_ABERTAS' || c.statusCode === 'EM_ANDAMENTO',
+    ) ?? null,
   );
 
   protected readonly bannerSrc = bannerSrc;
@@ -140,7 +143,7 @@ export class AdminCampeonatosComponent implements OnInit {
   }
 
   criar(): void {
-    if (!this.podeCriar() || this.saving()) return;
+    if (this.saving()) return;
 
     const nome = this.formNome().trim();
     const edicao = this.formEdicao().trim();

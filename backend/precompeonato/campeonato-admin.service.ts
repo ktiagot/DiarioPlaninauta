@@ -7,6 +7,7 @@ import {
 import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BannerStorage } from './banner-storage';
+import { STATUS_CAMPEONATO_ABERTO } from './campeonato-atual';
 import { CAMPEONATO_STATUS_LABEL } from './constants/status-labels';
 import { parseDateOnly, toDateOnly } from './date-only';
 import { CampeonatoAdminResponseDto } from './dto/campeonato-admin-response.dto';
@@ -52,16 +53,6 @@ export class CampeonatoAdminService {
   }
 
   async create(dto: CreateCampeonatoDto): Promise<CampeonatoAdminResponseDto> {
-    const ativo = await this.prisma.campeonato.findFirst({
-      where: { status: { not: CampeonatoStatus.ENCERRADO } },
-    });
-
-    if (ativo) {
-      throw new ConflictException(
-        'Já existe um campeonato em andamento. Finalize-o antes de criar o próximo.',
-      );
-    }
-
     const campeonato = await this.prisma.campeonato.create({
       data: {
         nome: dto.nome,
@@ -110,6 +101,21 @@ export class CampeonatoAdminService {
 
     if (!TRANSICOES[campeonato.status].includes(status)) {
       throw new ConflictException('Transição de status inválida.');
+    }
+
+    // Só um campeonato pode ficar aberto por vez (rascunhos e encerrados são ilimitados).
+    const abrindo =
+      STATUS_CAMPEONATO_ABERTO.includes(status) &&
+      !STATUS_CAMPEONATO_ABERTO.includes(campeonato.status);
+    if (abrindo) {
+      const outroAberto = await this.prisma.campeonato.findFirst({
+        where: { id: { not: id }, status: { in: STATUS_CAMPEONATO_ABERTO } },
+      });
+      if (outroAberto) {
+        throw new ConflictException(
+          `Já existe um campeonato aberto (${outroAberto.nome} — ${outroAberto.edicao}). Encerre-o antes de publicar outro.`,
+        );
+      }
     }
 
     const updated = await this.prisma.campeonato.update({

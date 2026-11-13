@@ -7,10 +7,11 @@
   <div class="admin-section admin-section--card">
     <h4>Novo campeonato</h4>
 
-    @if (!podeCriar()) {
+    @if (campeonatoAberto(); as aberto) {
       <div class="admin-alert admin-alert--warn">
-        <mat-icon>warning</mat-icon>
-        Finalize o campeonato atual para criar o próximo.
+        <mat-icon>info</mat-icon>
+        "{{ aberto.nome }}" está aberto. Você pode criar o próximo como rascunho, mas só poderá
+        publicá-lo depois de encerrar o atual.
       </div>
     }
 
@@ -21,7 +22,7 @@
           type="text"
           [ngModel]="formNome()"
           (ngModelChange)="formNome.set($event)"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
         />
       </label>
       <label>
@@ -30,7 +31,7 @@
           type="text"
           [ngModel]="formEdicao()"
           (ngModelChange)="formEdicao.set($event)"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
         />
       </label>
       <label>
@@ -39,7 +40,7 @@
           type="date"
           [ngModel]="formDataInicio()"
           (ngModelChange)="formDataInicio.set($event)"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
         />
       </label>
       <label class="campeonato-form__wide">
@@ -48,7 +49,7 @@
           rows="2"
           [ngModel]="formDescricao()"
           (ngModelChange)="formDescricao.set($event)"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
         ></textarea>
       </label>
       <label class="campeonato-form__wide campeonato-form__check">
@@ -56,7 +57,7 @@
           type="checkbox"
           [ngModel]="formUsaGrupos()"
           (ngModelChange)="formUsaGrupos.set($event)"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
         />
         Usar grupos neste campeonato
         <small class="campeonato-form__hint">
@@ -70,7 +71,7 @@
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
-          [disabled]="!podeCriar() || saving()"
+          [disabled]="saving()"
           (change)="onCreateBannerSelected($event)"
         />
         <small class="campeonato-form__hint">
@@ -81,7 +82,7 @@
       <button
         mat-flat-button
         color="primary"
-        [disabled]="!podeCriar() || saving()"
+        [disabled]="saving()"
         (click)="criar()"
       >
         @if (saving()) {
@@ -200,7 +201,7 @@
                 <button
                   mat-flat-button
                   color="primary"
-                  [disabled]="updatingStatusId() === c.id"
+                  [disabled]="updatingStatusId() === c.id || !!campeonatoAberto()"
                   (click)="publicar(c)"
                 >
                   Publicar

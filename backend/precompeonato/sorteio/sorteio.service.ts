@@ -29,6 +29,7 @@ import {
   SorteioPlayer,
 } from './swiss-pairing';
 import { recalcularRanking } from './ranking';
+import { findCampeonatoAtual } from '../campeonato-atual';
 import {
   comandanteFromInscricao,
   deckNomeFromInscricao,
@@ -364,10 +365,7 @@ export class SorteioService {
    * publicado ou rodada futura. Usado para o aviso na página do precompeonato.
    */
   async getProximaRodada(): Promise<ProximaRodadaDto | null> {
-    const campeonato = await this.prisma.campeonato.findFirst({
-      where: { status: { not: CampeonatoStatus.RASCUNHO } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma, { publico: true });
     if (!campeonato) return null;
 
     const { inicio } = hojeRangeUtc();
@@ -1091,9 +1089,7 @@ export class SorteioService {
   }
 
   private async findCampeonatoAtualOrThrow(): Promise<Campeonato> {
-    const campeonato = await this.prisma.campeonato.findFirst({
-      orderBy: { createdAt: 'desc' },
-    });
+    const campeonato = await findCampeonatoAtual(this.prisma);
     if (!campeonato) {
       throw new NotFoundException('Nenhum precompeonato encontrado.');
     }
