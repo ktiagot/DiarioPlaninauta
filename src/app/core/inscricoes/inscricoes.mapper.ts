@@ -1,8 +1,8 @@
-import { InscricaoApi, JogadorInscrito } from './inscricoes.models';
+﻿import { InscricaoApi, JogadorInscrito } from './inscricoes.models';
 
 export function mapInscricao(i: InscricaoApi): Omit<
   JogadorInscrito,
-  'meta' | 'rodada' | 'mesa' | 'ranking' | 'eliminacoes'
+  'rodada' | 'mesa' | 'ranking' | 'eliminacoes'
 > & {
   rankingBase: number;
 } {
@@ -18,20 +18,6 @@ export function mapInscricao(i: InscricaoApi): Omit<
     grupo: i.grupo ?? null,
     pontos: i.pontos ?? 0,
   };
-}
-
-export function aplicarMeta(jogadores: JogadorInscrito[]): JogadorInscrito[] {
-  const deckCounts = new Map<string, number>();
-
-  for (const j of jogadores) {
-    const key = j.deckNome.toLowerCase();
-    deckCounts.set(key, (deckCounts.get(key) ?? 0) + 1);
-  }
-
-  return jogadores.map((j) => ({
-    ...j,
-    meta: deckCounts.get(j.deckNome.toLowerCase()) ?? 1,
-  }));
 }
 
 export function ordenarPorRanking(jogadores: JogadorInscrito[]): JogadorInscrito[] {

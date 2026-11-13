@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+﻿import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
@@ -63,7 +63,6 @@ export class RankingService {
       comandante: j.comandante ?? '',
       deckNome: j.deckNome ?? '',
       deckUrl: j.deckUrl ?? undefined,
-      meta: 0,
       pontos: j.pontos ?? 0,
       eliminacoes: 0,
     }));

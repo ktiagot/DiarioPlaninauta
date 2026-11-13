@@ -1,4 +1,4 @@
-import { JogadorInscrito } from './inscricoes.models';
+﻿import { JogadorInscrito } from './inscricoes.models';
 
 type MockEntry = {
   id: number;
@@ -67,11 +67,6 @@ const MOCK_ENTRIES: MockEntry[] = [
 ];
 
 function buildMock(): JogadorInscrito[] {
-  const deckCounts = new Map<string, number>();
-  for (const e of MOCK_ENTRIES) {
-    const key = e.deckNome.toLowerCase();
-    deckCounts.set(key, (deckCounts.get(key) ?? 0) + 1);
-  }
 
   return MOCK_ENTRIES.map((e, index) => ({
     id: e.id,
@@ -81,7 +76,6 @@ function buildMock(): JogadorInscrito[] {
     comandante: e.comandante,
     deckNome: e.deckNome,
     deckUrl: e.deckUrl,
-    meta: deckCounts.get(e.deckNome.toLowerCase()) ?? 1,
     pontos: Math.max(0, 40 - index * 2 + (index % 3)),
     eliminacoes: index % 4,
     rodada: e.rodada,

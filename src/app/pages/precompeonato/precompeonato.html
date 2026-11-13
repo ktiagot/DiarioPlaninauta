@@ -1,4 +1,4 @@
-<main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+﻿<main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
 
   @if (rodadaAtiva()) {
     <div class="notif-rodada glass-card">
@@ -162,29 +162,6 @@
         />
       </mat-form-field>
 
-      <div class="precompeonato-deck-tags" role="list" aria-label="Filtrar por deck">
-        <button
-          type="button"
-          class="precompeonato-deck-tag"
-          [class.precompeonato-deck-tag--active]="isDeckAtivo(null)"
-          (click)="selecionarDeck(null)"
-          role="listitem"
-        >
-          Todos ({{ jogadores().length }})
-        </button>
-
-        @for (deck of deckFilterOptions(); track deck.nome) {
-          <button
-            type="button"
-            class="precompeonato-deck-tag"
-            [class.precompeonato-deck-tag--active]="isDeckAtivo(deck.nome)"
-            (click)="selecionarDeck(deck.nome)"
-            role="listitem"
-          >
-            {{ deck.nome }} ({{ deck.count }})
-          </button>
-        }
-      </div>
     </section>
 
     @if (filteredJogadores().length === 0) {

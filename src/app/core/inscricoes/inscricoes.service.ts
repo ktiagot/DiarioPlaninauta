@@ -1,11 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, throwError } from 'rxjs';
 
 import { API_URL } from '../config/api.config';
 import { mapRodadaAtual } from '../rodadas/rodadas.mapper';
 import { Rodada, RodadaAtualApi } from '../rodadas/rodadas.models';
-import { aplicarMeta, mapInscricao, ordenarPorRanking } from './inscricoes.mapper';
+import { mapInscricao, ordenarPorRanking } from './inscricoes.mapper';
 import { INSCRICOES_MOCK } from './inscricoes.mock';
 import {
   CreateInscricaoPayload,
@@ -55,7 +55,6 @@ export class InscricoesService {
               deckNome: base.deckNome,
               deckUrl: base.deckUrl,
               grupo: base.grupo,
-              meta: 0,
               pontos: base.pontos,
               eliminacoes: eliminacoesMap.get(String(i.id)) ?? 0,
               rodada: mesaInfo?.rodada,
@@ -63,8 +62,7 @@ export class InscricoesService {
             } satisfies JogadorInscrito;
           });
 
-        const comMeta = aplicarMeta(jogadores);
-        return ordenarPorRanking(comMeta);
+        return ordenarPorRanking(jogadores);
       }),
       catchError(() => {
         if (this.useMockFallback()) {

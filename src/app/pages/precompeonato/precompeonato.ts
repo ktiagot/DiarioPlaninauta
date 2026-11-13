@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,7 @@ import {
 
 import { API_URL, bannerSrc } from '../../core/config/api.config';
 import { SessionService } from '../../core/auth/session.service';
-import { DeckFilterOption, JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
+import { JogadorInscrito } from '../../core/inscricoes/inscricoes.models';
 import { InscricoesService } from '../../core/inscricoes/inscricoes.service';
 import { ProximaRodada, Rodada } from '../../core/rodadas/rodadas.models';
 import { RodadasService } from '../../core/rodadas/rodadas.service';
@@ -91,7 +91,6 @@ export class PrecompeonatoComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly jogadores = signal<JogadorInscrito[]>([]);
   protected readonly searchQuery = signal('');
-  protected readonly selectedDeck = signal<string | null>(null);
   protected readonly inscricaoAberta = signal(false);
   protected readonly checkInStatus = signal<CheckInStatus | null>(null);
   protected readonly checkInLoading = signal(false);
@@ -131,27 +130,9 @@ export class PrecompeonatoComponent implements OnInit {
     this.viewMode() === 'tabela' ? this.faUserGroup : this.faTableList,
   );
 
-  protected readonly deckFilterOptions = computed<DeckFilterOption[]>(() => {
-    const counts = new Map<string, number>();
-
-    for (const j of this.jogadores()) {
-      if (!j.deckNome) continue;
-      counts.set(j.deckNome, (counts.get(j.deckNome) ?? 0) + 1);
-    }
-
-    return [...counts.entries()]
-      .map(([nome, count]) => ({ nome, count }))
-      .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
-  });
-
   protected readonly filteredJogadores = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
-    const deck = this.selectedDeck();
     let result = this.jogadores();
-
-    if (deck) {
-      result = result.filter((j) => j.deckNome === deck);
-    }
 
     if (query) {
       result = result.filter((j) => {
@@ -168,7 +149,9 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected readonly totalJogadores = computed(() => this.jogadores().length);
 
-  protected readonly totalDecksUnicos = computed(() => this.deckFilterOptions().length);
+  protected readonly totalDecksUnicos = computed(
+    () => new Set(this.jogadores().map((j) => j.deckNome).filter(Boolean)).size,
+  );
 
   protected readonly totalCommanders = computed(() => {
     const commanders = new Set(
@@ -263,14 +246,6 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected onSearchChange(value: string): void {
     this.searchQuery.set(value);
-  }
-
-  protected selecionarDeck(deck: string | null): void {
-    this.selectedDeck.set(deck);
-  }
-
-  protected isDeckAtivo(deck: string | null): boolean {
-    return this.selectedDeck() === deck;
   }
 
   protected abrirInscricao(): void {

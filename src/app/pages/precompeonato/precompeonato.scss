@@ -1,4 +1,4 @@
-.precompeonato-page {
+﻿.precompeonato-page {
   min-height: calc(100vh - 4rem);
 }
 
@@ -150,48 +150,6 @@
   .mat-mdc-text-field-wrapper,
   .mdc-text-field--outlined {
     border-radius: 1.5rem;
-  }
-}
-
-.precompeonato-deck-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.precompeonato-deck-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(217, 217, 217, 0.1);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-  white-space: nowrap;
-
-  &:hover {
-    background: rgba(217, 217, 217, 0.18);
-    border-color: rgba(255, 255, 255, 0.35);
-    color: var(--sys-color-white);
-  }
-
-  &--active {
-    background: var(--sys-color-primary);
-    border-color: var(--sys-color-primary);
-    color: var(--sys-color-white);
-
-    &:hover {
-      background: var(--sys-color-primary);
-      border-color: var(--sys-color-primary);
-      color: var(--sys-color-white);
-    }
   }
 }
 

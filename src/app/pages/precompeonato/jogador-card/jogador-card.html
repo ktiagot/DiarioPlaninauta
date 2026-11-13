@@ -1,4 +1,4 @@
-<article class="jogador-card">
+﻿<article class="jogador-card">
   <header class="jogador-card__header">
     <h3 class="jogador-card__nome">
       <span class="jogador-card__ranking">#{{ jogador.ranking }}</span>
@@ -11,9 +11,10 @@
         [href]="jogador.deckUrl"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Abrir deck"
+        aria-label="Ver lista"
+        matTooltip="Ver lista"
       >
-        <mat-icon fontSet="material-icons-outlined">open_in_new</mat-icon>
+        <fa-icon [icon]="faDeck" />
       </a>
     } @else {
       <span class="jogador-card__link-placeholder" aria-hidden="true"></span>
@@ -24,12 +25,11 @@
 
   <div class="jogador-card__tags jogador-card__tags--primary">
     @if (jogador.deckNome) {
-      <span class="jogador-card__tag jogador-card__tag--deck">{{ jogador.deckNome }}</span>
+      <span class="jogador-card__tag jogador-card__tag--deck" [attr.title]="jogador.deckNome">{{ jogador.deckNome }}</span>
     }
     @if (jogador.grupo) {
       <span class="jogador-card__tag jogador-card__tag--exercito">{{ jogador.grupo }}</span>
     }
-    <span class="jogador-card__tag jogador-card__tag--meta">Meta {{ jogador.meta }}</span>
   </div>
 
   <div class="jogador-card__tags jogador-card__tags--status">

@@ -1,4 +1,4 @@
-export interface JogadorInscrito {
+﻿export interface JogadorInscrito {
   id: number;
   ranking: number;
   nome: string;
@@ -7,16 +7,10 @@ export interface JogadorInscrito {
   deckNome: string;
   deckUrl?: string;
   grupo?: string | null;
-  meta: number;
   pontos: number;
   eliminacoes: number;
   rodada?: number;
   mesa?: number;
-}
-
-export interface DeckFilterOption {
-  nome: string;
-  count: number;
 }
 
 /**
