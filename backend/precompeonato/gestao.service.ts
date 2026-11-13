@@ -1,10 +1,10 @@
-﻿import {
+import {
   BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Campeonato, CampeonatoStatus, Prisma } from '@prisma/client';
+import { Campeonato, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PreconsService } from '../precons/precons.service';
 import { RodadaAtualDto } from './dto/rodada-atual.dto';
@@ -21,7 +21,10 @@ import { SorteioService } from './sorteio/sorteio.service';
 
 const MAX_JOGADORES_MESA = 5;
 
-/** Ações manuais de admin sobre rodadas, mesas e inscrições do campeonato atual. */
+/**
+ * Ações manuais de admin sobre rodadas, mesas e inscrições do campeonato atual.
+ * Valem também para campeonato encerrado (correções pós-encerramento); o ranking é recalculado.
+ */
 @Injectable()
 export class GestaoService {
   constructor(
@@ -34,7 +37,6 @@ export class GestaoService {
 
   async atualizarRodada(rodadaId: string, dto: UpdateRodadaDto): Promise<RodadaAtualDto> {
     const { rodada, campeonato } = await this.getRodadaOrThrow(rodadaId);
-    this.assertNotEncerrado(campeonato);
 
     const data: Prisma.RodadaUpdateInput = {};
     if (dto.numero !== undefined && dto.numero !== rodada.numero) {
@@ -60,7 +62,6 @@ export class GestaoService {
 
   async reabrirRodada(rodadaId: string): Promise<RodadaAtualDto> {
     const { rodada, campeonato } = await this.getRodadaOrThrow(rodadaId);
-    this.assertNotEncerrado(campeonato);
 
     if (!rodada.finalizada) {
       throw new ConflictException('Esta rodada não está finalizada.');
@@ -92,7 +93,6 @@ export class GestaoService {
 
   async excluirRodada(rodadaId: string): Promise<void> {
     const { rodada, campeonato } = await this.getRodadaOrThrow(rodadaId);
-    this.assertNotEncerrado(campeonato);
 
     if (rodada.finalizada) {
       throw new ConflictException('Reabra a rodada antes de excluí-la.');
@@ -106,7 +106,7 @@ export class GestaoService {
 
   async criarMesa(rodadaId: string): Promise<RodadaAtualDto> {
     const { rodada, campeonato } = await this.getRodadaOrThrow(rodadaId);
-    this.assertEstruturaEditavel(campeonato, rodada.finalizada);
+    this.assertEstruturaEditavel(rodada.finalizada);
 
     const ultima = await this.prisma.mesaTorneio.aggregate({
       where: { rodadaId },
@@ -121,7 +121,7 @@ export class GestaoService {
 
   async excluirMesa(mesaId: string): Promise<RodadaAtualDto> {
     const { mesa, campeonato } = await this.getMesaOrThrow(mesaId);
-    this.assertEstruturaEditavel(campeonato, mesa.rodada.finalizada);
+    this.assertEstruturaEditavel(mesa.rodada.finalizada);
 
     await this.prisma.mesaTorneio.delete({ where: { id: mesaId } });
     return this.sorteioService.getRodadaDetalhe(mesa.rodadaId);
@@ -130,7 +130,7 @@ export class GestaoService {
   /** Coloca o jogador na mesa; se já estiver em outra mesa da rodada, move. */
   async colocarJogador(mesaId: string, dto: ColocarJogadorMesaDto): Promise<RodadaAtualDto> {
     const { mesa, campeonato } = await this.getMesaOrThrow(mesaId);
-    this.assertEstruturaEditavel(campeonato, mesa.rodada.finalizada);
+    this.assertEstruturaEditavel(mesa.rodada.finalizada);
 
     const inscricao = await this.prisma.inscricao.findFirst({
       where: { id: dto.inscricaoId, campeonatoId: campeonato.id, ativo: true },
@@ -168,7 +168,7 @@ export class GestaoService {
 
   async removerJogador(mesaId: string, inscricaoId: string): Promise<RodadaAtualDto> {
     const { mesa, campeonato } = await this.getMesaOrThrow(mesaId);
-    this.assertEstruturaEditavel(campeonato, mesa.rodada.finalizada);
+    this.assertEstruturaEditavel(mesa.rodada.finalizada);
 
     await this.prisma.$transaction(async (tx) => {
       const { count } = await tx.mesaTorneioJogador.deleteMany({
@@ -185,7 +185,6 @@ export class GestaoService {
 
   async invalidarMesa(mesaId: string): Promise<RodadaAtualDto> {
     const { mesa, campeonato } = await this.getMesaOrThrow(mesaId);
-    this.assertNotEncerrado(campeonato);
 
     await this.invalidar(this.prisma, mesaId);
     return this.sorteioService.getRodadaDetalhe(mesa.rodadaId);
@@ -193,7 +192,6 @@ export class GestaoService {
 
   async limparResultado(mesaId: string): Promise<RodadaAtualDto> {
     const { mesa, campeonato } = await this.getMesaOrThrow(mesaId);
-    this.assertNotEncerrado(campeonato);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.mesaTorneioJogador.updateMany({
@@ -225,7 +223,6 @@ export class GestaoService {
     adminUserId: string,
   ): Promise<AjustePontosResponseDto> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
-    this.assertNotEncerrado(campeonato);
     await this.getInscricaoOrThrow(inscricaoId, campeonato.id);
 
     if (dto.delta === 0) {
@@ -265,7 +262,6 @@ export class GestaoService {
 
   async atualizarInscricao(inscricaoId: string, dto: UpdateInscricaoAdminDto): Promise<void> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
-    this.assertNotEncerrado(campeonato);
     const inscricao = await this.getInscricaoOrThrow(inscricaoId, campeonato.id);
 
     const data: Prisma.InscricaoUncheckedUpdateInput = {};
@@ -319,7 +315,6 @@ export class GestaoService {
 
   async removerInscricao(inscricaoId: string): Promise<void> {
     const campeonato = await this.findCampeonatoAtualOrThrow();
-    this.assertNotEncerrado(campeonato);
     await this.getInscricaoOrThrow(inscricaoId, campeonato.id);
 
     const emMesas = await this.prisma.mesaTorneioJogador.count({ where: { inscricaoId } });
@@ -363,14 +358,7 @@ export class GestaoService {
     };
   }
 
-  private assertNotEncerrado(campeonato: Campeonato): void {
-    if (campeonato.status === CampeonatoStatus.ENCERRADO) {
-      throw new ConflictException('O precompeonato está encerrado.');
-    }
-  }
-
-  private assertEstruturaEditavel(campeonato: Campeonato, rodadaFinalizada: boolean): void {
-    this.assertNotEncerrado(campeonato);
+  private assertEstruturaEditavel(rodadaFinalizada: boolean): void {
     if (rodadaFinalizada) {
       throw new ConflictException('Rodada finalizada. Reabra a rodada para alterar as mesas.');
     }

@@ -86,6 +86,15 @@ describe('GestaoService', () => {
     expect(prisma.rodada.delete).not.toHaveBeenCalled();
   });
 
+  it('permite excluir rodada não finalizada de campeonato encerrado', async () => {
+    prisma.campeonato.findFirst.mockResolvedValue({ id: 'camp-1', status: 'ENCERRADO' });
+    prisma.rodada.findFirst.mockResolvedValue(rodada());
+
+    await service.excluirRodada('r-1');
+
+    expect(prisma.rodada.delete).toHaveBeenCalledWith({ where: { id: 'r-1' } });
+  });
+
   it('não altera estrutura de mesas em rodada finalizada', async () => {
     prisma.mesaTorneio.findFirst.mockResolvedValue(mesa(true));
     await expect(service.excluirMesa('m-2')).rejects.toThrow(ConflictException);
