@@ -1,14 +1,17 @@
 <main class="hall-page mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
 
-  <header class="hall-header">
-    <h1 class="hall-title">
-      <mat-icon class="hall-title__icon" fontSet="material-icons-outlined">emoji_events</mat-icon>
-      Hall da Fama
-    </h1>
-    <p class="hall-subtitle">Os campeões de cada edição do Precompeonato.</p>
-  </header>
+  <app-page-header
+    titulo="Hall da Fama"
+    icone="emoji_events"
+    subtitulo="Os campeões de cada edição do Precompeonato."
+  />
 
-  @if (loading()) {
+  @if (!ativo) {
+    <app-em-breve
+      icone="emoji_events"
+      mensagem="O Hall da Fama ainda está em preparação. Volte mais tarde!"
+    />
+  } @else if (loading()) {
     <div class="hall-loading">
       <mat-spinner diameter="48" />
     </div>

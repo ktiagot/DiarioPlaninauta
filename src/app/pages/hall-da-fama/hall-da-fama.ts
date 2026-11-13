@@ -5,10 +5,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { HallDaFamaService } from '../../core/hall-da-fama/hall-da-fama.service';
 import { HallDaFamaEntry } from '../../core/hall-da-fama/hall-da-fama.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
+import { EmBreveComponent } from '../../shared/em-breve/em-breve';
 
 @Component({
   selector: 'app-hall-da-fama',
-  imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [EmBreveComponent, PageHeaderComponent, MatCardModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './hall-da-fama.html',
   styleUrl: './hall-da-fama.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,11 +18,20 @@ import { HallDaFamaEntry } from '../../core/hall-da-fama/hall-da-fama.models';
 export class HallDaFamaComponent implements OnInit {
   private readonly hallService = inject(HallDaFamaService);
 
+  // Hall da Fama pausado: exibe aviso "em breve" e não carrega dados.
+  // Reative mudando para true quando a página for lançada.
+  protected readonly ativo = false;
+
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly entradas = signal<HallDaFamaEntry[]>([]);
 
   ngOnInit(): void {
+    if (!this.ativo) {
+      this.loading.set(false);
+      return;
+    }
+
     this.hallService.listar().subscribe({
       next: (lista) => {
         this.entradas.set(lista);

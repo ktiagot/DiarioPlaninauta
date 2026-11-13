@@ -1,26 +1,24 @@
 <div class="loja-container">
-  <!-- Header -->
-  <div class="loja-header">
-    <h1 class="loja-title">
-      <mat-icon class="title-icon">store</mat-icon>
-      Loja de Pontos
-    </h1>
-
+  <app-page-header
+    class="mb-6"
+    titulo="Loja de Pontos"
+    icone="store"
+    subtitulo="Troque seus pontos por recompensas."
+  >
     @if (lojaAtiva && isLoggedIn()) {
       <div class="saldo-badge">
         <mat-icon>stars</mat-icon>
         <span>Você tem <strong>{{ saldo() }}</strong> pontos</span>
       </div>
     }
-  </div>
+  </app-page-header>
 
   @if (!lojaAtiva) {
     <!-- Loja em breve -->
-    <div class="em-breve">
-      <mat-icon class="em-breve-icon">storefront</mat-icon>
-      <h2>Em breve</h2>
-      <p>A loja de pontos ainda está em preparação. Volte mais tarde!</p>
-    </div>
+    <app-em-breve
+      icone="storefront"
+      mensagem="A loja de pontos ainda está em preparação. Volte mais tarde!"
+    />
   } @else {
 
   <!-- Loading -->

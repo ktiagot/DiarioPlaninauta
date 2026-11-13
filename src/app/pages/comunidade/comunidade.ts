@@ -17,10 +17,11 @@ import { JogadorComunidade, ContatoResponse } from '../../core/comunidade/comuni
 import { MesasService } from '../../core/mesas/mesas.service';
 import { Mesa } from '../../core/mesas/mesas.models';
 import { SessionService } from '../../core/auth/session.service';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-comunidade',
-  imports: [
+  imports: [PageHeaderComponent, 
     FormsModule,
     MatButtonModule,
     MatFormFieldModule,

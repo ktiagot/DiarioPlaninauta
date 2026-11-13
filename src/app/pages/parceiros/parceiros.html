@@ -1,14 +1,17 @@
 <main class="parceiros-page mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
 
-  <header class="parceiros-header">
-    <h1 class="parceiros-title">
-      <mat-icon class="parceiros-title__icon" fontSet="material-icons-outlined">handshake</mat-icon>
-      Parceiros
-    </h1>
-    <p class="parceiros-subtitle">Lojas e marcas que apoiam o Diário Planinauta.</p>
-  </header>
+  <app-page-header
+    titulo="Parceiros"
+    icone="handshake"
+    subtitulo="Lojas e marcas que apoiam o Diário Planinauta."
+  />
 
-  @if (loading()) {
+  @if (!ativo) {
+    <app-em-breve
+      icone="handshake"
+      mensagem="A página de parceiros ainda está em preparação. Volte mais tarde!"
+    />
+  } @else if (loading()) {
     <div class="parceiros-loading">
       <mat-spinner diameter="48" />
     </div>

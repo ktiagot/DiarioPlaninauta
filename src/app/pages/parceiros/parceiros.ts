@@ -5,10 +5,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { bannerSrc } from '../../core/config/api.config';
 import { ParceirosService } from '../../core/parceiros/parceiros.service';
 import { Parceiro } from '../../core/parceiros/parceiros.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
+import { EmBreveComponent } from '../../shared/em-breve/em-breve';
 
 @Component({
   selector: 'app-parceiros',
-  imports: [MatIconModule, MatProgressSpinnerModule],
+  imports: [EmBreveComponent, PageHeaderComponent, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './parceiros.html',
   styleUrl: './parceiros.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,12 +18,21 @@ import { Parceiro } from '../../core/parceiros/parceiros.models';
 export class ParceirosComponent implements OnInit {
   private readonly parceirosService = inject(ParceirosService);
 
+  // Parceiros pausado: exibe aviso "em breve" e não carrega dados.
+  // Reative mudando para true quando a página for lançada.
+  protected readonly ativo = false;
+
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly parceiros = signal<Parceiro[]>([]);
   protected readonly logoSrc = bannerSrc;
 
   ngOnInit(): void {
+    if (!this.ativo) {
+      this.loading.set(false);
+      return;
+    }
+
     this.parceirosService.listarPublico().subscribe({
       next: (lista) => {
         this.parceiros.set(lista);

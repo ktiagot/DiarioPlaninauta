@@ -12,10 +12,11 @@ import {
   MinhasEstatisticas,
   TopKiller,
 } from '../../core/estatisticas/estatisticas.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-estatisticas',
-  imports: [
+  imports: [PageHeaderComponent, 
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,

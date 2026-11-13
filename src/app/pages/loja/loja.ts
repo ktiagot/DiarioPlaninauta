@@ -8,10 +8,12 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { LojaService } from '../../core/loja/loja.service';
 import { SessionService } from '../../core/auth/session.service';
 import { Produto } from '../../core/loja/loja.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
+import { EmBreveComponent } from '../../shared/em-breve/em-breve';
 
 @Component({
   selector: 'app-loja',
-  imports: [
+  imports: [EmBreveComponent, PageHeaderComponent, 
     MatCardModule,
     MatIconModule,
     MatButtonModule,

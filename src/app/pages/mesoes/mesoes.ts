@@ -11,12 +11,13 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MesasService } from '../../core/mesas/mesas.service';
 import { SessionService } from '../../core/auth/session.service';
 import { Mesa } from '../../core/mesas/mesas.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 type Filtro = 'todas' | 'abertas';
 
 @Component({
   selector: 'app-mesoes',
-  imports: [
+  imports: [PageHeaderComponent, 
     FormsModule,
     MatButtonModule,
     MatCardModule,
