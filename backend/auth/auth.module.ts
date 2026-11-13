@@ -21,7 +21,7 @@ import { AdminGuard } from './guards/admin.guard';
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: (config.get<string>('JWT_EXPIRES') || '15m') as any,
+          expiresIn: (config.get<string>('JWT_EXPIRES') || '12h') as any,
         },
       }),
     }),
