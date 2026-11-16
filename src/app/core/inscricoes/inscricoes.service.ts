@@ -56,7 +56,9 @@ export class InscricoesService {
               deckUrl: base.deckUrl,
               grupo: base.grupo,
               pontos: base.pontos,
-              eliminacoes: eliminacoesMap.get(String(i.id)) ?? 0,
+              eliminacoes: base.eliminacoes || (eliminacoesMap.get(String(i.id)) ?? 0),
+              pc: base.pc,
+              opc: base.opc,
               rodada: mesaInfo?.rodada,
               mesa: mesaInfo?.mesa,
             } satisfies JogadorInscrito;

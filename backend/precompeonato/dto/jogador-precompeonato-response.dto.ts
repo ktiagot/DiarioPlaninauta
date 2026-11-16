@@ -39,4 +39,21 @@ export class JogadorPrecompeonatoResponseDto {
 
   @ApiProperty({ example: 6 })
   pontos: number;
+
+  @ApiProperty({ example: 4, description: 'Eliminações somadas nas rodadas finalizadas.' })
+  eliminacoes: number;
+
+  @ApiPropertyOptional({
+    example: 21,
+    nullable: true,
+    description: 'Pontos de confronto (pontos de cada rodada x peso da rodada). Null no ranking geral.',
+  })
+  pc: number | null;
+
+  @ApiPropertyOptional({
+    example: 46,
+    nullable: true,
+    description: 'Soma do PC dos adversários enfrentados. Null no ranking geral.',
+  })
+  opc: number | null;
 }

@@ -17,6 +17,7 @@ import {
   inscricaoWithPreconInclude,
 } from '../precons/mappers/to-precon-response';
 import { findCampeonatoAtual } from './campeonato-atual';
+import { estatisticasDoCampeonato } from './sorteio/ranking';
 import { toDateOnly } from './date-only';
 import { CreateInscricaoDto } from './dto/create-inscricao.dto';
 import { CampeonatoAtualResponseDto } from './dto/campeonato-atual-response.dto';
@@ -254,8 +255,20 @@ export class PrecompeonatoService {
       orderBy: [{ posicao: 'asc' }, { pontos: 'desc' }],
     });
 
+    // Eliminações, PC e OPC calculados a partir das mesas das rodadas finalizadas.
+    const stats = await estatisticasDoCampeonato(
+      this.prisma,
+      campeonato.id,
+      inscricoes.map((i) => ({
+        id: i.id,
+        pontosAjuste: i.pontosAjuste,
+        ativo: i.ativo,
+        updatedAt: i.updatedAt,
+      })),
+    );
+
     // Prisma puts nulls first on ASC by default in PostgreSQL; re-sort nulls last.
-    const jogadores = inscricoes.map(toJogadorResponse);
+    const jogadores = inscricoes.map((i) => toJogadorResponse(i, stats.get(i.id)));
     return jogadores.sort((a, b) => {
       if (a.posicao == null && b.posicao == null) {
         return b.pontos - a.pontos;
@@ -365,6 +378,9 @@ export class PrecompeonatoService {
       rodadaAtual: null,
       mesaAtual: null,
       pontos: l.pontos,
+      eliminacoes: l.kills,
+      pc: null,
+      opc: null,
     }));
   }
 

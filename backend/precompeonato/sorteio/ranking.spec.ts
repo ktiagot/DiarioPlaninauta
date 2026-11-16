@@ -1,4 +1,4 @@
-import { calcularRanking, pontosDaMesa, recalcularRanking } from './ranking';
+import { calcularRanking, pesoPc, pontosDaMesa, recalcularRanking } from './ranking';
 
 describe('pontosDaMesa', () => {
   const jogadores = [
@@ -44,6 +44,7 @@ describe('recalcularRanking', () => {
     mesas: Array<{
       empate: boolean;
       empatadosInscricaoIds: string[];
+      rodada: { numero: number };
       jogadores: { inscricaoId: string; posicaoFinal: number | null; kills: number }[];
     }>,
   ) {
@@ -66,6 +67,7 @@ describe('recalcularRanking', () => {
         {
           empate: false,
           empatadosInscricaoIds: [],
+          rodada: { numero: 1 },
           jogadores: [
             { inscricaoId: 'a', posicaoFinal: 1, kills: 0 },
             { inscricaoId: 'b', posicaoFinal: 2, kills: 0 },
@@ -92,6 +94,7 @@ describe('recalcularRanking', () => {
         {
           empate: false,
           empatadosInscricaoIds: [],
+          rodada: { numero: 1 },
           jogadores: [{ inscricaoId: 'a', posicaoFinal: 1, kills: 0 }],
         },
       ],
@@ -113,10 +116,11 @@ describe('calcularRanking (desempate)', () => {
   });
   const mesa = (
     jogadores: Array<[string, number | null, number]>,
-    over: { empate?: boolean; empatados?: string[] } = {},
+    over: { empate?: boolean; empatados?: string[]; rodada?: number } = {},
   ) => ({
     empate: over.empate ?? false,
     empatadosInscricaoIds: over.empatados ?? [],
+    rodadaNumero: over.rodada ?? 1,
     jogadores: jogadores.map(([inscricaoId, posicaoFinal, kills]) => ({ inscricaoId, posicaoFinal, kills })),
   });
   const pos = (r: Map<string, { posicao: number | null }>, id: string) => r.get(id)?.posicao;
@@ -132,16 +136,50 @@ describe('calcularRanking (desempate)', () => {
     expect(pos(r, 'b')).toBeLessThan(pos(r, 'a') as number);
   });
 
-  it('empate em pontos e eliminações: maior força de adversários vence', () => {
-    // a e b: 1 ponto, 0 eliminações. a enfrentou o líder (x, 3 pts); b enfrentou quem fez 1 ponto.
+  it('PC pesa mais as rodadas iniciais (R1=4, R2=3) e desempata pontos e eliminações iguais', () => {
+    // a: 3 pts na R1 (PC 12). b: 3 pts na R2 (PC 9). Mesmos pontos e eliminações.
+    const r = calcularRanking(
+      [insc('a'), insc('b'), insc('x'), insc('y')],
+      [
+        mesa([['a', 1, 0], ['x', 3, 0]], { rodada: 1 }),
+        mesa([['b', 1, 0], ['y', 3, 0]], { rodada: 2 }),
+      ],
+    );
+    expect(r.get('a')?.pc).toBe(12);
+    expect(r.get('b')?.pc).toBe(9);
+    expect(pos(r, 'a')).toBeLessThan(pos(r, 'b') as number);
+  });
+
+  it('OPC soma o PC de cada adversário enfrentado e desempata quando pontos, elim. e PC empatam', () => {
+    // a e b: 1 ponto (2º) na R1, PC 4, 0 eliminações. a enfrentou o vencedor com 3 pts (PC 12); b também,
+    // mas b cruzou com mais um adversário forte na mesa.
     const r = calcularRanking(
       [insc('a'), insc('b'), insc('x'), insc('y'), insc('z')],
-      [mesa([['x', 1, 0], ['a', 2, 0]]), mesa([['y', 2, 0], ['b', 2, 0], ['z', 1, 0]])],
+      [
+        mesa([['x', 1, 0], ['a', 2, 0]], { rodada: 1 }),
+        mesa([['y', 1, 0], ['b', 2, 0], ['z', 3, 0]], { rodada: 1 }),
+      ],
     );
-    expect(r.get('a')?.pontos).toBe(1);
-    expect(r.get('b')?.pontos).toBe(1);
-    expect(r.get('a')?.forcaAdversarios).toBe(3);
-    expect(r.get('b')?.forcaAdversarios).toBe(4);
+    expect(r.get('a')?.pc).toBe(4);
+    expect(r.get('b')?.pc).toBe(4);
+    expect(r.get('a')?.opc).toBe(12); // x
+    expect(r.get('b')?.opc).toBe(12); // y (12) + z (0)
+    // empate total em OPC também: cai na ordem estável (updatedAt/id)
+    expect(pos(r, 'a')).toBeLessThan(pos(r, 'b') as number);
+  });
+
+  it('OPC maior fica na frente quando o resto empata', () => {
+    const r = calcularRanking(
+      [insc('a'), insc('b'), insc('x'), insc('y'), insc('z'), insc('w')],
+      [
+        mesa([['x', 1, 0], ['a', 2, 0]], { rodada: 1 }), // a: opc = PC(x) = 12
+        mesa([['y', 1, 0], ['z', 2, 0], ['b', 2, 0], ['w', 3, 0]], { rodada: 1 }), // b: opc = 12 + 4 = 16
+      ],
+    );
+    expect(r.get('a')?.pc).toBe(4);
+    expect(r.get('b')?.pc).toBe(4);
+    expect(r.get('a')?.opc).toBe(12);
+    expect(r.get('b')?.opc).toBe(16);
     expect(pos(r, 'b')).toBeLessThan(pos(r, 'a') as number);
   });
 
@@ -154,13 +192,14 @@ describe('calcularRanking (desempate)', () => {
     expect(pos(r, 'b')).toBe(2);
   });
 
-  it('ajuste manual conta nos pontos mas não altera a força dos adversários', () => {
+  it('ajuste manual conta nos pontos mas não altera PC/OPC', () => {
     const r = calcularRanking(
       [insc('a', { pontosAjuste: 10 }), insc('b')],
       [mesa([['a', 1, 0], ['b', 2, 0]])],
     );
     expect(r.get('a')?.pontos).toBe(13);
-    expect(r.get('b')?.forcaAdversarios).toBe(3);
+    expect(r.get('a')?.pc).toBe(12);
+    expect(r.get('b')?.opc).toBe(12);
   });
 
   it('inativos não recebem posição, mas contam como adversários', () => {
@@ -170,7 +209,7 @@ describe('calcularRanking (desempate)', () => {
     );
     expect(pos(r, 'b')).toBeNull();
     expect(pos(r, 'a')).toBe(1);
-    expect(r.get('a')?.forcaAdversarios).toBe(3);
+    expect(r.get('a')?.opc).toBe(12);
   });
 
   it('empate total desempata de forma estável por updatedAt e id', () => {
@@ -178,5 +217,11 @@ describe('calcularRanking (desempate)', () => {
     expect(pos(r, 'c')).toBe(1);
     expect(pos(r, 'a')).toBe(2);
     expect(pos(r, 'b')).toBe(3);
+  });
+});
+
+describe('pesoPc', () => {
+  it('R1=4, R2=3, R3=2, R4=1 e nunca abaixo de 1', () => {
+    expect([1, 2, 3, 4, 5, 9].map(pesoPc)).toEqual([4, 3, 2, 1, 1, 1]);
   });
 });

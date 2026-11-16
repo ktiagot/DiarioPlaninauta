@@ -82,6 +82,8 @@ export class PrecompeonatoTabelaComponent implements OnInit {
     'comandante',
     'pontos',
     'eliminacoes',
+    'pc',
+    'opc',
   ];
 
   protected readonly dataSource = computed(() => {
@@ -119,6 +121,8 @@ export class PrecompeonatoTabelaComponent implements OnInit {
       jogador.comandante,
       String(jogador.pontos),
       String(jogador.eliminacoes),
+      String(jogador.pc ?? ''),
+      String(jogador.opc ?? ''),
     ]
       .filter(Boolean)
       .join(' ')

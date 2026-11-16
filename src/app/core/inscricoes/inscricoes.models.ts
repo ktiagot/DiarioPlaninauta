@@ -9,6 +9,10 @@
   grupo?: string | null;
   pontos: number;
   eliminacoes: number;
+  /** Pontos de confronto (pontos de cada rodada x peso da rodada). */
+  pc?: number | null;
+  /** Soma do PC dos adversários enfrentados. */
+  opc?: number | null;
   rodada?: number;
   mesa?: number;
 }
@@ -34,7 +38,12 @@ export interface InscricaoApi {
   deck_url?: string;
   ranking?: number;
   ranking_campeonato?: number;
+  /** Posição no ranking calculada pelo backend (1 = líder). */
+  posicao?: number | null;
   pontos?: number;
+  eliminacoes?: number;
+  pc?: number | null;
+  opc?: number | null;
   ativo?: boolean;
   grupo?: string | null;
 }

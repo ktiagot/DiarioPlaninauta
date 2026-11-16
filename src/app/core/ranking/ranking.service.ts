@@ -20,6 +20,9 @@ interface JogadorRankingApi {
   deckUrl: string | null;
   posicao: number | null;
   pontos: number;
+  eliminacoes?: number;
+  pc?: number | null;
+  opc?: number | null;
 }
 
 export interface CampeonatoOpcao {
@@ -64,7 +67,9 @@ export class RankingService {
       deckNome: j.deckNome ?? '',
       deckUrl: j.deckUrl ?? undefined,
       pontos: j.pontos ?? 0,
-      eliminacoes: 0,
+      eliminacoes: j.eliminacoes ?? 0,
+      pc: j.pc ?? null,
+      opc: j.opc ?? null,
     }));
   }
 }

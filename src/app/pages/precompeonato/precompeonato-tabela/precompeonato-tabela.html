@@ -8,6 +8,10 @@
         encontrados
       }
     </p>
+    <p class="precompeonato-tabela__legenda">
+      Desempate: pontos, eliminações, PC e OPC. PC = pontos de cada rodada x peso da rodada;
+      OPC = soma do PC dos oponentes enfrentados.
+    </p>
   </header>
 
   <div class="precompeonato-tabela__filtros">
@@ -92,6 +96,28 @@
         <ng-container matColumnDef="eliminacoes">
           <th mat-header-cell *matHeaderCellDef>Eliminação</th>
           <td mat-cell *matCellDef="let jogador">{{ jogador.eliminacoes }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="pc">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            title="PC (pontos de confronto): pontos de cada rodada multiplicados pelo peso da rodada (R1 vale 4, R2 vale 3...). Desempate do formato suíço."
+          >
+            PC
+          </th>
+          <td mat-cell *matCellDef="let jogador">{{ jogador.pc ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="opc">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            title="OPC (PC dos oponentes): soma do PC de todos os adversários que você enfrentou. Desempate do formato suíço."
+          >
+            OPC
+          </th>
+          <td mat-cell *matCellDef="let jogador">{{ jogador.opc ?? '—' }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

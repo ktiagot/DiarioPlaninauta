@@ -171,6 +171,7 @@ export function toJogadorResponse(
 
   },
 
+  stats?: { eliminacoes: number; pc: number; opc: number },
 ): JogadorPrecompeonatoResponseDto {
 
   let rodadaAtual: number | null = null;
@@ -220,6 +221,9 @@ export function toJogadorResponse(
     mesaAtual,
 
     pontos: inscricao.pontos,
+    eliminacoes: stats?.eliminacoes ?? 0,
+    pc: stats?.pc ?? null,
+    opc: stats?.opc ?? null,
 
   };
 
