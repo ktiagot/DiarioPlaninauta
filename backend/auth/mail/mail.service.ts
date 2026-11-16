@@ -4,10 +4,18 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class MailService {
   private transporter() {
+    const port = Number(process.env.SMTP_PORT) || 587;
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false,
+      port,
+      // Porta 465 usa TLS desde o início da conexão (secure: true). Com secure: false nela, o
+      // servidor espera o handshake TLS e o cliente espera o "greeting": "Greeting never received".
+      // Nas demais (587), a conexão é aberta em texto e sobe para TLS via STARTTLS.
+      secure: port === 465,
+      // Sem isso o padrão é 30 s, e o usuário fica esperando a tela de "esqueci a senha".
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
