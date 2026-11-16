@@ -11,6 +11,10 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Atrás do Nginx: usa o IP real do cliente (X-Forwarded-For). Sem isso, todos os usuários
+  // compartilham o IP do proxy e dividem o mesmo limite do ThrottlerGuard (429 para todos).
+  app.set('trust proxy', 1);
+
   app.setGlobalPrefix('api');
 
   // Servido sob /api/uploads para reaproveitar o proxy do Nginx (/api -> backend).

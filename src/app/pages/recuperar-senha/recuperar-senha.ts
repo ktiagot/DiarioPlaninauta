@@ -86,8 +86,15 @@ export class RecuperarSenhaComponent {
           { duration: 6000 },
         );
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.enviando.set(false);
+        if (err.status === 429) {
+          // Limite de pedidos: não avança, senão o usuário ficaria esperando um e-mail que não saiu.
+          this.snackBar.open('Muitas tentativas. Aguarde um minuto e tente de novo.', 'OK', {
+            duration: 6000,
+          });
+          return;
+        }
         // Resposta genérica mesmo em erro, para não revelar inexistência.
         this.etapa.set('redefinir');
         this.snackBar.open(
@@ -120,8 +127,10 @@ export class RecuperarSenhaComponent {
       error: (err: HttpErrorResponse) => {
         this.enviando.set(false);
         const message =
-          (typeof err.error?.message === 'string' ? err.error.message : null) ||
-          'Código inválido ou expirado. Solicite um novo código.';
+          err.status === 429
+            ? 'Muitas tentativas. Aguarde um minuto e tente de novo.'
+            : (typeof err.error?.message === 'string' ? err.error.message : null) ||
+              'Código inválido ou expirado. Solicite um novo código.';
         this.snackBar.open(message, 'OK', { duration: 6000 });
       },
     });

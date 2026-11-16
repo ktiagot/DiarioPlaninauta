@@ -14,7 +14,7 @@ import { MailService } from './mail/mail.service';
 describe('AuthService', () => {
   let service: AuthService;
   let prisma: {
-    user: { findUnique: jest.Mock; update: jest.Mock };
+    user: { findUnique: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
   };
   let apoiase: { verify: jest.Mock };
   let jwt: { signAsync: jest.Mock };
@@ -37,7 +37,7 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     prisma = {
-      user: { findUnique: jest.fn(), update: jest.fn() },
+      user: { findUnique: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
     };
     apoiase = { verify: jest.fn() };
     jwt = { signAsync: jest.fn().mockResolvedValue('token-abc') };
@@ -265,6 +265,95 @@ describe('AuthService', () => {
     });
   });
 
+  describe('busca de e-mail sem diferenciar caixa (recuperação de senha e login)', () => {
+    it('esqueciSenha acha a conta cadastrada com maiúsculas e envia o código', async () => {
+      const contaMaiuscula = { ...baseUser, email: 'Joao.Silva@Gmail.com' };
+      prisma.user.findUnique.mockResolvedValue(null); // busca exata (minúsculas) não acha
+      prisma.user.findFirst.mockResolvedValue(contaMaiuscula);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('hash-do-codigo');
+      prisma.user.update.mockResolvedValue(contaMaiuscula);
+
+      await service.esqueciSenha('  joao.silva@gmail.com ');
+
+      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+        where: { email: { equals: 'joao.silva@gmail.com', mode: 'insensitive' } },
+      });
+      expect(mail.sendResetSenhaCode).toHaveBeenCalledWith(
+        'Joao.Silva@Gmail.com',
+        expect.stringMatching(/^\d{6}$/),
+      );
+    });
+
+    it('resetSenha também acha a conta com maiúsculas', async () => {
+      const contaMaiuscula = {
+        ...baseUser,
+        email: 'Joao.Silva@Gmail.com',
+        resetSenhaHash: 'hash-do-codigo',
+        resetSenhaExpiraEm: new Date(Date.now() + 10 * 60 * 1000),
+      };
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(contaMaiuscula);
+      jest.spyOn(argon2, 'verify').mockResolvedValue(true);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('novo-hash');
+      prisma.user.update.mockResolvedValue(contaMaiuscula);
+
+      await service.resetSenha('joao.silva@gmail.com', '123456', 'novasenha');
+
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'u1' } }),
+      );
+    });
+
+    it('login aceita o e-mail digitado com outra caixa', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue({ ...baseUser, email: 'Joao@Email.com' });
+      jest.spyOn(argon2, 'verify').mockResolvedValue(true);
+
+      const res = await service.login('joao@email.com', 'senha-ok');
+      expect(res.accessToken).toBe('token-abc');
+    });
+
+    it('prefere o match exato e não faz a busca insensível', async () => {
+      prisma.user.findUnique.mockResolvedValue(baseUser);
+      jest.spyOn(argon2, 'hash').mockResolvedValue('hash-do-codigo');
+      prisma.user.update.mockResolvedValue(baseUser);
+
+      await service.esqueciSenha(baseUser.email);
+
+      expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('esqueciSenha: pedidos repetidos', () => {
+    it('não gera outro código se o anterior foi emitido há menos de 1 minuto', async () => {
+      // Código emitido há 10 s: expira em 15 min - 10 s.
+      prisma.user.findUnique.mockResolvedValue({
+        ...baseUser,
+        resetSenhaHash: 'hash-do-codigo',
+        resetSenhaExpiraEm: new Date(Date.now() + 15 * 60 * 1000 - 10_000),
+      });
+
+      await service.esqueciSenha(baseUser.email);
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(mail.sendResetSenhaCode).not.toHaveBeenCalled();
+    });
+
+    it('gera um novo código quando o anterior tem mais de 1 minuto', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...baseUser,
+        resetSenhaHash: 'hash-antigo',
+        resetSenhaExpiraEm: new Date(Date.now() + 15 * 60 * 1000 - 120_000),
+      });
+      jest.spyOn(argon2, 'hash').mockResolvedValue('hash-novo');
+      prisma.user.update.mockResolvedValue(baseUser);
+
+      await service.esqueciSenha(baseUser.email);
+
+      expect(prisma.user.update).toHaveBeenCalled();
+      expect(mail.sendResetSenhaCode).toHaveBeenCalled();
+    });
+  });
   describe('resetSenha', () => {
     const comReset = {
       ...baseUser,

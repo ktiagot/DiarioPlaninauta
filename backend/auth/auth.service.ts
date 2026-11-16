@@ -18,6 +18,11 @@ import { MailService } from './mail/mail.service';
 const DUMMY_HASH =
   '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHRzb21lc2FsdA$RdescudvJCsgt3ub+b+dWRWJTmaasfEfp8XVWrvO-N8';
 
+/** Validade do código de redefinição de senha. */
+const RESET_SENHA_VALIDADE_MS = 15 * 60 * 1000;
+/** Intervalo mínimo entre dois códigos: dentro dele, o código anterior continua valendo. */
+const RESET_SENHA_INTERVALO_MS = 60 * 1000;
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -29,6 +34,20 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
+  /**
+   * Busca o usuário pelo e-mail sem diferenciar maiúsculas de minúsculas. O cadastro
+   * guarda o e-mail como foi digitado (ex.: "Joao@Gmail.com"), então uma busca exata
+   * em minúsculas não encontraria essas contas. Prefere o match exato.
+   */
+  private async buscarUsuarioPorEmail(email: string) {
+    const limpo = email.trim();
+    const exato = await this.prisma.user.findUnique({ where: { email: limpo } });
+    if (exato) return exato;
+    return this.prisma.user.findFirst({
+      where: { email: { equals: limpo, mode: 'insensitive' } },
+    });
+  }
+
   async verifyBacker(email: string) {
     const backer = await this.apoiaseService.verify(email);
     return {
@@ -39,7 +58,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.buscarUsuarioPorEmail(email);
 
     const hashToVerify = user?.passwordHash ?? DUMMY_HASH;
     const valid = await argon2.verify(hashToVerify, password);
@@ -102,16 +121,20 @@ export class AuthService {
    * genérica (não revela se o e-mail existe) para evitar enumeração de contas.
    */
   async esqueciSenha(email: string): Promise<void> {
-    const normalizado = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({
-      where: { email: normalizado },
-    });
+    const user = await this.buscarUsuarioPorEmail(email);
 
     if (!user) return; // resposta genérica: não sinaliza inexistência
 
+    // Pedido repetido em poucos segundos (duplo clique, "não chegou, vou pedir de novo"):
+    // mantém o código já enviado. Gerar outro invalidaria o e-mail que o usuário já tem.
+    if (user.resetSenhaExpiraEm) {
+      const emitidoEm = user.resetSenhaExpiraEm.getTime() - RESET_SENHA_VALIDADE_MS;
+      if (Date.now() - emitidoEm < RESET_SENHA_INTERVALO_MS) return;
+    }
+
     const codigo = String(randomInt(0, 1_000_000)).padStart(6, '0');
     const resetSenhaHash = await argon2.hash(codigo);
-    const resetSenhaExpiraEm = new Date(Date.now() + 15 * 60 * 1000);
+    const resetSenhaExpiraEm = new Date(Date.now() + RESET_SENHA_VALIDADE_MS);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -127,10 +150,7 @@ export class AuthService {
 
   /** Conclui a redefinição validando o código e gravando a nova senha. */
   async resetSenha(email: string, codigo: string, novaSenha: string): Promise<void> {
-    const normalizado = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({
-      where: { email: normalizado },
-    });
+    const user = await this.buscarUsuarioPorEmail(email);
 
     const invalido = new BadRequestException('Código inválido ou expirado.');
 
