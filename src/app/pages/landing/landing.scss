@@ -5,9 +5,7 @@
   min-height: 100vh;
   color: var(--sys-color-text, #fff);
   font-family: 'Inter', sans-serif;
-  // Fundo escuro translúcido sobre o BG global fixo do body, para dar contraste
-  // sem esconder totalmente a arte de fundo.
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.86));
+  // Sem fundo próprio: usa o mesmo BG global (com a camada escura) das demais páginas.
 
   // Header
   &__header {
@@ -21,7 +19,8 @@
   }
 
   &__header-inner {
-    max-width: 1100px;
+    // Mesma largura do cabeçalho do portal.
+    max-width: 1280px;
     margin: 0 auto;
     padding: 1rem 1.5rem;
     display: flex;
@@ -78,31 +77,20 @@
     }
   }
 
-  // Hero
+  // Hero: logo centralizado + cabeçalho padrão (app-page-header)
   &__hero {
     text-align: center;
-    padding: 5rem 1.5rem 4rem;
+    padding: 3rem 1.5rem 2rem;
   }
 
   &__hero-logo {
+    // O reset do Tailwind deixa <img> como bloco; sem margin auto ele fica à esquerda.
+    display: block;
     max-width: 260px;
     width: 100%;
     height: auto;
-    margin-bottom: 2rem;
+    margin: 0 auto 1.75rem;
     filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.45));
-  }
-
-  &__hero-title {
-    font-size: clamp(2rem, 5vw, 2.75rem);
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-  }
-
-  &__hero-tagline {
-    font-size: 1.125rem;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 520px;
-    margin: 0 auto;
   }
 
   // Sections
@@ -115,22 +103,34 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    // Mesmo peso/tamanho do título do app-page-header.
     h2 {
-      font-size: clamp(1.4rem, 3vw, 1.75rem);
+      font-size: 1.75rem;
       font-weight: 800;
+      line-height: 1.2;
       text-align: center;
-      margin-bottom: 1rem;
+      margin: 0 0 0.5rem;
     }
   }
 
+  // Mesma largura útil das páginas do portal (max-w-5xl) e mesmos recuos laterais.
   &__container {
-    max-width: 1100px;
+    max-width: 64rem;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
+
+    @media (min-width: 640px) {
+      padding: 0 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+      padding: 0 2rem;
+    }
   }
 
   &__section-desc {
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9375rem;
     text-align: center;
     max-width: 640px;
     margin: 0 auto 2rem;
