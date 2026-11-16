@@ -46,10 +46,13 @@
         {{ ctaTabelaLabel() }}
       </button>
 
-      <button mat-flat-button color="primary" type="button" (click)="abrirInscricao()">
-        <fa-icon [icon]="faUserPlus" class="precompeonato-hero__cta-icon" />
-        Inscrever-se
-      </button>
+      @if (!jaInscrito()) {
+        <button mat-flat-button color="primary" type="button" (click)="abrirInscricao()" [disabled]="!inscricoesAbertas()"
+          [title]="inscricoesAbertas() ? '' : 'Inscrições encerradas'">
+          <fa-icon [icon]="faUserPlus" class="precompeonato-hero__cta-icon" />
+          Inscrever-se
+        </button>
+      }
 
 
 

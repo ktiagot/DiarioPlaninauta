@@ -162,6 +162,12 @@ export class PrecompeonatoComponent implements OnInit {
     return commanders.size;
   });
 
+  protected readonly inscricoesAbertas = computed(
+    () => this.campeonato()?.statusCode === 'INSCRICOES_ABERTAS',
+  );
+
+  protected readonly jaInscrito = computed(() => !!this.checkInStatus()?.jaInscrito);
+
   protected readonly showCheckInButton = computed(() => {
     const status = this.checkInStatus();
     return !!status?.jaInscrito && status.podeCheckIn;
