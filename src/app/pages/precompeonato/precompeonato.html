@@ -1,4 +1,4 @@
-﻿<main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+<main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
 
   @if (rodadaAtiva()) {
     <div class="notif-rodada glass-card">
@@ -79,6 +79,10 @@
         </button>
       }
     </div>
+
+    @if (avisoCheckIn(); as aviso) {
+      <p class="precompeonato-hero__descricao">{{ aviso }}</p>
+    }
 
     <div class="precompeonato-hero__stats">
       <div class="precompeonato-hero__stat">

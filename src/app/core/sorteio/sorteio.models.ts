@@ -50,6 +50,8 @@ export interface CheckInStatus {
   checkIn: boolean;
   jaInscrito: boolean;
   podeCheckIn: boolean;
+  prazoCheckIn: string | null;
+  checkInEncerrado: boolean;
 }
 
 export interface AbrirRodadaContext {

@@ -125,4 +125,10 @@ export class CheckInStatusDto {
 
   @ApiProperty()
   podeCheckIn: boolean;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Limite do check-in (ISO 8601).' })
+  prazoCheckIn: string | null;
+
+  @ApiProperty()
+  checkInEncerrado: boolean;
 }

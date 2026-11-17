@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -9,6 +9,12 @@
 import { Campeonato, CampeonatoStatus, Prisma, Rodada } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { hojeRangeUtc } from '../../common/date-range.util';
+import {
+  CHECKIN_HORA_LIMITE,
+  checkInEncerrado,
+  prazoCheckIn,
+  prazoCheckInLabel,
+} from '../constants/checkin';
 import { CreateRodadaDto } from '../dto/create-rodada.dto';
 import {
   AbrirRodadaContextDto,
@@ -287,6 +293,7 @@ export class SorteioService {
         'As mesas desta rodada já foram sorteadas. Check-in encerrado.',
       );
     }
+    this.assertPrazoCheckIn(rodada);
 
     const inscricao = await this.prisma.inscricao.findFirst({
       where: {
@@ -703,6 +710,8 @@ export class SorteioService {
         checkIn: false,
         jaInscrito: !!inscricao?.ativo,
         podeCheckIn: false,
+        prazoCheckIn: null,
+        checkInEncerrado: false,
       };
     }
 
@@ -713,6 +722,8 @@ export class SorteioService {
         checkIn: false,
         jaInscrito: false,
         podeCheckIn: false,
+        prazoCheckIn: prazoCheckIn(rodada.dataRodada).toISOString(),
+        checkInEncerrado: checkInEncerrado(rodada.dataRodada),
       };
     }
 
@@ -726,12 +737,15 @@ export class SorteioService {
       },
     });
 
+    const encerrado = checkInEncerrado(rodada.dataRodada);
     return {
       rodadaId: rodada.id,
       rodadaNumero: rodada.numero,
       checkIn: !!checkIn,
       jaInscrito: true,
-      podeCheckIn: mesasCount === 0,
+      podeCheckIn: mesasCount === 0 && !encerrado,
+      prazoCheckIn: prazoCheckIn(rodada.dataRodada).toISOString(),
+      checkInEncerrado: encerrado,
     };
   }
 
@@ -796,6 +810,7 @@ export class SorteioService {
         'As mesas desta rodada já foram sorteadas. Não é possível cancelar o check-in.',
       );
     }
+    this.assertPrazoCheckIn(rodada);
 
     await this.prisma.checkInRodada.deleteMany({
       where: { rodadaId: rodada.id, inscricaoId: inscricao.id },
@@ -1050,7 +1065,7 @@ export class SorteioService {
           userId: i.userId,
           tipo: 'rodada_nova',
           titulo: `Rodada ${rodada.numero} aberta`,
-          mensagem: `Check-in disponível para a rodada ${rodada.numero} (${dataFmt}).`,
+          mensagem: `Check-in disponível para a rodada ${rodada.numero} (${dataFmt}). Faça o seu até ${prazoCheckInLabel(rodada.dataRodada)}.`,
         })),
       });
     } catch (err) {
@@ -1112,6 +1127,51 @@ export class SorteioService {
 
     const { count } = await this.prisma.notificacao.createMany({ data: dados });
     return count;
+  }
+
+  /**
+   * Lembrete no dia do prazo: inscritos ativos sem check-in na rodada aberta (sem mesas)
+   * cujo prazo termina hoje. Chamado por cron diário. Retorna quantas notificações foram criadas.
+   */
+  async notificarLembreteCheckIn(now: Date = new Date()): Promise<number> {
+    const rodadas = await this.prisma.rodada.findMany({
+      where: { finalizada: false, campeonato: { status: { not: CampeonatoStatus.ENCERRADO } } },
+      include: { _count: { select: { mesas: true } } },
+    });
+    const { inicio, fim } = hojeRangeUtc(now);
+
+    const dados: { userId: string; tipo: string; titulo: string; mensagem: string }[] = [];
+    for (const rodada of rodadas) {
+      const prazo = prazoCheckIn(rodada.dataRodada);
+      if (rodada._count.mesas > 0 || prazo < inicio || prazo > fim || prazo <= now) continue;
+
+      const pendentes = await this.prisma.inscricao.findMany({
+        where: {
+          campeonatoId: rodada.campeonatoId,
+          ativo: true,
+          checkIns: { none: { rodadaId: rodada.id } },
+        },
+        select: { userId: true },
+      });
+      for (const i of pendentes) {
+        dados.push({
+          userId: i.userId,
+          tipo: 'checkin_lembrete',
+          titulo: `Check-in da rodada ${rodada.numero} encerra hoje!`,
+          mensagem: `Você ainda não fez o check-in. Ele encerra hoje às ${CHECKIN_HORA_LIMITE}h. Sem check-in você fica fora das mesas e recebe advertência.`,
+        });
+      }
+    }
+
+    if (dados.length === 0) return 0;
+    const { count } = await this.prisma.notificacao.createMany({ data: dados });
+    return count;
+  }
+
+  private assertPrazoCheckIn(rodada: Rodada): void {
+    if (checkInEncerrado(rodada.dataRodada)) {
+      throw new ConflictException(`O prazo do check-in terminou em ${prazoCheckInLabel(rodada.dataRodada)}.`);
+    }
   }
 
   private assertCampeonatoNotEncerrado(campeonato: Campeonato): void {

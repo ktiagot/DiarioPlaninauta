@@ -168,6 +168,31 @@ export class PrecompeonatoComponent implements OnInit {
 
   protected readonly jaInscrito = computed(() => !!this.checkInStatus()?.jaInscrito);
 
+  protected readonly avisoCheckIn = computed(() => {
+    const s = this.checkInStatus();
+    if (!s?.jaInscrito || !s.rodadaNumero || !s.prazoCheckIn) return null;
+    const prazo = new Date(s.prazoCheckIn);
+    const dia = new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      timeZone: 'America/Sao_Paulo',
+    }).format(prazo);
+    const hora = new Intl.DateTimeFormat('pt-BR', {
+      hour: '2-digit',
+      timeZone: 'America/Sao_Paulo',
+    }).format(prazo);
+    const limite = `${dia} às ${hora}h`;
+    if (s.checkInEncerrado) {
+      return s.checkIn
+        ? `Check-in da rodada ${s.rodadaNumero} encerrado. Você está confirmado.`
+        : `Check-in da rodada ${s.rodadaNumero} encerrado em ${limite}.`;
+    }
+    return s.checkIn
+      ? `Você está confirmado na rodada ${s.rodadaNumero}. Pode cancelar até ${limite}.`
+      : `Faça o check-in da rodada ${s.rodadaNumero} até ${limite}.`;
+  });
+
   protected readonly showCheckInButton = computed(() => {
     const status = this.checkInStatus();
     return !!status?.jaInscrito && status.podeCheckIn;

@@ -18,10 +18,11 @@ export class MesasSchedulerService {
     try {
       const mesas = await this.mesasService.notificarMesasDeHoje();
       const rodadas = await this.sorteioService.notificarRodadasDeHoje();
-      const total = mesas + rodadas;
+      const lembretes = await this.sorteioService.notificarLembreteCheckIn();
+      const total = mesas + rodadas + lembretes;
       if (total > 0) {
         this.logger.log(
-          `Notificações do dia: ${mesas} de mesa casual, ${rodadas} de rodada.`,
+          `Notificações do dia: ${mesas} de mesa casual, ${rodadas} de rodada, ${lembretes} de lembrete de check-in.`,
         );
       }
     } catch (err) {
