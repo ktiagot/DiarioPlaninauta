@@ -1,6 +1,6 @@
 <main class="precompeonato-page mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
 
-  @if (rodadaAtiva()) {
+  @if (rodadaAtiva() && jaInscrito()) {
     <div class="notif-rodada glass-card">
       <mat-icon class="notif-icon">notifications_active</mat-icon>
       <div>
@@ -8,7 +8,7 @@
         <p class="text-sm text-white/60">Confira sua mesa e registre o resultado.</p>
       </div>
     </div>
-  } @else if (avisoProximaRodada()) {
+  } @else if (avisoProximaRodada() && jaInscrito()) {
     <div class="notif-rodada glass-card">
       <mat-icon class="notif-icon">event_upcoming</mat-icon>
       <div>
