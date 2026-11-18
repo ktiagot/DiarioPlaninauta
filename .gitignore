@@ -71,3 +71,6 @@ docs/dump.sql
 # Manual gerado pelo script (binário; será editado com prints localmente)
 /Manual Diario Planinauta.docx
 ~$*.docx
+
+# Arquivos locais (planilhas com dados pessoais, logs, rascunhos)
+/_local/
