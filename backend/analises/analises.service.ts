@@ -1,4 +1,4 @@
-﻿import {
+import {
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,7 +6,9 @@
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { assertApoiadorAtivo } from '../common/apoiador.util';
-import { formatDataHoraBr } from '../common/date-format.util';
+import { hojeRangeUtc } from '../common/date-range.util';
+import { formatDataBr } from '../common/date-format.util';
+import { ANALISE_VAGAS_PADRAO } from './analises.constants';
 import {
   CreateAnaliseSessaoDto,
   InscreverAnaliseDto,
@@ -32,7 +34,7 @@ export class AnalisesService {
   async listar(userId: string): Promise<AnaliseSessaoResponseDto[]> {
     await assertApoiadorAtivo(this.prisma, userId);
     const sessoes = await this.prisma.analiseSessao.findMany({
-      where: { aberta: true, dataHora: { gt: new Date() } },
+      where: { aberta: true, dataHora: { gte: hojeRangeUtc().inicio } },
       orderBy: { dataHora: 'asc' },
       include: analiseInclude,
     });
@@ -46,7 +48,7 @@ export class AnalisesService {
   ): Promise<AnaliseSessaoResponseDto> {
     await assertApoiadorAtivo(this.prisma, userId);
     const sessao = await this.findOrThrow(sessaoId);
-    if (!sessao.aberta || sessao.dataHora <= new Date()) {
+    if (!sessao.aberta || sessao.dataHora < hojeRangeUtc().inicio) {
       throw new ConflictException('Esta data não está aberta para inscrições.');
     }
 
@@ -78,7 +80,7 @@ export class AnalisesService {
   ): Promise<AnaliseSessaoResponseDto> {
     await assertApoiadorAtivo(this.prisma, userId);
     const sessao = await this.findOrThrow(sessaoId);
-    if (sessao.dataHora <= new Date()) {
+    if (sessao.dataHora < hojeRangeUtc().inicio) {
       throw new ConflictException('Esta data já passou.');
     }
     const { count } = await this.prisma.analiseInscricao.updateMany({
@@ -120,7 +122,7 @@ export class AnalisesService {
       data: {
         dataHora: new Date(dto.dataHora),
         titulo: dto.titulo || null,
-        vagas: dto.vagas,
+        vagas: dto.vagas ?? ANALISE_VAGAS_PADRAO,
         aberta: dto.aberta ?? true,
         observacoes: dto.observacoes || null,
       },
@@ -221,7 +223,7 @@ export class AnalisesService {
         userId,
         tipo: 'analise_vaga',
         titulo: 'Vaga na análise de deck',
-        mensagem: `Abriu uma vaga e você saiu da lista de espera da análise de ${formatDataHoraBr(sessao.dataHora)}.`,
+        mensagem: `Abriu uma vaga e você saiu da lista de espera da análise de ${formatDataBr(sessao.dataHora)}.`,
       })),
     });
   }

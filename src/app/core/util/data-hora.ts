@@ -45,3 +45,28 @@ export function mensagemErro(err: unknown, fallback: string): string {
   }
   return fallback;
 }
+
+/** Ex.: "quinta-feira, 12/11" (sem horário). */
+export function formatarData(iso: string): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: TZ,
+  }).format(new Date(iso));
+}
+
+/** Valor de `<input type="date">` -> ISO ao meio-dia de Brasília. */
+export function inputDataParaIso(valor: string): string {
+  return `${valor}T12:00:00-03:00`;
+}
+
+/** ISO -> valor de `<input type="date">` em Brasília (yyyy-MM-dd). */
+export function isoParaInputData(iso: string): string {
+  return new Intl.DateTimeFormat('sv-SE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: TZ,
+  }).format(new Date(iso));
+}

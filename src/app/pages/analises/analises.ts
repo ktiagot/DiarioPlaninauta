@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AnaliseSessao } from '../../core/analises/analises.models';
 import { AnalisesService } from '../../core/analises/analises.service';
-import { formatarDataHora, mensagemErro } from '../../core/util/data-hora';
+import { formatarData, mensagemErro } from '../../core/util/data-hora';
 import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
@@ -28,7 +28,7 @@ export class AnalisesComponent implements OnInit {
   private readonly service = inject(AnalisesService);
   private readonly snackBar = inject(MatSnackBar);
 
-  protected readonly formatarDataHora = formatarDataHora;
+  protected readonly formatarData = formatarData;
   protected readonly loading = signal(true);
   protected readonly erro = signal<string | null>(null);
   protected readonly sessoes = signal<AnaliseSessao[]>([]);

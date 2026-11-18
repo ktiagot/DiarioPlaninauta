@@ -1,4 +1,4 @@
-﻿import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
@@ -17,7 +17,7 @@ const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
 
 export class CreateAnaliseSessaoDto {
-  @ApiProperty({ example: '2026-11-12T20:00:00-03:00' })
+  @ApiProperty({ example: '2026-11-12T12:00:00-03:00', description: 'Só a data importa (horário ignorado)' })
   @IsDateString()
   dataHora: string;
 
@@ -28,11 +28,12 @@ export class CreateAnaliseSessaoDto {
   @MaxLength(120)
   titulo?: string;
 
-  @ApiProperty({ example: 7, minimum: 1, maximum: 50 })
+  @ApiPropertyOptional({ default: 1, minimum: 1, maximum: 50 })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(50)
-  vagas: number;
+  vagas?: number;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()

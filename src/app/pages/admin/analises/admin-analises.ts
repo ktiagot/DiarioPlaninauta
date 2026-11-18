@@ -12,9 +12,9 @@ import {
 } from '../../../core/analises/analises.models';
 import { AnalisesService } from '../../../core/analises/analises.service';
 import {
-  formatarDataHora,
-  inputLocalParaIso,
-  isoParaInputLocal,
+  formatarData,
+  inputDataParaIso,
+  isoParaInputData,
   mensagemErro,
 } from '../../../core/util/data-hora';
 
@@ -36,7 +36,7 @@ export class AdminAnalisesComponent implements OnInit {
   private readonly service = inject(AnalisesService);
   private readonly snackBar = inject(MatSnackBar);
 
-  protected readonly formatarDataHora = formatarDataHora;
+  protected readonly formatarData = formatarData;
   protected readonly loading = signal(true);
   protected readonly salvando = signal(false);
   protected readonly sessoes = signal<AnaliseSessao[]>([]);
@@ -48,7 +48,6 @@ export class AdminAnalisesComponent implements OnInit {
   protected readonly form = this.fb.nonNullable.group({
     dataHora: ['', Validators.required],
     titulo: [''],
-    vagas: [7, [Validators.required, Validators.min(1), Validators.max(50)]],
     observacoes: [''],
     aberta: [true],
   });
@@ -77,9 +76,8 @@ export class AdminAnalisesComponent implements OnInit {
   protected editar(s: AnaliseSessao): void {
     this.editandoId.set(s.id);
     this.form.setValue({
-      dataHora: isoParaInputLocal(s.dataHora),
+      dataHora: isoParaInputData(s.dataHora),
       titulo: s.titulo ?? '',
-      vagas: s.vagas,
       observacoes: s.observacoes ?? '',
       aberta: s.aberta,
     });
@@ -87,7 +85,7 @@ export class AdminAnalisesComponent implements OnInit {
 
   protected cancelarEdicao(): void {
     this.editandoId.set(null);
-    this.form.reset({ dataHora: '', titulo: '', vagas: 7, observacoes: '', aberta: true });
+    this.form.reset({ dataHora: '', titulo: '', observacoes: '', aberta: true });
   }
 
   protected salvar(): void {
@@ -97,9 +95,8 @@ export class AdminAnalisesComponent implements OnInit {
     }
     const raw = this.form.getRawValue();
     const payload = {
-      dataHora: inputLocalParaIso(raw.dataHora),
+      dataHora: inputDataParaIso(raw.dataHora),
       titulo: raw.titulo.trim(),
-      vagas: raw.vagas,
       observacoes: raw.observacoes.trim(),
       aberta: raw.aberta,
     };

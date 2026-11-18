@@ -17,12 +17,12 @@
         <header class="analises__head">
           <div>
             <h2>{{ s.titulo || 'Análise de deck' }}</h2>
-            <p class="analises__data">{{ formatarDataHora(s.dataHora) }}</p>
+            <p class="analises__data">{{ formatarData(s.dataHora) }}</p>
           </div>
           <div class="analises__vagas">
-            <strong>{{ s.confirmados }}/{{ s.vagas }}</strong> vagas
+            <strong>{{ s.confirmados >= s.vagas ? 'Vaga ocupada' : 'Vaga livre' }}</strong>
             @if (s.totalListaEspera > 0) {
-              <span> · {{ s.totalListaEspera }} na espera</span>
+              <span> · {{ s.totalListaEspera }} na lista de espera</span>
             }
           </div>
         </header>

@@ -11,3 +11,12 @@ export function formatDataHoraBr(d: Date): string {
     .format(d)
     .replace(',', ' às');
 }
+
+/** Ex.: "12/11". */
+export function formatDataBr(d: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: TZ,
+  }).format(d);
+}

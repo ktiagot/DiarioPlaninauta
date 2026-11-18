@@ -1,4 +1,4 @@
-﻿export interface AnaliseInscritoPublico {
+export interface AnaliseInscritoPublico {
   nick: string;
   commander: string;
   posicao: number;
@@ -55,7 +55,7 @@ export interface InscreverAnalisePayload {
 export interface AnaliseSessaoPayload {
   dataHora: string;
   titulo?: string;
-  vagas: number;
+  vagas?: number;
   aberta?: boolean;
   observacoes?: string;
 }

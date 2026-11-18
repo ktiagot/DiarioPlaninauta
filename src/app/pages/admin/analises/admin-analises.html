@@ -5,16 +5,12 @@
     <h4>{{ editandoId() ? 'Editar data' : 'Nova data' }}</h4>
     <div class="admin-sessoes__grid">
       <label class="field">
-        Data e hora (Brasília)
-        <input type="datetime-local" formControlName="dataHora" />
+        Data
+        <input type="date" formControlName="dataHora" />
       </label>
       <label class="field">
         Título (opcional)
         <input formControlName="titulo" />
-      </label>
-      <label class="field">
-        Vagas
-        <input type="number" min="1" max="50" formControlName="vagas" />
       </label>
       <label class="field admin-sessoes__wide">
         Observações (opcional)
@@ -40,14 +36,14 @@
     <div class="admin-table-wrapper">
       <table class="admin-table">
         <thead>
-          <tr><th>Data</th><th>Título</th><th>Vagas</th><th>Espera</th><th>Status</th><th>Ações</th></tr>
+          <tr><th>Data</th><th>Título</th><th>Vaga</th><th>Na espera</th><th>Status</th><th>Ações</th></tr>
         </thead>
         <tbody>
           @for (s of sessoes(); track s.id) {
             <tr>
-              <td>{{ formatarDataHora(s.dataHora) }}</td>
+              <td>{{ formatarData(s.dataHora) }}</td>
               <td>{{ s.titulo || '—' }}</td>
-              <td>{{ s.confirmados }}/{{ s.vagas }}</td>
+              <td>{{ s.confirmados >= s.vagas ? 'Ocupada' : 'Livre' }}</td>
               <td>{{ s.totalListaEspera }}</td>
               <td>
                 <span class="badge" [class.badge--done]="s.aberta" [class.badge--inativo]="!s.aberta">
