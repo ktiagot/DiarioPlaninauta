@@ -1,25 +1,25 @@
-﻿<div class="admin-sessoes">
+<div class="admin-sessoes">
   <h3>Análises de Commander</h3>
 
   <form class="admin-sessoes__form" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
     <h4>{{ editandoId() ? 'Editar data' : 'Nova data' }}</h4>
     <div class="admin-sessoes__grid">
-      <mat-form-field appearance="outline">
-        <mat-label>Data e hora (Brasília)</mat-label>
-        <input matInput type="datetime-local" formControlName="dataHora" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Título (opcional)</mat-label>
-        <input matInput formControlName="titulo" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Vagas</mat-label>
-        <input matInput type="number" min="1" max="50" formControlName="vagas" />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="admin-sessoes__wide">
-        <mat-label>Observações (opcional)</mat-label>
-        <input matInput formControlName="observacoes" />
-      </mat-form-field>
+      <label class="field">
+        Data e hora (Brasília)
+        <input type="datetime-local" formControlName="dataHora" />
+      </label>
+      <label class="field">
+        Título (opcional)
+        <input formControlName="titulo" />
+      </label>
+      <label class="field">
+        Vagas
+        <input type="number" min="1" max="50" formControlName="vagas" />
+      </label>
+      <label class="field admin-sessoes__wide">
+        Observações (opcional)
+        <input formControlName="observacoes" />
+      </label>
       <mat-checkbox formControlName="aberta" color="primary">Aberta para inscrições</mat-checkbox>
     </div>
     <div class="admin-sessoes__actions">

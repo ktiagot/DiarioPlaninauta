@@ -1,4 +1,4 @@
-﻿<main class="analises mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+<main class="analises mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
   <app-page-header
     titulo="Análise de Commander"
     subtitulo="Inscreva seu deck em uma das datas. Sem vaga, você entra na lista de espera."
@@ -49,29 +49,29 @@
 
         @if (formAbertoId() === s.id) {
           <form class="analises__form" [formGroup]="form" (ngSubmit)="salvar(s)" novalidate>
-            <mat-form-field appearance="outline">
-              <mat-label>Commander</mat-label>
-              <input matInput formControlName="commander" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Link do deck (https://...)</mat-label>
-              <input matInput formControlName="linkDeck" />
+            <label class="field">
+              Commander
+              <input formControlName="commander" />
+            </label>
+            <label class="field">
+              Link do deck (https://...)
+              <input formControlName="linkDeck" placeholder="https://moxfield.com/decks/..." />
               @if (form.controls.linkDeck.invalid && form.controls.linkDeck.touched) {
-                <mat-error>Informe um link válido começando com http(s)://</mat-error>
+                <span class="field__erro">Informe um link válido começando com http(s)://</span>
               }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Bracket (opcional)</mat-label>
-              <input matInput formControlName="bracket" placeholder="B3" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Budget para upgrades</mat-label>
-              <input matInput formControlName="budget" placeholder="Ex.: até R$ 300" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="analises__wide">
-              <mat-label>Objetivos e observações</mat-label>
-              <textarea matInput rows="4" formControlName="objetivos"></textarea>
-            </mat-form-field>
+            </label>
+            <label class="field">
+              Bracket (opcional)
+              <input formControlName="bracket" placeholder="B3" />
+            </label>
+            <label class="field">
+              Budget para upgrades
+              <input formControlName="budget" placeholder="Ex.: até R$ 300" />
+            </label>
+            <label class="field analises__wide">
+              Objetivos e observações
+              <textarea rows="4" formControlName="objetivos"></textarea>
+            </label>
             <div class="analises__acoes analises__wide">
               <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
                 {{ s.minhaInscricao ? 'Salvar alterações' : 'Confirmar inscrição' }}

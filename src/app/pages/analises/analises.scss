@@ -1,4 +1,4 @@
-﻿.analises__center { display: flex; justify-content: center; padding: 3rem 0; }
+.analises__center { display: flex; justify-content: center; padding: 3rem 0; }
 .analises__vazio { text-align: center; color: rgba(255, 255, 255, 0.65); padding: 2rem 0; }
 
 .analises__card {
@@ -53,3 +53,38 @@
   ol { margin: 0.5rem 0 0; padding-left: 1.25rem; }
 }
 .analises__espera { opacity: 0.65; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+
+  input,
+  textarea {
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+      border-color: var(--sys-color-primary, #f58220);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.field__erro {
+  color: #ef5350;
+  font-size: 0.75rem;
+}
