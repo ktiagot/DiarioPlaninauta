@@ -9,6 +9,7 @@ export interface Notificacao {
     | 'campeonato_novo'
     | 'dia_do_evento'
     | 'checkin_lembrete'
+    | 'analise_vaga'
     | 'convite_mesa'
     | 'geral';
   titulo: string;

@@ -16,6 +16,8 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { label: 'Estatisticas', path: '/estatisticas' },
   { label: 'Hall da Fama', path: '/hall-da-fama' },
   { label: 'Mesões', path: '/mesoes' },
+  { label: 'Análise de Deck', path: '/analises' },
+  { label: 'Mesão ao Vivo', path: '/mesao-live' },
   { label: 'Loja de Pontos', path: '/loja' },
   { label: 'Parceiros', path: '/parceiros' },
   { label: 'Sugestões', path: '/sugestoes' },

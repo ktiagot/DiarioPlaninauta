@@ -1,0 +1,87 @@
+﻿<main class="mesao mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+  <app-page-header
+    titulo="Mesão ao Vivo"
+    subtitulo="Jogue com o Thiago e outros apoiadores na live. 3 vagas de jogador e até 3 suplentes por data."
+    icone="live_tv"
+  />
+
+  <section class="mesao__regras">
+    <h2>Regras</h2>
+    <ul>
+      <li>Coloque seu nome como jogador em apenas um dia do mês.</li>
+      <li>Você pode ser suplente em até 2 dias do mês.</li>
+      <li>Para trocar de jogador para suplente na mesma data, basta escolher o outro botão.</li>
+      <li>Se precisar desistir, cancele sua inscrição para liberar a vaga.</li>
+    </ul>
+  </section>
+
+  @if (loading()) {
+    <div class="mesao__center"><mat-spinner diameter="36" /></div>
+  } @else if (erro()) {
+    <p class="mesao__vazio">{{ erro() }}</p>
+  } @else if (sessoes().length === 0) {
+    <p class="mesao__vazio">Nenhum mesão aberto no momento. Fique de olho nas notificações.</p>
+  } @else {
+    @for (s of sessoes(); track s.id) {
+      <section class="mesao__card">
+        <header class="mesao__head">
+          <div>
+            <h2>
+              {{ s.titulo || 'Mesão de Commander' }}
+              @if (s.bracket) { <span class="mesao__bracket">{{ s.bracket }}</span> }
+            </h2>
+            <p class="mesao__data">{{ formatarDataHora(s.dataHora) }}</p>
+          </div>
+        </header>
+
+        @if (s.observacoes) {
+          <p class="mesao__obs">{{ s.observacoes }}</p>
+        }
+
+        <div class="mesao__colunas">
+          <div>
+            <h3>Jogadores ({{ s.jogadores.length }}/{{ s.vagasJogador }})</h3>
+            <ul class="mesao__slots">
+              @for (nick of slots(s.vagasJogador, s.jogadores); track $index) {
+                <li [class.mesao__slot--livre]="!nick">{{ nick ?? 'Vaga livre' }}</li>
+              }
+            </ul>
+          </div>
+          <div>
+            <h3>Suplentes ({{ s.suplentes.length }}/{{ s.vagasSuplente }})</h3>
+            <ul class="mesao__slots">
+              @for (nick of slots(s.vagasSuplente, s.suplentes); track $index) {
+                <li [class.mesao__slot--livre]="!nick">{{ nick ?? 'Vaga livre' }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div class="mesao__acoes">
+          @if (s.minhaInscricao; as m) {
+            <span class="mesao__status">
+              Você está como <strong>{{ m.tipo === 'JOGADOR' ? 'jogador' : 'suplente' }}</strong>
+            </span>
+          }
+          @if (s.minhaInscricao?.tipo !== 'JOGADOR') {
+            <button mat-flat-button color="primary" type="button"
+              [disabled]="enviandoId() === s.id || vagasLivres(s, 'JOGADOR') <= 0"
+              (click)="inscrever(s, 'JOGADOR')">
+              {{ vagasLivres(s, 'JOGADOR') <= 0 ? 'Sem vaga de jogador' : 'Quero jogar' }}
+            </button>
+          }
+          @if (s.minhaInscricao?.tipo !== 'SUPLENTE') {
+            <button mat-stroked-button type="button"
+              [disabled]="enviandoId() === s.id || vagasLivres(s, 'SUPLENTE') <= 0"
+              (click)="inscrever(s, 'SUPLENTE')">
+              {{ vagasLivres(s, 'SUPLENTE') <= 0 ? 'Sem vaga de suplente' : 'Ser suplente' }}
+            </button>
+          }
+          @if (s.minhaInscricao) {
+            <button mat-button type="button" (click)="cancelar(s)">Cancelar inscrição</button>
+          }
+        </div>
+      </section>
+    }
+  }
+</main>

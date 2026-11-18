@@ -1,0 +1,113 @@
+﻿<div class="admin-sessoes">
+  <h3>Mesão ao Vivo</h3>
+
+  <form class="admin-sessoes__form" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+    <h4>{{ editandoId() ? 'Editar data' : 'Nova data' }}</h4>
+    <div class="admin-sessoes__grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Data e hora (Brasília)</mat-label>
+        <input matInput type="datetime-local" formControlName="dataHora" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Título (opcional)</mat-label>
+        <input matInput formControlName="titulo" placeholder="Mesão 1" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Bracket (opcional)</mat-label>
+        <input matInput formControlName="bracket" placeholder="Bracket 3" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Vagas de jogador</mat-label>
+        <input matInput type="number" min="1" max="10" formControlName="vagasJogador" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Vagas de suplente</mat-label>
+        <input matInput type="number" min="0" max="10" formControlName="vagasSuplente" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="admin-sessoes__wide">
+        <mat-label>Observações (opcional)</mat-label>
+        <input matInput formControlName="observacoes" />
+      </mat-form-field>
+      <mat-checkbox formControlName="aberta" color="primary">Aberta para inscrições</mat-checkbox>
+    </div>
+    <div class="admin-sessoes__actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+        {{ editandoId() ? 'Salvar alterações' : 'Criar data' }}
+      </button>
+      @if (editandoId()) {
+        <button mat-stroked-button type="button" (click)="cancelarEdicao()">Cancelar</button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="admin-sessoes__loading"><mat-spinner diameter="32" /></div>
+  } @else if (sessoes().length === 0) {
+    <p class="admin-sessoes__empty">Nenhuma data cadastrada.</p>
+  } @else {
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr><th>Data</th><th>Título</th><th>Jogadores</th><th>Suplentes</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          @for (s of sessoes(); track s.id) {
+            <tr>
+              <td>{{ formatarDataHora(s.dataHora) }}</td>
+              <td>{{ s.titulo || '—' }}{{ s.bracket ? ' · ' + s.bracket : '' }}</td>
+              <td>{{ s.jogadores.length }}/{{ s.vagasJogador }}</td>
+              <td>{{ s.suplentes.length }}/{{ s.vagasSuplente }}</td>
+              <td>
+                <span class="badge" [class.badge--done]="s.aberta" [class.badge--inativo]="!s.aberta">
+                  {{ s.aberta ? 'Aberta' : 'Fechada' }}
+                </span>
+              </td>
+              <td>
+                <button mat-icon-button type="button" (click)="abrirDetalhe(s.id)" aria-label="Ver inscritos">
+                  <mat-icon>groups</mat-icon>
+                </button>
+                <button mat-icon-button type="button" (click)="editar(s)" aria-label="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button type="button" (click)="remover(s)" aria-label="Remover">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+            @if (detalheId() === s.id) {
+              <tr>
+                <td colspan="6">
+                  @if (loadingInscricoes()) {
+                    <mat-spinner diameter="24" />
+                  } @else if (inscricoes().length === 0) {
+                    <em>Sem inscrições.</em>
+                  } @else {
+                    <div class="admin-table-wrapper">
+                      <table class="admin-table">
+                        <thead><tr><th>Tipo</th><th>#</th><th>Apoiador</th><th></th></tr></thead>
+                        <tbody>
+                          @for (i of inscricoes(); track i.id) {
+                            <tr>
+                              <td>{{ i.tipo === 'JOGADOR' ? 'Jogador' : 'Suplente' }}</td>
+                              <td>{{ i.posicao }}</td>
+                              <td>{{ i.nome }} ({{ i.nick }})</td>
+                              <td>
+                                <button mat-icon-button type="button" (click)="removerInscricao(i)" aria-label="Remover inscrição">
+                                  <mat-icon>close</mat-icon>
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

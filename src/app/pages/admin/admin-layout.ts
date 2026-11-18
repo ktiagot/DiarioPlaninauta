@@ -36,6 +36,20 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         >
           Parceiros
         </a>
+        <a
+          routerLink="/admin/analises"
+          routerLinkActive="admin-layout__nav-link--active"
+          class="admin-layout__nav-link"
+        >
+          Análises
+        </a>
+        <a
+          routerLink="/admin/mesao-live"
+          routerLinkActive="admin-layout__nav-link--active"
+          class="admin-layout__nav-link"
+        >
+          Mesão ao Vivo
+        </a>
       </nav>
       <div class="admin-layout__content">
         <router-outlet />

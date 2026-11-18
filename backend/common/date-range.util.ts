@@ -16,3 +16,14 @@ export function hojeRangeUtc(now: Date = new Date()): { inicio: Date; fim: Date 
   const fim = new Date(inicio.getTime() + 24 * 60 * 60 * 1000 - 1);
   return { inicio, fim };
 }
+
+/** Intervalo [início, fim) do mês civil (UTC-3) que contém `d`, em instantes UTC. */
+export function mesRangeUtc(d: Date): { inicio: Date; fim: Date } {
+  const local = new Date(d.getTime() + TZ_OFFSET_MIN * 60 * 1000);
+  const y = local.getUTCFullYear();
+  const m = local.getUTCMonth();
+  return {
+    inicio: new Date(Date.UTC(y, m, 1) - TZ_OFFSET_MIN * 60 * 1000),
+    fim: new Date(Date.UTC(y, m + 1, 1) - TZ_OFFSET_MIN * 60 * 1000),
+  };
+}

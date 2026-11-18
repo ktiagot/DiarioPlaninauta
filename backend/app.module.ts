@@ -4,11 +4,13 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { validateEnv } from './common/env.validation';
+import { AnalisesModule } from './analises/analises.module';
 import { AuthModule } from './auth/auth.module';
 import { ComunidadeModule } from './comunidade/comunidade.module';
 import { HealthModule } from './health/health.module';
 import { LojaModule } from './loja/loja.module';
 import { MesasModule } from './mesas/mesas.module';
+import { MesaoLiveModule } from './mesao-live/mesao-live.module';
 import { NotificacoesModule } from './notificacoes/notificacoes.module';
 import { ParceirosModule } from './parceiros/parceiros.module';
 import { PreconsModule } from './precons/precons.module';
@@ -34,6 +36,8 @@ import { UsersModule } from './users/users.module';
     NotificacoesModule,
     ParceirosModule,
     PreconsModule,
+    AnalisesModule,
+    MesaoLiveModule,
     TemaModule,
     HealthModule,
   ],

@@ -126,6 +126,10 @@ model User {
   // --- notificações ---
   notificacoes Notificacao[]
 
+  // --- apoiadores: análises de deck e mesão ao vivo ---
+  analiseInscricoes AnaliseInscricao[]
+  mesaoInscricoes   MesaoInscricao[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -561,4 +565,88 @@ model Parceiro {
 
   @@index([ativo, ordem])
   @@map("parceiros")
+}
+
+// =============================================
+// ANÁLISE DE COMMANDER (apoiadores)
+// =============================================
+
+model AnaliseSessao {
+  id          String   @id @default(uuid())
+  dataHora    DateTime
+  titulo      String?
+  vagas       Int
+  aberta      Boolean  @default(true)
+  observacoes String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inscricoes AnaliseInscricao[]
+
+  @@index([dataHora])
+  @@map("analise_sessoes")
+}
+
+model AnaliseInscricao {
+  id        String   @id @default(uuid())
+  sessaoId  String
+  userId    String
+  commander String
+  linkDeck  String
+  bracket   String?
+  budget    String
+  objetivos String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessao AnaliseSessao @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessaoId, userId])
+  @@index([sessaoId, createdAt])
+  @@index([userId])
+  @@map("analise_inscricoes")
+}
+
+// =============================================
+// MESÃO DE COMMANDER AO VIVO (apoiadores)
+// =============================================
+
+enum MesaoTipo {
+  JOGADOR
+  SUPLENTE
+}
+
+model MesaoSessao {
+  id            String   @id @default(uuid())
+  dataHora      DateTime
+  titulo        String?
+  bracket       String?
+  vagasJogador  Int      @default(3)
+  vagasSuplente Int      @default(3)
+  aberta        Boolean  @default(true)
+  observacoes   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  inscricoes MesaoInscricao[]
+
+  @@index([dataHora])
+  @@map("mesao_sessoes")
+}
+
+model MesaoInscricao {
+  id        String    @id @default(uuid())
+  sessaoId  String
+  userId    String
+  tipo      MesaoTipo
+  createdAt DateTime  @default(now())
+
+  sessao MesaoSessao @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessaoId, userId])
+  @@index([sessaoId, tipo, createdAt])
+  @@index([userId])
+  @@map("mesao_inscricoes")
 }

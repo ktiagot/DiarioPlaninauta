@@ -91,6 +91,19 @@ export const routes: Routes = [
         data: { title: 'Mesões' },
       },
       {
+        path: 'analises',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/analises/analises').then((m) => m.AnalisesComponent),
+        data: { title: 'Análise de Commander' },
+      },
+      {
+        path: 'mesao-live',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./pages/mesao-live/mesao-live').then((m) => m.MesaoLiveComponent),
+        data: { title: 'Mesão ao Vivo' },
+      },
+      {
         path: 'loja',
         canActivate: [authGuard],
         loadComponent: () =>
@@ -147,6 +160,20 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/admin/tema/admin-tema').then((m) => m.AdminTemaComponent),
             data: { title: 'Admin — Tema' },
+          },
+          {
+            path: 'analises',
+            loadComponent: () =>
+              import('./pages/admin/analises/admin-analises').then((m) => m.AdminAnalisesComponent),
+            data: { title: 'Admin — Análises' },
+          },
+          {
+            path: 'mesao-live',
+            loadComponent: () =>
+              import('./pages/admin/mesao-live/admin-mesao-live').then(
+                (m) => m.AdminMesaoLiveComponent,
+              ),
+            data: { title: 'Admin — Mesão ao Vivo' },
           },
           {
             path: 'parceiros',

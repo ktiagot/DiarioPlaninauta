@@ -1,0 +1,111 @@
+﻿<main class="analises mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+  <app-page-header
+    titulo="Análise de Commander"
+    subtitulo="Inscreva seu deck em uma das datas. Sem vaga, você entra na lista de espera."
+    icone="query_stats"
+  />
+
+  @if (loading()) {
+    <div class="analises__center"><mat-spinner diameter="36" /></div>
+  } @else if (erro()) {
+    <p class="analises__vazio">{{ erro() }}</p>
+  } @else if (sessoes().length === 0) {
+    <p class="analises__vazio">Nenhuma data aberta no momento. Fique de olho nas notificações.</p>
+  } @else {
+    @for (s of sessoes(); track s.id) {
+      <section class="analises__card">
+        <header class="analises__head">
+          <div>
+            <h2>{{ s.titulo || 'Análise de deck' }}</h2>
+            <p class="analises__data">{{ formatarDataHora(s.dataHora) }}</p>
+          </div>
+          <div class="analises__vagas">
+            <strong>{{ s.confirmados }}/{{ s.vagas }}</strong> vagas
+            @if (s.totalListaEspera > 0) {
+              <span> · {{ s.totalListaEspera }} na espera</span>
+            }
+          </div>
+        </header>
+
+        @if (s.observacoes) {
+          <p class="analises__obs">{{ s.observacoes }}</p>
+        }
+
+        @if (s.minhaInscricao; as m) {
+          <div class="analises__minha" [class.analises__minha--espera]="m.listaEspera">
+            <mat-icon>{{ m.listaEspera ? 'hourglass_top' : 'check_circle' }}</mat-icon>
+            <div>
+              @if (m.listaEspera) {
+                <strong>Lista de espera: posição {{ m.posicao - s.vagas }}</strong>
+                <p>Se alguém cancelar, você avança e recebe uma notificação.</p>
+              } @else {
+                <strong>Vaga confirmada (posição {{ m.posicao }})</strong>
+              }
+              <p class="analises__deck">{{ m.commander }} ·
+                <a [href]="m.linkDeck" target="_blank" rel="noopener noreferrer">ver deck</a></p>
+            </div>
+          </div>
+        }
+
+        @if (formAbertoId() === s.id) {
+          <form class="analises__form" [formGroup]="form" (ngSubmit)="salvar(s)" novalidate>
+            <mat-form-field appearance="outline">
+              <mat-label>Commander</mat-label>
+              <input matInput formControlName="commander" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Link do deck (https://...)</mat-label>
+              <input matInput formControlName="linkDeck" />
+              @if (form.controls.linkDeck.invalid && form.controls.linkDeck.touched) {
+                <mat-error>Informe um link válido começando com http(s)://</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Bracket (opcional)</mat-label>
+              <input matInput formControlName="bracket" placeholder="B3" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Budget para upgrades</mat-label>
+              <input matInput formControlName="budget" placeholder="Ex.: até R$ 300" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="analises__wide">
+              <mat-label>Objetivos e observações</mat-label>
+              <textarea matInput rows="4" formControlName="objetivos"></textarea>
+            </mat-form-field>
+            <div class="analises__acoes analises__wide">
+              <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+                {{ s.minhaInscricao ? 'Salvar alterações' : 'Confirmar inscrição' }}
+              </button>
+              <button mat-stroked-button type="button" (click)="fecharForm()">Fechar</button>
+            </div>
+          </form>
+        } @else {
+          <div class="analises__acoes">
+            @if (s.minhaInscricao) {
+              <button mat-stroked-button type="button" (click)="abrirForm(s)">Editar</button>
+              <button mat-stroked-button type="button" (click)="cancelar(s)">Cancelar inscrição</button>
+            } @else {
+              <button mat-flat-button color="primary" type="button" (click)="abrirForm(s)">
+                {{ s.confirmados >= s.vagas ? 'Entrar na lista de espera' : 'Inscrever meu deck' }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (s.inscritos.length > 0) {
+          <details class="analises__lista">
+            <summary>Inscritos ({{ s.inscritos.length }})</summary>
+            <ol>
+              @for (i of s.inscritos; track i.posicao) {
+                <li [class.analises__espera]="i.listaEspera">
+                  {{ i.nick }} · {{ i.commander }}
+                  @if (i.listaEspera) { <em>(espera)</em> }
+                </li>
+              }
+            </ol>
+          </details>
+        }
+      </section>
+    }
+  }
+</main>
