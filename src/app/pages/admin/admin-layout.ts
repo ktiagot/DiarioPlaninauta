@@ -44,9 +44,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   `,
   styles: [`
     .admin-layout {
-      max-width: 1100px;
+      width: 100%;
+      max-width: 1800px;
       margin: 0 auto;
-      padding: 2rem 1rem;
+      padding: 2rem clamp(1rem, 3vw, 3rem);
 
       &__title {
         font-size: 1.75rem;
@@ -83,7 +84,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       }
 
       &__content {
-        min-height: 400px;
+        min-height: calc(100vh - 16rem);
       }
     }
   `],
