@@ -1,4 +1,4 @@
-﻿-- CreateEnum
+-- CreateEnum
 CREATE TYPE "MesaoTipo" AS ENUM ('JOGADOR', 'SUPLENTE');
 
 -- CreateTable
