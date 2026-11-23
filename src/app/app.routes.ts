@@ -63,7 +63,7 @@ export const routes: Routes = [
           import('./pages/comunidade/comunidade').then(
             (m) => m.ComunidadeComponent,
           ),
-        data: { title: 'Comunidade' },
+        data: { title: 'Apoiadores' },
       },
       {
         path: 'precompeonato',

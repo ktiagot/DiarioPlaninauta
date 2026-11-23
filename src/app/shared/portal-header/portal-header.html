@@ -6,7 +6,35 @@
 
     <nav class="portal-header__nav" aria-label="Menu principal">
       @for (item of navItems(); track item.label; let last = $last) {
-        @if (item.external) {
+        @if (item.children) {
+          <div class="portal-header__group">
+            <button
+              type="button"
+              class="portal-header__link portal-header__group-btn"
+              [class.portal-header__link--active]="isGroupActive(item)"
+              [attr.aria-expanded]="openGroup() === item.label"
+              aria-haspopup="true"
+              (click)="toggleGroup(item.label)"
+            >
+              {{ item.label }}
+              <span class="portal-header__caret" aria-hidden="true"></span>
+            </button>
+            @if (openGroup() === item.label) {
+              <div class="portal-header__dropdown" role="menu">
+                @for (child of item.children; track child.label) {
+                  <a
+                    [routerLink]="child.path"
+                    routerLinkActive="portal-header__dropdown-link--active"
+                    class="portal-header__dropdown-link"
+                    role="menuitem"
+                  >
+                    {{ child.label }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        } @else if (item.external) {
           <a
             [href]="item.href"
             target="_blank"
@@ -79,7 +107,19 @@
     aria-label="Menu mobile"
   >
     @for (item of navItems(); track item.label) {
-      @if (item.external) {
+      @if (item.children) {
+        <span class="portal-header__mobile-group">{{ item.label }}</span>
+        @for (child of item.children; track child.label) {
+          <a
+            [routerLink]="child.path"
+            routerLinkActive="portal-header__mobile-link--active"
+            class="portal-header__mobile-link portal-header__mobile-link--child"
+            (click)="closeMobileMenu()"
+          >
+            {{ child.label }}
+          </a>
+        }
+      } @else if (item.external) {
         <a
           [href]="item.href"
           target="_blank"

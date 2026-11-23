@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, ElementRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,7 @@ import {
   PORTAL_GUEST_NAV_ITEMS,
   PORTAL_LOGO_MINIMAL_URL,
   PORTAL_NAV_ITEMS,
+  PortalNavItem,
 } from './portal-header.constants';
 import { SessionService } from '../../core/auth/session.service';
 import { NotificacoesSinoComponent } from '../notificacoes-sino/notificacoes-sino';
@@ -23,9 +24,12 @@ import { NotificacoesSinoComponent } from '../notificacoes-sino/notificacoes-sin
 export class PortalHeaderComponent {
   private readonly router = inject(Router);
   private readonly session = inject(SessionService);
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   protected readonly logoUrl = PORTAL_LOGO_MINIMAL_URL;
   protected readonly mobileMenuOpen = signal(false);
+  protected readonly openGroup = signal<string | null>(null);
+  private readonly currentUrl = signal(this.router.url);
 
   protected readonly isAuthenticated = computed(() => {
     this.session.authRevision();
@@ -51,9 +55,31 @@ export class PortalHeaderComponent {
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => {
-        // force recompute on navigation
+      .subscribe((event) => {
+        this.currentUrl.set((event as NavigationEnd).urlAfterRedirects);
+        this.openGroup.set(null);
       });
+  }
+
+  protected toggleGroup(label: string): void {
+    this.openGroup.update((g) => (g === label ? null : label));
+  }
+
+  protected isGroupActive(item: PortalNavItem): boolean {
+    const url = this.currentUrl().split(/[?#]/)[0];
+    return (item.children ?? []).some(
+      (c) => !!c.path && (url === c.path || url.startsWith(c.path + '/')),
+    );
+  }
+
+  @HostListener('document:click', ['$event'])
+  protected onDocumentClick(event: Event): void {
+    if (!this.host.nativeElement.contains(event.target as Node)) this.openGroup.set(null);
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.openGroup.set(null);
   }
 
   toggleMobileMenu(): void {
