@@ -69,56 +69,60 @@
       }
     </div>
 
-    <div class="mesa-card__drag-hint-row">
-      <p class="mesa-card__drag-hint">
-        {{ resultadoEmpate() ? 'Marque quem empatou' : 'Arraste para definir posições' }}
-      </p>
-      <mat-slide-toggle
-        class="mesa-card__empate-toggle"
-        [checked]="resultadoEmpate()"
-        [disabled]="somenteLeitura()"
-        (change)="onResultadoEmpateChange($event.checked)"
-      >
-        Empate
-      </mat-slide-toggle>
-    </div>
+    @if (mostrarResultado()) {
+      <div class="mesa-card__drag-hint-row">
+        <p class="mesa-card__drag-hint">
+          {{ resultadoEmpate() ? 'Marque quem empatou' : 'Arraste para definir posições' }}
+        </p>
+        <mat-slide-toggle
+          class="mesa-card__empate-toggle"
+          [checked]="resultadoEmpate()"
+          [disabled]="somenteLeitura()"
+          (change)="onResultadoEmpateChange($event.checked)"
+        >
+          Empate
+        </mat-slide-toggle>
+      </div>
+    }
 
     <div
       class="mesa-jogadores"
-      [class.mesa-jogadores--empate]="resultadoEmpate()"
+      [class.mesa-jogadores--empate]="mostrarResultado() && resultadoEmpate()"
       cdkDropList
-      [cdkDropListDisabled]="somenteLeitura() || resultadoEmpate()"
+      [cdkDropListDisabled]="somenteLeitura() || resultadoEmpate() || !mostrarResultado()"
       (cdkDropListDropped)="drop($event)"
     >
       @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId; let i = $index) {
         <div
           class="mesa-jogador"
-          [class.mesa-jogador--first]="isPrimeiroLugar(jogador.inscricaoId, i)"
-          [class.mesa-jogador--second]="!resultadoEmpate() && i === 1"
+          [class.mesa-jogador--first]="mostrarResultado() && isPrimeiroLugar(jogador.inscricaoId, i)"
+          [class.mesa-jogador--second]="mostrarResultado() && !resultadoEmpate() && i === 1"
           cdkDrag
-          [cdkDragDisabled]="somenteLeitura() || resultadoEmpate()"
+          [cdkDragDisabled]="somenteLeitura() || resultadoEmpate() || !mostrarResultado()"
         >
           <div *cdkDragPlaceholder class="mesa-jogador__drag-placeholder"></div>
 
-          @if (!somenteLeitura() && !resultadoEmpate()) {
+          @if (mostrarResultado() && !somenteLeitura() && !resultadoEmpate()) {
             <mat-icon class="mesa-jogador__handle" cdkDragHandle>drag_indicator</mat-icon>
           }
 
-          <div class="mesa-jogador__posicao-wrap">
-            @if (isPrimeiroLugar(jogador.inscricaoId, i)) {
-              <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--first">emoji_events</mat-icon>
-              <span class="mesa-jogador__posicao mesa-jogador__posicao--first">
-                {{ resultadoEmpate() ? 'Primeiro lugar' : '1º' }}
-              </span>
-            } @else if (!resultadoEmpate() && i === 1) {
-              <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--second">military_tech</mat-icon>
-              <span class="mesa-jogador__posicao mesa-jogador__posicao--second">2º</span>
-            } @else if (!resultadoEmpate()) {
-              <span class="mesa-jogador__posicao">{{ posicaoLabel(i, jogador) }}</span>
-            } @else {
-              <span class="mesa-jogador__posicao">—</span>
-            }
-          </div>
+          @if (mostrarResultado()) {
+            <div class="mesa-jogador__posicao-wrap">
+              @if (isPrimeiroLugar(jogador.inscricaoId, i)) {
+                <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--first">emoji_events</mat-icon>
+                <span class="mesa-jogador__posicao mesa-jogador__posicao--first">
+                  {{ resultadoEmpate() ? 'Primeiro lugar' : '1º' }}
+                </span>
+              } @else if (!resultadoEmpate() && i === 1) {
+                <mat-icon class="mesa-jogador__place-icon mesa-jogador__place-icon--second">military_tech</mat-icon>
+                <span class="mesa-jogador__posicao mesa-jogador__posicao--second">2º</span>
+              } @else if (!resultadoEmpate()) {
+                <span class="mesa-jogador__posicao">{{ posicaoLabel(i, jogador) }}</span>
+              } @else {
+                <span class="mesa-jogador__posicao">—</span>
+              }
+            </div>
+          }
 
           <div class="mesa-jogador__info">
             <p class="mesa-jogador__nome">{{ displayNome(jogador) }}</p>
@@ -145,7 +149,7 @@
             }
           }
 
-          @if (resultadoEmpate()) {
+          @if (mostrarResultado() && resultadoEmpate()) {
             <mat-slide-toggle
               class="mesa-jogador__empatou-toggle"
               [checked]="jogadorEmpatou(jogador.inscricaoId)"
@@ -160,129 +164,138 @@
       }
     </div>
 
-    <mat-divider class="mesa-card__section-divider" />
+    @if (mostrarResultado()) {
+      <mat-divider class="mesa-card__section-divider" />
 
-    <section class="mesa-card__kills" aria-labelledby="kills-title-{{ mesa().id }}">
-      <div class="mesa-card__kills-header">
-        <h3 class="mesa-card__kills-title" [id]="'kills-title-' + mesa().id">Registro de eliminações</h3>
-        <p class="mesa-card__kills-hint">
-          Registre quem eliminou quem. São necessárias 3 eliminações antes de confirmar.
-        </p>
-      </div>
-
-      @if (!somenteLeitura()) {
-        <div class="mesa-card__kills-form">
-          <mat-form-field appearance="outline" class="mesa-card__kill-field">
-            <mat-select
-              placeholder="Eliminador"
-              [ngModel]="novoEliminadorId()"
-              (ngModelChange)="onEliminadorChange($event)"
-              [disabled]="limiteEliminacoesAtingido()"
-            >
-              @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId) {
-                <mat-option [value]="jogador.inscricaoId">{{ displayNome(jogador) }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <mat-icon class="mesa-card__kills-arrow" aria-hidden="true">arrow_forward</mat-icon>
-
-          <mat-form-field appearance="outline" class="mesa-card__kill-field">
-            <mat-select
-              placeholder="Eliminado"
-              [ngModel]="novoEliminadoId()"
-              (ngModelChange)="novoEliminadoId.set($event)"
-              [disabled]="novoEliminadorId() == null || limiteEliminacoesAtingido()"
-            >
-              @for (jogador of jogadoresDisponiveisComoEliminado(); track jogador.inscricaoId) {
-                <mat-option [value]="jogador.inscricaoId">{{ displayNome(jogador) }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <button
-            mat-stroked-button
-            type="button"
-            class="mesa-card__kill-add-btn"
-            [disabled]="!podeAdicionarEliminacao()"
-            (click)="adicionarEliminacao()"
-          >
-            <mat-icon>add</mat-icon>
-            Registrar
-          </button>
+      <section class="mesa-card__kills" aria-labelledby="kills-title-{{ mesa().id }}">
+        <div class="mesa-card__kills-header">
+          <h3 class="mesa-card__kills-title" [id]="'kills-title-' + mesa().id">Registro de eliminações</h3>
+          <p class="mesa-card__kills-hint">
+            Registre quem eliminou quem. São necessárias 3 eliminações antes de confirmar.
+          </p>
         </div>
-      }
 
-      @if (eliminacoes().length) {
-        <ul class="mesa-card__kills-list">
-          @for (eliminacao of eliminacoes(); track $index; let i = $index) {
-            <li class="mesa-card__kill-item">
-              <mat-icon class="mesa-card__kill-item-icon" aria-hidden="true">skull</mat-icon>
-              <span class="mesa-card__kill-item-text">
-                <strong>{{ displayNome(jogadorPorId(eliminacao.eliminadorInscricaoId)!) }}</strong>
-                eliminou
-                <strong>{{ displayNome(jogadorPorId(eliminacao.eliminadoInscricaoId)!) }}</strong>
-              </span>
-              @if (!somenteLeitura()) {
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="mesa-card__kill-remove-btn"
-                  aria-label="Remover eliminação"
-                  (click)="removerEliminacao(i)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              }
-            </li>
-          }
-        </ul>
-      } @else if (!somenteLeitura()) {
-        <p class="mesa-card__kills-empty">Nenhuma eliminação registrada ainda.</p>
-      }
+        @if (!somenteLeitura()) {
+          <div class="mesa-card__kills-form">
+            <mat-form-field appearance="outline" class="mesa-card__kill-field">
+              <mat-select
+                placeholder="Eliminador"
+                [ngModel]="novoEliminadorId()"
+                (ngModelChange)="onEliminadorChange($event)"
+                [disabled]="limiteEliminacoesAtingido()"
+              >
+                @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId) {
+                  <mat-option [value]="jogador.inscricaoId">{{ displayNome(jogador) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-      <div class="mesa-card__kills-summary">
-        <p class="mesa-card__kills-summary-title">Resumo de eliminações</p>
-        <div class="mesa-card__kills-summary-grid">
-          @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId) {
-            <div class="mesa-kill-stat">
-              <span class="mesa-kill-stat__nome">{{ displayNome(jogador) }}</span>
-              <span class="mesa-kill-stat__count">
-                {{ killCount(jogador.inscricaoId) }}
-                {{ killLabel(killCount(jogador.inscricaoId)) }}
-              </span>
-            </div>
-          }
+            <mat-icon class="mesa-card__kills-arrow" aria-hidden="true">arrow_forward</mat-icon>
+
+            <mat-form-field appearance="outline" class="mesa-card__kill-field">
+              <mat-select
+                placeholder="Eliminado"
+                [ngModel]="novoEliminadoId()"
+                (ngModelChange)="novoEliminadoId.set($event)"
+                [disabled]="novoEliminadorId() == null || limiteEliminacoesAtingido()"
+              >
+                @for (jogador of jogadoresDisponiveisComoEliminado(); track jogador.inscricaoId) {
+                  <mat-option [value]="jogador.inscricaoId">{{ displayNome(jogador) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button
+              mat-stroked-button
+              type="button"
+              class="mesa-card__kill-add-btn"
+              [disabled]="!podeAdicionarEliminacao()"
+              (click)="adicionarEliminacao()"
+            >
+              <mat-icon>add</mat-icon>
+              Registrar
+            </button>
+          </div>
+        }
+
+        @if (eliminacoes().length) {
+          <ul class="mesa-card__kills-list">
+            @for (eliminacao of eliminacoes(); track $index; let i = $index) {
+              <li class="mesa-card__kill-item">
+                <mat-icon class="mesa-card__kill-item-icon" aria-hidden="true">skull</mat-icon>
+                <span class="mesa-card__kill-item-text">
+                  <strong>{{ displayNome(jogadorPorId(eliminacao.eliminadorInscricaoId)!) }}</strong>
+                  eliminou
+                  <strong>{{ displayNome(jogadorPorId(eliminacao.eliminadoInscricaoId)!) }}</strong>
+                </span>
+                @if (!somenteLeitura()) {
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="mesa-card__kill-remove-btn"
+                    aria-label="Remover eliminação"
+                    (click)="removerEliminacao(i)"
+                  >
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        } @else if (!somenteLeitura()) {
+          <p class="mesa-card__kills-empty">Nenhuma eliminação registrada ainda.</p>
+        }
+
+        <div class="mesa-card__kills-summary">
+          <p class="mesa-card__kills-summary-title">Resumo de eliminações</p>
+          <div class="mesa-card__kills-summary-grid">
+            @for (jogador of jogadoresOrdenados(); track jogador.inscricaoId) {
+              <div class="mesa-kill-stat">
+                <span class="mesa-kill-stat__nome">{{ displayNome(jogador) }}</span>
+                <span class="mesa-kill-stat__count">
+                  {{ killCount(jogador.inscricaoId) }}
+                  {{ killLabel(killCount(jogador.inscricaoId)) }}
+                </span>
+              </div>
+            }
+          </div>
         </div>
-      </div>
 
-      @if (!somenteLeitura() && eliminacoes().length > 0 && eliminacoes().length < 3) {
-        <p class="mesa-card__kills-progress">
-          {{ eliminacoes().length }}/3 eliminações registradas
-        </p>
-      }
-    </section>
+        @if (!somenteLeitura() && eliminacoes().length > 0 && eliminacoes().length < 3) {
+          <p class="mesa-card__kills-progress">
+            {{ eliminacoes().length }}/3 eliminações registradas
+          </p>
+        }
+      </section>
+    }
   </mat-card-content>
 
   <mat-card-actions class="mesa-card__actions">
     @if (!somenteLeitura()) {
-      <button
-        mat-flat-button
-        color="primary"
-        class="mesa-card__confirm-btn"
-        [disabled]="!podeConfirmar()"
-        (click)="confirmarPosicoes()"
-      >
-        @if (confirmando()) {
-          <mat-spinner diameter="20" class="mesa-card__spinner" />
-          Confirmando…
-        } @else {
-          <span class="mesa-card__confirm-content">
-            <mat-icon class="mesa-card__confirm-icon">check</mat-icon>
-            {{ botaoConfirmarLabel() }}
-          </span>
-        }
-      </button>
+      @if (mostrarResultado()) {
+        <button
+          mat-flat-button
+          color="primary"
+          class="mesa-card__confirm-btn"
+          [disabled]="!podeConfirmar()"
+          (click)="confirmarPosicoes()"
+        >
+          @if (confirmando()) {
+            <mat-spinner diameter="20" class="mesa-card__spinner" />
+            Confirmando…
+          } @else {
+            <span class="mesa-card__confirm-content">
+              <mat-icon class="mesa-card__confirm-icon">check</mat-icon>
+              {{ botaoConfirmarLabel() }}
+            </span>
+          }
+        </button>
+      } @else {
+        <button mat-stroked-button type="button" class="mesa-card__confirm-btn" (click)="iniciarLancamento()">
+          <mat-icon>edit_note</mat-icon>
+          Lançar resultado
+        </button>
+      }
     }
   </mat-card-actions>
 </mat-card>

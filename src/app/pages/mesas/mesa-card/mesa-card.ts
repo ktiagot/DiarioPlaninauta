@@ -81,6 +81,23 @@ export class MesaCardComponent {
     return 'Salvar correção';
   });
 
+  /** Usuário abriu o lançamento de resultado (fora do modo admin). */
+  protected readonly editando = signal(false);
+
+  /** Posições, empate e eliminações só aparecem com resultado lançado ou durante o lançamento. */
+  protected readonly mostrarResultado = computed(
+    () =>
+      this.mesa().finalizada === true ||
+      this.mesa().validada === true ||
+      this.rodadaFinalizada() ||
+      this.modoAdmin() ||
+      this.editando(),
+  );
+
+  protected iniciarLancamento(): void {
+    this.editando.set(true);
+  }
+
   protected readonly badgeLabel = computed(() => {
     if (this.rodadaFinalizada()) return 'Finalizada';
     if (this.mesa().validada) return 'Validada';
